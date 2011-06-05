@@ -1,0 +1,6 @@
+[submodule "libs/doctrine-orm"]
+	path = libs/doctrine-orm
+	url = git://github.com/doctrine/doctrine2.git
+[submodule "libs/Fluid"]
+	path = libs/Fluid
+	url = git://git.typo3.org/FLOW3/Packages/Fluid.git
