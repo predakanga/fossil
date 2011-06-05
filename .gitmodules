@@ -4,3 +4,6 @@
 [submodule "libs/Fluid"]
 	path = libs/Fluid
 	url = git://git.typo3.org/FLOW3/Packages/Fluid.git
+[submodule "libs/addendum"]
+	path = libs/addendum
+	url = git://github.com/predakanga/addendum.git
