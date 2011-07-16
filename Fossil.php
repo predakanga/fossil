@@ -21,6 +21,27 @@ namespace Fossil;
  * @since 0.1
  */
 class Fossil {
+        const AssertionsAndChecks       =   1; // 1 >> 0
+        const LogWarnings               =   2; // 1 >> 1
+        const DisplayWarnings           =   4; // 1 >> 2
+        const LogErrors                 =   8; // 1 >> 3
+        const DisplayErrors             =  16; // 1 >> 4
+        const CacheData                 =  32; // 1 >> 5
+        const CacheCode                 =  64; // 1 >> 6
+        const CacheInstances            = 128; // 1 >> 7
+        const FileTimesInvalidateCache  = 256; // 1 >> 8
+        
+        /**
+         * Mode constant - Production Mode
+         * 
+         * Specifies that Fossil should run in production mode.
+         * Enables all caches, and doesn't check for file modifications.
+         * 
+         * @var int
+         */
+        const PRODUCTION = 232;
+        // CacheData & CacheCode & CacheInstances & LogErrors
+        
 	/**
 	 * Mode constant - Release Mode
 	 * 
@@ -29,16 +50,20 @@ class Fossil {
 	 * 
 	 * @var int
 	 */
-	const RELEASE = 0;
+	const RELEASE = 488;
+        // CacheData & CacheCode & CacheInstances & FileTimesInvalidateCache & LogErrors
+        
 	/**
 	 * Mode constant - Testing Mode
 	 * 
 	 * Specifies that Fossil should run in testing mode.
-	 * Enables all caches and enables assertions, displays all errors and warnings
+	 * Enables all caches and enables assertions, logs all errors and warnings
 	 * 
 	 * @var int
 	 */
-	const TESTING = 1;
+	const TESTING = 490;
+        // CacheData & CacheCode & CacheInstances & FileTimesInvalidateCache & LogErrors & LogWarnings
+        
 	/**
 	 * Mode constant - Debug Mode
 	 * 
@@ -47,7 +72,9 @@ class Fossil {
 	 * 
 	 * @var int
 	 */
-	const DEBUG = 2;
+	const DEBUG = 498;
+        // CacheData & CacheCode & CacheInstances & FileTimesInvalidateCache & DisplayErrors & LogWarnings
+        
 	/**
 	 * Mode constant - Development Mode
 	 * 
@@ -56,7 +83,8 @@ class Fossil {
 	 * 
 	 * @var int
 	 */
-	const DEVELOPMENT = 3;
+	const DEVELOPMENT = 21;
+        // AssertionsAndChecks & DisplayErrors & DisplayWarnings
 	
 	/**
 	 * Checks whether Fossil can run in the current environment
@@ -92,7 +120,7 @@ class Fossil {
 	 */
 	static function bootstrap($mode=PRODUCTION) {
 		// First thing's first, check that the environment is okay for Fossil
-		if($mode > RELEASE && !self::checkEnvironment())
+		if(($mode & AssertionsAndChecks) && !self::checkEnvironment())
 			return NULL;
 		
 		// Next, set up the autoloaders
@@ -101,10 +129,10 @@ class Fossil {
 		
 		// Then, perform one-time initialization on the object manager
 		// Use a cached initialization if possible and not in debug mode
-		if($mode >= DEBUG)
-			OM::init();
-		else
+		if($mode & CacheInstances)
 			OM::cachedInit() or OM::init();
+		else
+			OM::init();
 		
 		// And get the core object from it
 		return OM::core();
