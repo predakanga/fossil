@@ -2,7 +2,7 @@
 
 namespace Fossil;
 
-require_once("blackbox/annotations.php");
+require_once("libs/AddendumPP/annotations.php");
 
 class Annotations {
 	
