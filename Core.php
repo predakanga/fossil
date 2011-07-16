@@ -8,11 +8,11 @@
 namespace Fossil;
 
 /**
+ * The core Fossil class, provides lifecycle management
  * 
- * Enter description here ...
  * @author predakanga
  * @since 0.1
  */
-class FossilCore {
+class Core {
 	
 }

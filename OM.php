@@ -27,16 +27,22 @@ class OM {
 	 * @var array
 	 */
 	private static $instances = array();
+        
 	/**
 	 * Maps type to potential provider name
 	 * 
 	 * Provider keys:
-	 * ['fqcn'] => Fully Qualified Class Name
-	 * ['default'] => Whether this provider is to be used by default
+	 * ['fqcn']         => Fully Qualified Class Name
+	 * ['default']      => Whether this provider is to be used by default
+         * ['takesContext'] => Whether this provider has a constructor which
+         *                     takes the previous provider instance for context
 	 * 
 	 * @var array
 	 */
-	private static $classes = array();
+	private static $classes = array(
+            'Core' => array('default' => array('fqcn' => '\\Fossil\\Core', 'takesContext' => false)),
+            'FS' => array('default' => array('fqcn' => '\\Fossil\\Filesystem', 'takesContext' => false))
+        );
 	
 	/**
 	 * Initialize the object manager without cache
