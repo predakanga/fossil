@@ -135,7 +135,7 @@ class Fossil {
 			OM::init();
 		
 		// And get the core object from it
-		return OM::core();
+		return OM::Core();
 	}
 }
 

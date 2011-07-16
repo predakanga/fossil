@@ -18,7 +18,8 @@ namespace Fossil;
  * 
  * @author predakanga
  * @since 0.1
- * @method Fossil\FossilCore core() core() Returns the Fossil core
+ * @method Fossil\Core Core() Core() Returns the Fossil core
+ * @method Fossil\Filesystem FS() FS() Returns the Fossile filesystem layer
  */
 class OM {
 	/**
