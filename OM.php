@@ -42,7 +42,8 @@ class OM {
 	 */
 	private static $classes = array(
             'Core' => array('default' => array('fqcn' => '\\Fossil\\Core', 'takesContext' => false)),
-            'FS' => array('default' => array('fqcn' => '\\Fossil\\Filesystem', 'takesContext' => false))
+            'FS' => array('default' => array('fqcn' => '\\Fossil\\Filesystem', 'takesContext' => false)),
+            'Annotations' => array('default' => array('fqcn' => '\\Fossil\\Annotations', 'takesContext' => false))
         );
 	
 	/**

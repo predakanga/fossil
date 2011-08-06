@@ -7,10 +7,10 @@ use \AddendumPP\AddendumPP,
 
 require_once("libs/AddendumPP/annotations.php");
 
-class FossilResolver extends AnnotationResolver {
-    private $namespaces = array();
+class FossilAddendumPP extends AddendumPP {
+    private $namespaces = array("" => array("Target" => "AddendumPP\Annotation_Target"));
     
-    public function match($className) {
+    public function resolveClassName($className) {
         $namespace = "";
         $key = $className;
         if(strpos($className, ":") !== FALSE)
@@ -21,19 +21,19 @@ class FossilResolver extends AnnotationResolver {
         }
         
         // Check whether we have a cached result
-        if(isset($namespaces[$namespace])) {
-            if(isset($namespaces[$namespace][$key]))
-                return $namespaces[$namespace][$key];
+        if(isset($this->namespaces[$namespace])) {
+            if(isset($this->namespaces[$namespace][$key]))
+                return $this->namespaces[$namespace][$key];
         }
         
         // If not, and there's no namespace, scan the declared annotation list
         if($namespace == "")
         {
-            foreach($this->addendum->getDeclaredAnnotations() as $annotation) {
+            foreach($this->getDeclaredAnnotations() as $annotation) {
                 if($annotation == $className) {
-                    if(!isset($namespaces[""]))
-                        $namespaces[""] = array();
-                    $namespaces[""][$className] = $annotation;
+                    if(!isset($this->namespaces[""]))
+                        $this->namespaces[""] = array();
+                    $this->namespaces[""][$className] = $annotation;
                     return $annotation;
                 }
             }
@@ -42,17 +42,21 @@ class FossilResolver extends AnnotationResolver {
         // If we didn't find one, check for an aliased one
         // If there is a namespace, go through the list of annotations
         // and stack them into the cached array
-        foreach($this->addendum->getDeclaredAnnotations() as $annotation) {
-            $reflClass = $this->addendum->reflect($annotation);
+        foreach($this->getDeclaredAnnotations() as $annotation) {
+            // To avoid a circular reference exception, skip over any annotations already on the creation stack
+            if(isset($this->creationStack[$annotation]) && $this->creationStack[$annotation])
+                continue;
+            
+            $reflClass = $this->reflect($annotation);
             if($reflClass->hasAnnotation("Fossil\\Annotations\\AliasAnnotation")) {
                 $targetNamespace = "";
                 $targetAlias = $reflClass->getAnnotation("Fossil\\Annotations\\AliasAnnotation")->value;
                 if($reflClass->hasAnnotation("Fossil\\Annotations\\NamespaceAnnotation")) {
                     $targetNamespace = $reflClass->getAnnotation("Fossil\\Annotations\\NamespaceAnnotation")->value;
                 }
-                if(!isset($namespaces[$targetNamespace]))
-                    $namespaces[$targetNamespace] = array();
-                $namespaces[$targetNamespace][$targetAlias] = $annotation;
+                if(!isset($this->namespaces[$targetNamespace]))
+                    $this->namespaces[$targetNamespace] = array();
+                $this->namespaces[$targetNamespace][$targetAlias] = $annotation;
                 if($namespace == $targetNamespace && $targetAlias == $key)
                     return $annotation;
             }
@@ -61,32 +65,26 @@ class FossilResolver extends AnnotationResolver {
     }
 }
 
-class FossilAddendumPP extends AddendumPP {
-    public function __construct()
-    {
-        parent::__construct();
-        $this->resolver = new FossilResolver($this);
-    }
-}
-
 class Annotations {
     /**
-     *
-     * @var AddendumPP
+     * @var FossilAddendumPP
      */
     private $addendum;
     
     public function __construct() {
+        require_once(dirname(__FILE__)."/annotations/AliasAnnotation.php");
+        require_once(dirname(__FILE__)."/annotations/NamespaceAnnotation.php");
+        require_once(dirname(__FILE__)."/annotations/ObjectAnnotation.php");
         $this->addendum = new FossilAddendumPP();
     }
     
     public function getAnnotations($class) {
-        return $this->addendum->reflect($class)->getAnnotations();
+        return $this->addendum->reflect($class)->getAllAnnotations();
     }
     
     public function filterClassesByAnnotation($classes, $annotation) {
         return array_filter($classes, function($class) {
-            return $this->addendum->reflect($class)->getAnnotations() instanceof $annotation;
+            return $this->addendum->reflect($class)->hasAnnotation($annotation);
         });
     }
 }
