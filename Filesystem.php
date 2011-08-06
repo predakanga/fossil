@@ -17,7 +17,13 @@ namespace Fossil;
  * @since 0.1
  */
 class Filesystem {
-    //put your code here
+    /**
+     * 
+     * @return array List of roots in which to look for classes, templates, etc
+     */
+    public function roots() {
+        return array(dirname(__FILE__));
+    }
 }
 
 ?>

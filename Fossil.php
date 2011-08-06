@@ -116,11 +116,11 @@ class Fossil {
 	 * code compacted, and to avoid any requires in the header.
 	 * 
 	 * @param int $mode Mode to run Fossil in - defaults to PRODUCTION
-	 * @return Fossil\FossilCore A Fossil instance ready to serve requests, or NULL
+	 * @return Fossil\Core A Fossil instance ready to serve requests, or NULL
 	 */
 	static function bootstrap($mode=PRODUCTION) {
 		// First thing's first, check that the environment is okay for Fossil
-		if(($mode & AssertionsAndChecks) && !self::checkEnvironment())
+		if(($mode & self::AssertionsAndChecks) && !self::checkEnvironment())
 			return NULL;
 		
 		// Next, set up the autoloaders
@@ -129,7 +129,7 @@ class Fossil {
 		
 		// Then, perform one-time initialization on the object manager
 		// Use a cached initialization if possible and not in debug mode
-		if($mode & CacheInstances)
+		if($mode & self::CacheInstances)
 			OM::cachedInit() or OM::init();
 		else
 			OM::init();
