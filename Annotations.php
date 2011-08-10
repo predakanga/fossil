@@ -78,13 +78,24 @@ class Annotations {
         $this->addendum = new FossilAddendumPP();
     }
     
-    public function getAnnotations($class) {
-        return $this->addendum->reflect($class)->getAllAnnotations();
+    /**
+     * @param string $class
+     * @param string $annotation
+     * @return \AddendumPP\Annotation[]
+     */
+    public function getAnnotations($class, $annotation = false) {
+        return $this->addendum->reflect($class)->getAllAnnotations($annotation);
     }
     
+    /**
+     * @param string[] $classes
+     * @param string $annotation
+     * @return string[]
+     */
     public function filterClassesByAnnotation($classes, $annotation) {
-        return array_filter($classes, function($class) {
-            return $this->addendum->reflect($class)->hasAnnotation($annotation);
+        $addendum = $this->addendum;
+        return array_filter($classes, function($class) use($addendum, $annotation) {
+            return $addendum->reflect($class)->hasAnnotation($annotation);
         });
     }
 }

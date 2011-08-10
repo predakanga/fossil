@@ -19,7 +19,10 @@ namespace Fossil;
  * @author predakanga
  * @since 0.1
  * @method Fossil\Core Core() Core() Returns the Fossil core
- * @method Fossil\Filesystem FS() FS() Returns the Fossile filesystem layer
+ * @method Fossil\Filesystem FS() FS() Returns the Fossil filesystem layer
+ * @method Fossil\Annotations Annotations() Annotations() Returns the Fossil annotation layer
+ * @method Fossil\Requests\RequestFactory Request() Request() Returns the Fossil request factory
+ * 
  */
 class OM {
 	/**
@@ -41,11 +44,38 @@ class OM {
 	 * @var array
 	 */
 	private static $classes = array(
-            'Core' => array('default' => array('fqcn' => '\\Fossil\\Core', 'takesContext' => false)),
             'FS' => array('default' => array('fqcn' => '\\Fossil\\Filesystem', 'takesContext' => false)),
             'Annotations' => array('default' => array('fqcn' => '\\Fossil\\Annotations', 'takesContext' => false))
         );
 	
+        private static function scanForClasses() {
+            // For each filesystem root, glob on .php and \*.php
+            $files = array();
+            foreach(self::FS()->roots() as $root) {
+                $cmd = 'grep -Rl --include="*.php" "@F:Object" ' . escapeshellarg($root);
+                $newFiles = array();
+                exec($cmd, $newFiles);
+                $files = array_merge($files, $newFiles);
+            }
+            foreach($files as $file) {
+                try
+                {
+                    include_once($file);
+                }
+                catch(\Exception $e)
+                {
+                }
+            }
+            // Once we've loaded all files, grab the list of objects
+            $allObjects = self::Annotations()->filterClassesByAnnotation(get_declared_classes(), "F:Object");
+            foreach($allObjects as $object) {
+                $annotations = self::Annotations()->getAnnotations($object, "F:Object");
+                foreach($annotations as $objAnno) {
+                    self::$classes[$objAnno->value] = array('default' => array('fqcn' => '\\' . $object, 'takesContext' => false));
+                }
+            }
+        }
+        
 	/**
 	 * Initialize the object manager without cache
 	 * 
@@ -55,7 +85,7 @@ class OM {
 	 * @return void
 	 */
 	public static function init() {
-		
+		self::scanForClasses();
 	}
 	
 	/**
@@ -183,8 +213,12 @@ class OM {
 	 */
 	public static function __callStatic($type, $args) {
 		if(isset(self::$instances[$type]) || isset(self::$classes[$type])) {
-			return self::get($type);
+                        $obj = self::get($type);
+                        if(count($args) > 0)
+                            return call_user_func_array(array($obj, 'get'), $args);
+                        else
+                            return self::get($type);
 		}
-		throw new BadMethodCallException("Method '$type' does not exist");
+		throw new \BadMethodCallException("Method '$type' does not exist");
 	}
 }
