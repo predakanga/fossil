@@ -76,7 +76,19 @@ class OM {
             }
         }
         
-        /**
+        public static function setup() {
+            // Load the basic settings from 'quickstart.yml'
+            $basics = yaml_parse_file('quickstart.yml');
+            // Return if we have no quickstart settings
+            if(!$basics)
+                return;
+            // If we have settings, grab the cache
+            if(isset($basics['cache'])) {
+                self::$instances['Cache'] = new $basics['cache']['fqcn']($basics['cache']['options']);
+            }
+        }
+        
+	/**
 	 * Initialize the object manager without cache
 	 * 
 	 * Scans the codebase immediately to discover classes for
@@ -103,7 +115,9 @@ class OM {
 	 *  @return bool Whether cached state could be loaded
 	 */
 	public static function cachedInit() {
+            if(!self::has("Cache"))
 		return false;
+            return false;
 	}
 	
 	/**

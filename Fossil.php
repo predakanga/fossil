@@ -128,6 +128,7 @@ class Fossil {
 		Autoloader::registerAutoloader();
 		
 		// Then, perform one-time initialization on the object manager
+                OM::setup();
 		// Use a cached initialization if possible and not in debug mode
 		if($mode & self::CacheInstances)
 			OM::cachedInit() or OM::init();
