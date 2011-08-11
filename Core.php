@@ -22,6 +22,8 @@ class Core {
             do
             {
                 $resp = OM::Controller($req->controller)->run($req);
+                if(!$resp)
+                    return;
                 if($resp->nextRequest)
                     $req = $resp->nextRequest;
                 else
