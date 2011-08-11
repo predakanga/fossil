@@ -71,12 +71,12 @@ class OM {
             foreach($allObjects as $object) {
                 $annotations = self::Annotations()->getAnnotations($object, "F:Object");
                 foreach($annotations as $objAnno) {
-                    self::$classes[$objAnno->value] = array('default' => array('fqcn' => '\\' . $object, 'takesContext' => false));
+                    self::$classes[$objAnno->value ?: $objAnno->type] = array($objAnno->name => array('fqcn' => '\\' . $object, 'takesContext' => $objAnno->takesContext));
                 }
             }
         }
         
-	/**
+        /**
 	 * Initialize the object manager without cache
 	 * 
 	 * Scans the codebase immediately to discover classes for
