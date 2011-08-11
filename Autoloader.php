@@ -79,7 +79,7 @@ class Autoloader {
                                 return;
                             }
                     }
-                    array_push($resolvePath, array_pop($classPaths));
+                    array_push($resolvePath, lcfirst(array_pop($classPaths)));
                 } while(count($classPaths) > 0);
 	}
 	
@@ -98,7 +98,7 @@ class Autoloader {
 		$fullClassPath = self::$classPaths[$namespace] . DIRECTORY_SEPARATOR . $class . ".php";
 		// And require it
 		assert("file_exists('$fullClassPath')");
-		require_once($fullClassPath);
+		include_once($fullClassPath);
 	}
 }
 
