@@ -48,15 +48,15 @@ class OM {
             'Annotations' => array('default' => array('fqcn' => '\\Fossil\\Annotations', 'takesContext' => false))
         );
 	
-        private static function scanForClasses() {
+        private static function scanForObjects($root) {
             // For each filesystem root, glob on .php and \*.php
             $files = array();
-            foreach(self::FS()->roots() as $root) {
-                $cmd = 'grep -Rl --include="*.php" "@F:Object" ' . escapeshellarg($root);
-                $newFiles = array();
-                exec($cmd, $newFiles);
-                $files = array_merge($files, $newFiles);
-            }
+            
+            $cmd = 'grep -Rl --include="*.php" "@F:Object" ' . escapeshellarg($root);
+            $newFiles = array();
+            exec($cmd, $newFiles);
+            $files = array_merge($files, $newFiles);
+            
             foreach($files as $file) {
                 try
                 {
@@ -85,7 +85,12 @@ class OM {
 	 * @return void
 	 */
 	public static function init() {
-		self::scanForClasses();
+            // Regular functionality:
+            // Scan local namespace for objects
+            self::scanForObjects(self::FS()->fossilRoot());
+            // Load settings from DB
+            // Scan plugin namespaces for objects
+            // Do compilation
 	}
 	
 	/**
