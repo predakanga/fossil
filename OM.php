@@ -61,7 +61,7 @@ class OM {
         $quickstart['cache'] = self::Cache()->getSetup();
 
         // And output the document
-        file_put_contents(".quickstart.yml", yaml_emit($quickstart));
+        file_put_contents(dirname(__FILE__) . '/.quickstart.yml', yaml_emit($quickstart));
     }
 
     private static function scanForObjects($root) {
@@ -101,7 +101,7 @@ class OM {
         register_shutdown_function(__CLASS__ . "::shutdown");
         
         // Load the basic settings from 'quickstart.yml'
-        $basics = yaml_parse_file('.quickstart.yml');
+        $basics = yaml_parse_file(dirname(__FILE__) . '/.quickstart.yml');
         // Return if we have no quickstart settings
         if(!$basics)
             return;
