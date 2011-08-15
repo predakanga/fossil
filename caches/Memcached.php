@@ -2,19 +2,40 @@
 
 namespace Fossil\Caches;
 
+use Fossil\OM;
+
 /**
  * Description of Memcached
  *
  * @author lachlan
- * @F:Object("Cache", name = "Memcached")
+ * @F:Object(type = "Cache", name = "Memcached")
  */
-class Memcached implements ICache {
+class Memcached extends BaseCache {
     /**
      * @var Memcached
      */
     private $mc;
     
-    public function __construct($args) {
+    private function getDefaultOptions() {
+        // Grab options from the settings
+        $cacheOpts = OM::Settings("Fossil", "cache", NULL);
+        if(!$cacheOpts) {
+            // Default settings
+            $cacheOpts['options']['id'] = "fossil";
+            $cacheOpts['options']['servers'] = array();
+            $cacheOpts['options']['servers'][] = array("host" => "localhost",
+                                                       "port" => 11211);
+        }
+        return $cacheOpts['options']; 
+    }
+    
+    public function __construct($args = NULL) {
+        // If args == NULL, we're doing a default construction, load default options
+        if($args === NULL)
+            $args = $this->getDefaultOptions();
+        
+        parent::__construct($args);
+        
         // Conditionally use a persistent connection
         if(isset($args['id'])) {
             $this->mc = new \Memcached($args['id']);

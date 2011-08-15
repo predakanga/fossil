@@ -1,9 +1,0 @@
----
-cache:
-  fqcn: \Fossil\Caches\Memcached
-  options:
-    id: fossil
-    servers:
-      - host: localhost
-        port: 11211
-...

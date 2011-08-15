@@ -8,7 +8,12 @@ namespace Fossil\Caches;
  * @author lachlan
  * @F:Object("Cache")
  */
-class NoCache implements ICache {
+class NoCache extends BaseCache {
+    public function __construct($args = NULL) {
+        // Empty options for the bit bucket
+        parent::__construct(array());
+    }
+    
     public function has($key) {
         return false;
     }
