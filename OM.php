@@ -22,6 +22,7 @@ namespace Fossil;
  * @method Fossil\Filesystem FS() FS() Returns the Fossil filesystem layer
  * @method Fossil\Annotations Annotations() Annotations() Returns the Fossil annotation layer
  * @method Fossil\Requests\RequestFactory Request() Request() Returns the Fossil request factory
+ * @method Fossil\Caches\BaseCache Cache() Cache() Returns the current cache driver
  * 
  */
 class OM {
@@ -38,55 +39,78 @@ class OM {
 	 * Provider keys:
 	 * ['fqcn']         => Fully Qualified Class Name
 	 * ['default']      => Whether this provider is to be used by default
-         * ['takesContext'] => Whether this provider has a constructor which
-         *                     takes the previous provider instance for context
+     * ['takesContext'] => Whether this provider has a constructor which
+     *                     takes the previous provider instance for context
 	 * 
 	 * @var array
 	 */
 	private static $classes = array(
-            'FS' => array('default' => array('fqcn' => '\\Fossil\\Filesystem', 'takesContext' => false)),
-            'Annotations' => array('default' => array('fqcn' => '\\Fossil\\Annotations', 'takesContext' => false))
-        );
-	
-        private static function scanForObjects($root) {
-            // For each filesystem root, glob on .php and \*.php
-            $files = array();
-            
-            $cmd = 'grep -Rl --include="*.php" "@F:Object" ' . escapeshellarg($root);
-            $newFiles = array();
-            exec($cmd, $newFiles);
-            $files = array_merge($files, $newFiles);
-            
-            foreach($files as $file) {
-                try
-                {
-                    include_once($file);
-                }
-                catch(\Exception $e)
-                {
-                }
+        'FS' => array('default' => array('fqcn' => '\\Fossil\\Filesystem', 'takesContext' => false)),
+        'Annotations' => array('default' => array('fqcn' => '\\Fossil\\Annotations', 'takesContext' => false))
+    );
+    private static $dirty = false;
+
+    // Destructor, to update the quickstart file
+    public static function shutdown() {
+        if(file_exists(".quickstart.yml") && !self::$dirty) {
+            // If we don't have anything to update, return
+            return;
+        }
+        // Otherwise, build up a document with everything we need, and emit it
+        $quickstart = array();
+        $quickstart['cache'] = self::Cache()->getSetup();
+
+        // And output the document
+        file_put_contents(".quickstart.yml", yaml_emit($quickstart));
+    }
+
+    private static function scanForObjects($root) {
+        // For each filesystem root, glob on .php and \*.php
+        $files = array();
+
+        $cmd = 'grep -Rl --include="*.php" "@F:Object" ' . escapeshellarg($root);
+        $newFiles = array();
+        exec($cmd, $newFiles);
+        $files = array_merge($files, $newFiles);
+
+        foreach($files as $file) {
+            try
+            {
+                include_once($file);
             }
-            // Once we've loaded all files, grab the list of objects
-            $allObjects = self::Annotations()->filterClassesByAnnotation(get_declared_classes(), "F:Object");
-            foreach($allObjects as $object) {
-                $annotations = self::Annotations()->getAnnotations($object, "F:Object");
-                foreach($annotations as $objAnno) {
-                    self::$classes[$objAnno->value ?: $objAnno->type] = array($objAnno->name => array('fqcn' => '\\' . $object, 'takesContext' => $objAnno->takesContext));
-                }
+            catch(\Exception $e)
+            {
             }
         }
+        // Once we've loaded all files, grab the list of objects
+        $allObjects = self::Annotations()->filterClassesByAnnotation(get_declared_classes(), "F:Object");
+        foreach($allObjects as $object) {
+            $annotations = self::Annotations()->getAnnotations($object, "F:Object");
+            foreach($annotations as $objAnno) {
+                $type = $objAnno->value ?: $objAnno->type;
+                if(!isset(self::$classes[$type]))
+                    self::$classes[$type] = array();
+                self::$classes[$type][$objAnno->name] = array('fqcn' => '\\' . $object, 'takesContext' => $objAnno->takesContext);
+            }
+        }
+    }
+
+    public static function setup() {
+        // Set up a shutdown function to handle writing out the quickstart file
+        // TODO: Probably register the shutdown func only when dirty is set
+        register_shutdown_function(__CLASS__ . "::shutdown");
         
-        public static function setup() {
-            // Load the basic settings from 'quickstart.yml'
-            $basics = yaml_parse_file('quickstart.yml');
-            // Return if we have no quickstart settings
-            if(!$basics)
-                return;
-            // If we have settings, grab the cache
-            if(isset($basics['cache'])) {
-                self::$instances['Cache'] = new $basics['cache']['fqcn']($basics['cache']['options']);
-            }
+        // Load the basic settings from 'quickstart.yml'
+        $basics = yaml_parse_file('.quickstart.yml');
+        // Return if we have no quickstart settings
+        if(!$basics)
+            return;
+        // If we have settings, grab the cache
+        if(isset($basics['cache'])) {
+            // Bypass the setTypeInstance function so as not to dirty the context
+            self::$instances['Cache'] = new $basics['cache']['fqcn']($basics['cache']['options']);
         }
+    }
         
 	/**
 	 * Initialize the object manager without cache
@@ -100,7 +124,12 @@ class OM {
             // Regular functionality:
             // Scan local namespace for objects
             self::scanForObjects(self::FS()->fossilRoot());
-            // Load settings from DB
+            // Load settings up, set up drivers
+            $cacheDriver = self::Settings("Fossil", "cache", NULL);
+            if(!$cacheDriver)
+                $cacheDriver = array('driver' => 'default',
+                                     'options' => array());
+            self::select("Cache", $cacheDriver['driver']);
             // Scan plugin namespaces for objects
             // Do compilation
 	}
@@ -115,9 +144,9 @@ class OM {
 	 *  @return bool Whether cached state could be loaded
 	 */
 	public static function cachedInit() {
-            if(!self::has("Cache"))
-		return false;
+        if(!self::has("Cache"))
             return false;
+        return false;
 	}
 	
 	/**
@@ -161,8 +190,33 @@ class OM {
 		} else {
 			$newInstance = new $typeInfo['fqcn'];
 		}
-		self::$instances[$type] = $newInstance;
+        self::setTypeInstance($type, $newInstance);
 	}
+    
+    private static function setTypeInstance($type, $instance) {
+        // We only care about cache when setting the dirty status
+        if($type == "Cache") {
+            self::$dirty = true;
+        }
+        
+        self::$instances[$type] = $instance;
+    }
+    
+    private static function selectDefault($type) {
+        // First off, check that we know about this type
+        if(!isset(self::$classes[$type])) {
+            // TODO: Throw an exception if the type isn't known
+        }
+        // By default, just use the element named default, or the first if none exists
+        if(isset(self::$classes[$type]['default']))
+            $typeInfo = self::$classes[$type]['default'];
+        else
+            $typeInfo = reset(self::$classes[$type]);
+        // Instantiate it
+        $newInstance = new $typeInfo['fqcn'];
+        // And store it
+        self::setTypeInstance($type, $newInstance);
+    }
 	
 	/**
 	 * Get an object of the requested type
@@ -176,19 +230,7 @@ class OM {
 	 */
 	public static function get($type) {
 		if(!isset(self::$instances[$type])) {
-			// First off, check that we know about this type
-			if(!isset(self::$classes[$type])) {
-				// TODO: Throw an exception if the type isn't known
-			}
-			// By default, just use the element named default, or the first if none exists
-			if(isset(self::$classes[$type]['default']))
-				$typeInfo = self::$classes[$type]['default'];
-			else
-				$typeInfo = reset(self::$classes[$type]);
-			// Instantiate it
-			$newInstance = new $typeInfo['fqcn'];
-			// And store it
-			self::$instances[$type] = $newInstance;
+            self::selectDefault($type);
 		}
 		return self::$instances[$type];
 	}
@@ -232,11 +274,11 @@ class OM {
 	 */
 	public static function __callStatic($type, $args) {
 		if(isset(self::$instances[$type]) || isset(self::$classes[$type])) {
-                        $obj = self::get($type);
-                        if(count($args) > 0)
-                            return call_user_func_array(array($obj, 'get'), $args);
-                        else
-                            return self::get($type);
+            $obj = self::get($type);
+            if(count($args) > 0)
+                return call_user_func_array(array($obj, 'get'), $args);
+            else
+                return self::get($type);
 		}
 		throw new \BadMethodCallException("Method '$type' does not exist");
 	}

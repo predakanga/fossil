@@ -19,7 +19,7 @@ class Memcached extends BaseCache {
     private function getDefaultOptions() {
         // Grab options from the settings
         $cacheOpts = OM::Settings("Fossil", "cache", NULL);
-        if(!$cacheOpts) {
+        if(!$cacheOpts || !isset($cacheOpts['options'])) {
             // Default settings
             $cacheOpts['options']['id'] = "fossil";
             $cacheOpts['options']['servers'] = array();
