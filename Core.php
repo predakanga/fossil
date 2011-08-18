@@ -7,6 +7,8 @@
 
 namespace Fossil;
 
+use Fossil\OM;
+
 /**
  * The core Fossil class, provides lifecycle management
  * 
@@ -32,7 +34,8 @@ class Core {
                 $resp->runAction();
             } while($req);
             // Then with our final data, select the appropriate adaptor and output
-            if($resp->data)
-                var_dump($resp->data);
+            if($resp->data) {
+                OM::Renderer()->render($resp);
+            }
         }
 }
