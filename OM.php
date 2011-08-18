@@ -46,7 +46,8 @@ class OM {
 	 */
 	private static $classes = array(
         'FS' => array('default' => array('fqcn' => '\\Fossil\\Filesystem', 'takesContext' => false)),
-        'Annotations' => array('default' => array('fqcn' => '\\Fossil\\Annotations', 'takesContext' => false))
+        'Annotations' => array('default' => array('fqcn' => '\\Fossil\\Annotations', 'takesContext' => false)),
+        'Error' => array('default' => array('fqcn' => '\\Fossil\\ErrorManager', 'takesContext' => false))
     );
     private static $dirty = false;
 
@@ -98,8 +99,8 @@ class OM {
     public static function setup() {
         // Set up a shutdown function to handle writing out the quickstart file
         // TODO: Probably register the shutdown func only when dirty is set
-        register_shutdown_function(__CLASS__ . "::shutdown");
-        
+        register_shutdown_function(array(__CLASS__, "shutdown"));
+        self::Error()->init(E_ALL | E_STRICT);
         // Load the basic settings from 'quickstart.yml'
         $basics = yaml_parse_file(dirname(__FILE__) . '/.quickstart.yml');
         // Return if we have no quickstart settings
