@@ -125,11 +125,6 @@ class OM {
             // Scan local namespace for objects
             self::scanForObjects(self::FS()->fossilRoot());
             // Load settings up, set up drivers
-            $cacheDriver = self::Settings("Fossil", "cache", NULL);
-            if(!$cacheDriver)
-                $cacheDriver = array('driver' => 'default',
-                                     'options' => array());
-            self::select("Cache", $cacheDriver['driver']);
             // Scan plugin namespaces for objects
             // Do compilation
 	}
@@ -213,7 +208,13 @@ class OM {
         else
             $typeInfo = reset(self::$classes[$type]);
         // Instantiate it
-        $newInstance = new $typeInfo['fqcn'];
+        try
+        {
+            $newInstance = new $typeInfo['fqcn'];
+        }
+        catch(\Fossil\Exceptions\SelectionChangedException $e) {
+            return;
+        }
         // And store it
         self::setTypeInstance($type, $newInstance);
     }

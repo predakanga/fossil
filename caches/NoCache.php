@@ -6,7 +6,7 @@ namespace Fossil\Caches;
  * Description of NoCache
  *
  * @author lachlan
- * @F:Object("Cache")
+ * @F:Object(type = "Cache", name = "NoCache")
  */
 class NoCache extends BaseCache {
     public function __construct($args = NULL) {
