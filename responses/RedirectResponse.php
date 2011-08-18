@@ -9,6 +9,7 @@ namespace Fossil\Responses;
  */
 class RedirectResponse extends BaseResponse {
     public function __construct($url) {
+        $this->template = null;
         $this->data = null;
         $this->nextRequest = null;
         $this->url = $url;

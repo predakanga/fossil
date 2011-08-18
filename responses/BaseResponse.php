@@ -8,6 +8,7 @@ namespace Fossil\Responses;
  * @author lachlan
  */
 class BaseResponse {
+    public $template;
     public $data;
     public $nextRequest;
     

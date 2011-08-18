@@ -8,7 +8,8 @@ namespace Fossil\Responses;
  * @author lachlan
  */
 class DataResponse extends BaseResponse {
-    public function __construct($args) {
+    public function __construct($template, $args) {
+        $this->template = $template;
         $this->data = $args;
         $this->nextRequest = null;
     }

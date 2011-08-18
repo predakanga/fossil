@@ -15,7 +15,7 @@ class Index extends AutoController {
     }
     
     public function runIndex() {
-        return new \Fossil\Responses\DataResponse(array("label" => "default"));
+        return new \Fossil\Responses\DataResponse("index", array("label" => "default"));
     }
     
     public function runOther() {
@@ -28,7 +28,7 @@ class Index extends AutoController {
     }
     
     public function runRetrieve() {
-        return new \Fossil\Responses\DataResponse(array("item" => OM::Cache("test")));
+        return new \Fossil\Responses\DataResponse("retrieve", array("item" => OM::Cache("test")));
     }
 }
 ?>
