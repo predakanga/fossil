@@ -1,0 +1,37 @@
+/*
+	FEM CSS Framework 1.0
+	http://www.frontendmatters.com/projects/fem-css-framework/
+
+	Licensed under GPL and MIT.
+*/
+
+/* table __________________________________*/
+table {
+	width:100%;
+	margin-bottom:1.8em;
+	font-size: 1.2em;
+	line-height: 1.5em;
+}
+caption {
+	font-style: italic;
+	color: #555;
+}
+th, td {
+	padding:.4em 20px;
+	text-align:left;
+}
+thead th {
+	padding:.4em 20px;
+}
+thead th.table-head {
+	background-color:#eee;
+}
+tbody th,
+tbody td {
+	border-top:1px solid #bbb;
+	border-bottom:1px solid #bbb;
+}
+th.number,
+td.number {
+	text-align:right;
+}

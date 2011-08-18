@@ -1,0 +1,42 @@
+html, body {
+	height: 100%;
+	position: relative;
+}
+
+.main_col {
+	height: 100%;
+	background: #FFF;
+}
+
+.no-margin {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+h1 {
+	margin-bottom: 0;
+}
+
+#errors th:first-child {
+	width: 10px;
+}
+
+#errors th:first-child + th {
+	width: 100px;
+}
+
+#errors th:first-child + th + th {
+	width: 388px;
+}
+
+#errors th:first-child + th + th + th {
+	width: 200px;
+}
+
+#errors .bt {
+	float: right;
+}
+
+#errors .backtrace {
+	display: none;
+}

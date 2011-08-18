@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>FEM CSS Framework : Grey box demo</title>
+<link href="css/reset.css" media="all" rel="stylesheet" type="text/css" />
+<link href="css/grid-16.css" media="all" rel="stylesheet" type="text/css" />
+<link href="css/text.css" media="all" rel="stylesheet" type="text/css" />
+<link href="css/menu.css" media="all" rel="stylesheet" type="text/css" />
+<link href="css/table.css" media="all" rel="stylesheet" type="text/css" />
+<link href="css/form.css" media="all" rel="stylesheet" type="text/css" />
+<link href="css/grey-box.css" media="all" rel="stylesheet" type="text/css" />
+<link href="css/test.css" media="all" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript" src="js/test.js"></script>
+<script type="text/javascript">
+google.load("jquery", "1.6.2");
+</script>
+</head>
+<body>
+	
+<div class="grid-centered main_col">
+	<div class="box-16-expand">
+		<div class="box no-margin"><h1>Title</h1></div>
+		<div class="box-16-expand">
+			<ul class="menu-horizontal no-margin">
+				<li class="current"><a>Home</a></li>
+				<li><a>Users</a></li>
+				<li><a>Settings</a></li>
+				<li><a>About</a></li>
+			</ul>
+			<div class="box-16-contract">
+				<div class="box">
+					Focus item
+				</div>
+			</div>
+		</div>
+		<div class="box-14-expand push-1">
+			<div class="box-9">
+				<div class="box">Main content goes here</div>
+			</div>
+			<div class="box-5">
+				<div class="box">Poll or similar</div>
+			</div>
+		</div>
+		<div class="box-16">
+			<div class="box">
+				<a id="errors_toggle" href="javascript:void(0)">Errors [+]</a>
+				<div id="errors" class="box" style="display: none;">
+					<table>
+						<thead>
+							<!--<th style="width: 10px;">#</th><th style="width: 100px;">Type</th><th>Error</th><th style="width: 200px;">Location</th>-->
+							<th>#</th><th>Type</th><th>Error</th><th>Location</th>
+						</thead>
+						<tbody>
+							<tr>
+								<td>1</td><td>Warn</td><td>Sample error</td><td>Fossil.php:30<a class="bt">BT</a></td>
+							</tr>
+							<tr class="backtrace">
+								<td colspan="4" style="content: Test">Backtrace</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,142 @@
+/*
+	FEM CSS Framework 1.0
+	http://www.frontendmatters.com/projects/fem-css-framework/
+
+	Licensed under GPL and MIT.
+*/
+
+$grid-gutter: $grid-margin*2;
+$box-width: ($grid-width/$grid-cols)-$grid-gutter;
+
+/* Containers __________________________________*/
+.grid-centered {
+	margin-left: auto;
+	margin-right: auto;
+	width: $grid-width;
+}
+.left {
+   float: left;
+}
+
+.right {
+   float: right;
+}
+.box {
+	margin-bottom: 1.8em;
+	padding: 1.8em $grid-gutter;
+	height: 1%;
+}
+html > body .box {
+	height: auto;
+}
+/* Grid >> Global __________________________________*/
+
+.box-n {
+    display: inline;
+    float: left;
+    position: relative;
+    margin-left: $grid-margin;
+    margin-right: $grid-margin;
+    
+}
+
+.box-n-expand {
+    @extend .box-n;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.box-n-contract-left {
+    @extend .box-n;
+    margin-left: $grid-gutter;
+}
+
+.box-n-contract-right {
+    @extend .box-n;
+    margin-right: $grid-gutter;
+}
+
+.box-n-contract {
+    @extend .box-n;
+    margin-left: $grid-gutter;
+    margin-right: $grid-gutter;
+}
+
+.no-margin-left {
+    margin-left: 0;
+}
+
+.no-margin-right {
+    margin-right: 0;
+}
+
+.box-n-expand-left {
+    @extend .box-n;
+    @extend .no-margin-left;
+}
+
+.box-n-expand-right {
+    @extend .box-n;
+    @extend .no-margin-right;
+}
+
+@for $n from 1 through $grid-cols {
+    $base_width: ($box-width * $n) + ($grid-gutter * ($n - 1));
+    // Basic inheritances first
+    .box-#{$n} {
+        @extend .box-n;
+    }
+    .box-#{$n}-expand-left {
+        @extend .box-n-expand-left;
+    }
+    .box-#{$n}-expand-right {
+        @extend .box-n-expand-right;
+    }
+    .box-#{$n}-expand {
+        @extend .box-n-expand;
+    }
+    .box-#{$n}-contract-left {
+        @extend .box-n-contract-left;
+    }
+    .box-#{$n}-contract-right {
+        @extend .box-n-contract-right;
+    }
+    .box-#{$n}-contract {
+        @extend .box-n-contract;
+    }
+    // Then, the width definitions
+    .box-#{$n} {
+        width: $base_width;
+    }
+    .box-#{$n}-expand-left, .box-#{$n}-expand-right {
+        width: $base_width + $grid-margin;
+    }
+    .box-#{$n}-expand {
+        width: $base_width + $grid-gutter;
+    }
+    .box-#{$n}-contract-left, .box-#{$n}-contract-right {
+        width: $base_width - $grid-margin;
+    }
+    .box-#{$n}-contract {
+        @if $n == 1 { width: $base_width - $grid-margin; }
+        @else { width: $base_width - $grid-gutter; }
+    }
+}
+
+// Add the prefix/suffix/push/pulls
+@for $n from 1 through ($grid-cols - 1) {
+    $width: ($grid-width / $grid-cols) * $n;
+    
+    .prefix-#{$n} {
+        padding-left: $width;
+    }
+    .suffix-#{$n} {
+        padding-right: $width;
+    }
+    .push-#{$n} {
+        left: $width;
+    }
+    .pull-#{$n} {
+        left: 0-$width;
+    }
+}
