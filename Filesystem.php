@@ -26,7 +26,7 @@ class Filesystem {
     }
     
     public function fossilRoot() {
-        return dirname(__FILE__);
+        return __DIR__;
     }
     
     public function pluginRoots() {

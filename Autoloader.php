@@ -34,7 +34,7 @@ class Autoloader {
 		// First, add our loading function to the SPL autoload stack
 		spl_autoload_register(array("\Fossil\Autoloader", "autoload"));
 		// Then add in our own namespace
-		self::addNamespacePath("Fossil", dirname(__FILE__));
+		self::addNamespacePath("Fossil", __DIR__);
 	}
 	
 	/**

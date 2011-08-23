@@ -72,9 +72,9 @@ class Annotations {
     private $addendum;
     
     public function __construct() {
-        require_once(dirname(__FILE__)."/annotations/AliasAnnotation.php");
-        require_once(dirname(__FILE__)."/annotations/NamespaceAnnotation.php");
-        require_once(dirname(__FILE__)."/annotations/ObjectAnnotation.php");
+        require_once(__DIR__."/annotations/AliasAnnotation.php");
+        require_once(__DIR__."/annotations/NamespaceAnnotation.php");
+        require_once(__DIR__."/annotations/ObjectAnnotation.php");
         $this->addendum = new FossilAddendumPP();
     }
     
