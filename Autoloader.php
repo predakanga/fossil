@@ -22,6 +22,7 @@ class Autoloader {
 	 * @var array
 	 */
 	static $classPaths = array();
+    static $doctrineClassLoader;
 	
 	/**
 	 * Bootstrap function for the autoloader
@@ -35,6 +36,10 @@ class Autoloader {
 		spl_autoload_register(array("\Fossil\Autoloader", "autoload"));
 		// Then add in our own namespace
 		self::addNamespacePath("Fossil", __DIR__);
+        // Also add in the default Doctrine classloader, to pass off responsibility
+        require_once 'Doctrine/Common/ClassLoader.php';
+        self::$doctrineClassLoader = new \Doctrine\Common\ClassLoader('Doctrine');
+        self::$doctrineClassLoader->register();
 	}
 	
 	/**
@@ -64,23 +69,26 @@ class Autoloader {
 	 * @return void
 	 */
 	static public function autoload($classname) {
+        // If it begins with a \, kill that
+        if($classname[0] == '\\')
+            $classname = substr($classname, 1);
 		// First, determine the namespace
 		$classPaths = explode("\\", $classname);
 		$resolvePath = array();
 		$actualClass = array_pop($classPaths);
 		// Then, check each successive part of the namespace for a path
-                do
-                {
-                    $classPath = implode("\\", $classPaths);
-                    if(array_key_exists($classPath, self::$classPaths)) {
-                            if(self::$classPaths[$classPath]) {
-                                array_push($resolvePath, $actualClass);
-                                self::loadClass($classPath, implode(DIRECTORY_SEPARATOR, $resolvePath));
-                                return;
-                            }
+        do
+        {
+            $classPath = implode("\\", $classPaths);
+            if(array_key_exists($classPath, self::$classPaths)) {
+                    if(self::$classPaths[$classPath]) {
+                        array_push($resolvePath, $actualClass);
+                        self::loadClass($classPath, implode(DIRECTORY_SEPARATOR, $resolvePath));
+                        return;
                     }
-                    array_push($resolvePath, lcfirst(array_pop($classPaths)));
-                } while(count($classPaths) > 0);
+            }
+            array_push($resolvePath, lcfirst(array_pop($classPaths)));
+        } while(count($classPaths) > 0);
 	}
 	
 	/**
@@ -97,8 +105,8 @@ class Autoloader {
 		// Fold the class name into the path
 		$fullClassPath = self::$classPaths[$namespace] . DIRECTORY_SEPARATOR . $class . ".php";
 		// And require it
-		assert("file_exists('$fullClassPath')");
-		include_once($fullClassPath);
+        if(file_exists($fullClassPath))
+            include_once($fullClassPath);
 	}
 }
 

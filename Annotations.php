@@ -2,80 +2,45 @@
 
 namespace Fossil;
 
-use \AddendumPP\AddendumPP,
-    \AddendumPP\AnnotationResolver;
-
-require_once("libs/AddendumPP/annotations.php");
-
-class FossilAddendumPP extends AddendumPP {
-    private $namespaces = array("" => array("Target" => "AddendumPP\Annotation_Target"));
-    
-    public function resolveClassName($className) {
-        $namespace = "";
-        $key = $className;
-        if(strpos($className, ":") !== FALSE)
-        {
-            $parts = explode(":", $className, 2);
-            $namespace = $parts[0];
-            $key = $parts[1];
-        }
-        
-        // Check whether we have a cached result
-        if(isset($this->namespaces[$namespace])) {
-            if(isset($this->namespaces[$namespace][$key]))
-                return $this->namespaces[$namespace][$key];
-        }
-        
-        // If not, and there's no namespace, scan the declared annotation list
-        if($namespace == "")
-        {
-            foreach($this->getDeclaredAnnotations() as $annotation) {
-                if($annotation == $className) {
-                    if(!isset($this->namespaces[""]))
-                        $this->namespaces[""] = array();
-                    $this->namespaces[""][$className] = $annotation;
-                    return $annotation;
-                }
-            }
-        }
-        
-        // If we didn't find one, check for an aliased one
-        // If there is a namespace, go through the list of annotations
-        // and stack them into the cached array
-        foreach($this->getDeclaredAnnotations() as $annotation) {
-            // To avoid a circular reference exception, skip over any annotations already on the creation stack
-            if(isset($this->creationStack[$annotation]) && $this->creationStack[$annotation])
-                continue;
-            
-            $reflClass = $this->reflect($annotation);
-            if($reflClass->hasAnnotation("Fossil\\Annotations\\AliasAnnotation")) {
-                $targetNamespace = "";
-                $targetAlias = $reflClass->getAnnotation("Fossil\\Annotations\\AliasAnnotation")->value;
-                if($reflClass->hasAnnotation("Fossil\\Annotations\\NamespaceAnnotation")) {
-                    $targetNamespace = $reflClass->getAnnotation("Fossil\\Annotations\\NamespaceAnnotation")->value;
-                }
-                if(!isset($this->namespaces[$targetNamespace]))
-                    $this->namespaces[$targetNamespace] = array();
-                $this->namespaces[$targetNamespace][$targetAlias] = $annotation;
-                if($namespace == $targetNamespace && $targetAlias == $key)
-                    return $annotation;
-            }
-        }
-        throw new AddendumPP\UnresolvedAnnotationException($className);
-    }
-}
+use \Doctrine\Common\Annotations\AnnotationReader,
+    \Doctrine\Common\Annotations\AnnotationRegistry,
+    \ReflectionClass;
 
 class Annotations {
     /**
-     * @var FossilAddendumPP
+     * @var AnnotationReader
      */
-    private $addendum;
+    private $reader;
+    /**
+     * @var string[]
+     */
+    private $namespaces;
+    
+    private function registerNamespaceAlias($namespace, $alias) {
+        $this->namespaces[$alias] = $namespace;
+        $this->reader->setAnnotationNamespaceAlias($namespace, $alias);
+    }
+    
+    private function resolveName($annoName) {
+        // TODO: Throw an exception if the name couldn't be resolved to an annotation
+        if(strpos($annoName, ":") !== false) {
+            $parts = explode(":", $annoName, 2);
+            return $this->namespaces[$parts[0]] . $parts[1];
+        }
+        return $annoName;
+    }
     
     public function __construct() {
-        require_once(__DIR__."/annotations/AliasAnnotation.php");
-        require_once(__DIR__."/annotations/NamespaceAnnotation.php");
-        require_once(__DIR__."/annotations/ObjectAnnotation.php");
-        $this->addendum = new FossilAddendumPP();
+        // Register our own class loader with the annotation registry
+        AnnotationRegistry::registerLoader(function($class) {
+            Autoloader::autoload($class);
+            return class_exists($class, false);
+        });
+        AnnotationReader::addGlobalIgnoredName('since');
+        
+        $this->reader = new AnnotationReader();
+        $this->reader->setIgnoreNotImportedAnnotations(true);
+        $this->registerNamespaceAlias("\\Fossil\\Annotations\\", "F");
     }
     
     /**
@@ -84,7 +49,7 @@ class Annotations {
      * @return \AddendumPP\Annotation[]
      */
     public function getAnnotations($class, $annotation = false) {
-        return $this->addendum->reflect($class)->getAllAnnotations($annotation);
+        return $this->reader->getClassAnnotations(new ReflectionClass($class));
     }
     
     /**
@@ -93,9 +58,10 @@ class Annotations {
      * @return string[]
      */
     public function filterClassesByAnnotation($classes, $annotation) {
-        $addendum = $this->addendum;
-        return array_filter($classes, function($class) use($addendum, $annotation) {
-            return $addendum->reflect($class)->hasAnnotation($annotation);
+        $annotation = $this->resolveName($annotation);
+        $reader = $this->reader;
+        return array_filter($classes, function($class) use($reader, $annotation) {
+            return ($reader->getClassAnnotation(new ReflectionClass($class), $annotation) != null);
         });
     }
 }

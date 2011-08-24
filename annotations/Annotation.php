@@ -2,6 +2,6 @@
 
 namespace Fossil\Annotations;
 
-class Annotation extends \AddendumPP\Annotation { }
+class Annotation extends \Doctrine\Common\Annotations\Annotation { }
 
 ?>

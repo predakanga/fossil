@@ -3,10 +3,11 @@
 namespace Fossil\Annotations;
 
 /**
- * @F:Namespace("F")
- * @F:Alias("Object")
+ * Object annotation
+ *
+ * @author lachlan
  */
-final class ObjectAnnotation extends Annotation {
+class Object extends Annotation {
     public $type;
 	public $name = "default";
     public $takesContext = false;
