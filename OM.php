@@ -68,14 +68,9 @@ class OM {
     }
 
     private static function scanForObjects($root) {
-        // For each filesystem root, glob on .php and \*.php
-        $files = array();
-
-        $cmd = 'grep -Rl --include="*.php" "@F:Object" ' . escapeshellarg($root);
-        $newFiles = array();
-        exec($cmd, $newFiles);
-        $files = array_merge($files, $newFiles);
-
+        // Get all php files below this directory, excluding libs and static
+        $files = OM::FS()->sourceFiles($root);
+        
         foreach($files as $file) {
             try
             {
