@@ -33,6 +33,8 @@ class OM {
 	 */
 	private static $instances = array();
         
+    private static $startupTime = 0;
+    
 	/**
 	 * Maps type to potential provider name
 	 * 
@@ -97,6 +99,7 @@ class OM {
     }
 
     public static function setup() {
+        self::$startupTime = microtime(true);
         // Set up a shutdown function to handle writing out the quickstart file
         // TODO: Probably register the shutdown func only when dirty is set
         register_shutdown_function(array(__CLASS__, "shutdown"));
@@ -113,6 +116,9 @@ class OM {
         }
     }
         
+    public static function getRuntime() {
+        return microtime(true) - self::$startupTime;
+    }
 	/**
 	 * Initialize the object manager without cache
 	 * 
