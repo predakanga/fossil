@@ -5,7 +5,7 @@ namespace Fossil;
 /**
  * Description of RequestFactory
  *
- * @author lachlan
+ * @author predakanga
  * @F:Object("Request")
  */
 class RequestFactory {

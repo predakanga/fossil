@@ -5,7 +5,7 @@ namespace Fossil\Requests;
 /**
  * Description of WebRequest
  *
- * @author lachlan
+ * @author predakanga
  */
 class WebRequest extends BaseRequest {
     public function __construct() {

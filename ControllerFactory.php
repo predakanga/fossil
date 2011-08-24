@@ -5,7 +5,7 @@ namespace Fossil;
 /**
  * Description of ControllerFactory
  *
- * @author lachlan
+ * @author predakanga
  * @F:Object("Controller")
  */
 class ControllerFactory {

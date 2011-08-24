@@ -5,7 +5,7 @@ namespace Fossil\Annotations;
 /**
  * Object annotation
  *
- * @author lachlan
+ * @author predakanga
  */
 class Object extends Annotation {
     public $type;

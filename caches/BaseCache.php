@@ -5,7 +5,7 @@ namespace Fossil\Caches;
 /**
  * Description of BaseCache
  *
- * @author lachlan
+ * @author predakanga
  */
 abstract class BaseCache {
     protected $options;

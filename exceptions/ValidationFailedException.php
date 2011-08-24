@@ -5,7 +5,7 @@ namespace Fossil\Exceptions;
 /**
  * Description of ValidationFailedException
  *
- * @author lachlan
+ * @author predakanga
  */
 class ValidationFailedException extends \Exception {
     public function __construct($class, $property, $value) {

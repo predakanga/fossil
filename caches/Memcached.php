@@ -7,7 +7,7 @@ use Fossil\OM;
 /**
  * Description of Memcached
  *
- * @author lachlan
+ * @author predakanga
  * @F:Object(type = "Cache", name = "Memcached")
  */
 class Memcached extends BaseCache {

@@ -5,7 +5,7 @@ namespace Fossil;
 /**
  * Description of ORM
  *
- * @author lachlan
+ * @author predakanga
  * @F:Object("ORM")
  */
 class ORM {

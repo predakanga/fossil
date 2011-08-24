@@ -7,7 +7,7 @@ use Fossil\OM;
 /**
  * Description of RendererFactory
  *
- * @author lachlan
+ * @author predakanga
  * @F:Object("Renderer")
  */
 class RendererFactory {

@@ -4,7 +4,7 @@ namespace Fossil\Exceptions;
 /**
  * Description of RetryImmediatelyException
  *
- * @author lachlan
+ * @author predakanga
  */
 class SelectionChangedException extends \Exception {
     //put your code here

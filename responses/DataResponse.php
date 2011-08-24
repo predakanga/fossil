@@ -5,7 +5,7 @@ namespace Fossil\Responses;
 /**
  * Description of DataResponse
  *
- * @author lachlan
+ * @author predakanga
  */
 class DataResponse extends BaseResponse {
     public function __construct($template, $args) {

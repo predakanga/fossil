@@ -5,7 +5,7 @@ namespace Fossil\Models;
 /**
  * Description of Setting
  *
- * @author lachlan
+ * @author predakanga
  * @Entity
  */
 class Setting extends Model {

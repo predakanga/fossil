@@ -8,7 +8,7 @@ use Fossil\Responses\BaseResponse,
 /**
  * Description of SmartyRenderer
  *
- * @author lachlan
+ * @author predakanga
  * @F:Object(type = "Renderer", name = "Smarty")
  */
 class SmartyRenderer {

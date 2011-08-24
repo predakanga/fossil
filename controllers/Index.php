@@ -7,7 +7,7 @@ use Fossil\OM;
 /**
  * Description of Default
  *
- * @author lachlan
+ * @author predakanga
  */
 class Index extends AutoController {
     public function indexAction() {

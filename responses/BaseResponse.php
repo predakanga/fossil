@@ -5,7 +5,7 @@ namespace Fossil\Responses;
 /**
  * Description of BaseResponse
  *
- * @author lachlan
+ * @author predakanga
  */
 class BaseResponse {
     public $template;

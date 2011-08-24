@@ -7,7 +7,7 @@ use Fossil\Responses\BaseResponse;
 /**
  * Description of DevelRenderer
  *
- * @author lachlan
+ * @author predakanga
  * @F:Object(type = "Renderer", name = "Development")
  */
 class DevelRenderer {

@@ -5,7 +5,7 @@ namespace Fossil\Requests;
 /**
  * Description of BaseRequest
  *
- * @author lachlan
+ * @author predakanga
  */
 abstract class BaseRequest {
     public $controller;

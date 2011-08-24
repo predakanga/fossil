@@ -8,7 +8,7 @@ use Fossil\OM,
 /**
  * Description of Model
  *
- * @author lachlan
+ * @author predakanga
  */
 abstract class Model {
     private function getMetadata() {

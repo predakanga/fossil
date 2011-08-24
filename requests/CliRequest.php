@@ -5,7 +5,7 @@ namespace Fossil\Requests;
 /**
  * Description of CliRequest
  *
- * @author lachlan
+ * @author predakanga
  */
 class CliRequest extends BaseRequest {
     public function __construct() {

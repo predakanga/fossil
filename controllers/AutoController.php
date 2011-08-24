@@ -5,7 +5,7 @@ namespace Fossil\Controllers;
 /**
  * Description of AutoController
  *
- * @author lachlan
+ * @author predakanga
  */
 abstract class AutoController extends BaseController {
     public function run(\Fossil\Requests\BaseRequest $req) {

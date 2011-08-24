@@ -5,7 +5,7 @@ namespace Fossil;
 /**
  * Description of ErrorManager
  *
- * @author lachlan
+ * @author predakanga
  * @F:Object("Error")
  */
 class ErrorManager {

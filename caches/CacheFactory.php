@@ -7,7 +7,7 @@ use Fossil\OM;
 /**
  * Description of CacheFactory
  *
- * @author lachlan
+ * @author predakanga
  * @F:Object("Cache")
  */
 class CacheFactory {

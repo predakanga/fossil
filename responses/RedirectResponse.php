@@ -5,7 +5,7 @@ namespace Fossil\Responses;
 /**
  * Description of RedirectResponse
  *
- * @author lachlan
+ * @author predakanga
  */
 class RedirectResponse extends BaseResponse {
     public function __construct($url) {

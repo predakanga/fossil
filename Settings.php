@@ -5,7 +5,7 @@ namespace Fossil;
 /**
  * Description of Settings
  *
- * @author lachlan
+ * @author predakanga
  * @F:Object("Settings")
  */
 class Settings {
