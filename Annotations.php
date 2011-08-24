@@ -49,7 +49,13 @@ class Annotations {
      * @return \AddendumPP\Annotation[]
      */
     public function getAnnotations($class, $annotation = false) {
-        return $this->reader->getClassAnnotations(new ReflectionClass($class));
+        if(!$annotation)
+            return $this->reader->getClassAnnotations(new ReflectionClass($class));
+        
+        $annotation = $this->resolveName($annotation);
+        return array_filter($this->reader->getClassAnnotations(new ReflectionClass($class)), function($thisAnno) use($annotation) {
+            return ("\\" . get_class($thisAnno)) == $annotation;
+        });
     }
     
     /**
