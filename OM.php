@@ -23,6 +23,7 @@ namespace Fossil;
  * @method Fossil\Annotations Annotations() Annotations() Returns the Fossil annotation layer
  * @method Fossil\Requests\RequestFactory Request() Request() Returns the Fossil request factory
  * @method Fossil\Caches\BaseCache Cache() Cache() Returns the current cache driver
+ * @method Fossil\ORM ORM() ORM() Returns the ORM layer
  * 
  */
 class OM {
