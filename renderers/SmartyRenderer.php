@@ -22,7 +22,7 @@ class SmartyRenderer {
         require_once("libs/smarty/distribution/libs/Smarty.class.php");
         $this->smarty = new \Smarty();
         foreach(OM::FS()->roots() as $root) {
-            $this->smarty->addTemplateDir($root . DIRECTORY_SEPARATOR . "templates" . DIRECTORY_SEPARATOR . "smarty");
+            $this->smarty->addTemplateDir($root . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "smarty");
         }
     }
     
