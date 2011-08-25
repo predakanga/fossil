@@ -4,7 +4,7 @@ namespace Fossil;
 
 use Fossil\Requests\BaseRequest,
     Fossil\Responses\RenderableResponse,
-    Fossil\Responses\ActiunableResponse;
+    Fossil\Responses\ActionableResponse;
 
 /**
  * Description of Dispatcher
