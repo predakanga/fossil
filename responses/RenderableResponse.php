@@ -5,7 +5,7 @@ namespace Fossil\Responses;
 /**
  * Description of RenderableResponse
  *
- * @author lachlan
+ * @author predakanga
  */
 abstract class RenderableResponse implements IResponse {
     protected $outputType = "text/html";

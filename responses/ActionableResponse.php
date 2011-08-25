@@ -5,7 +5,7 @@ namespace Fossil\Responses;
 /**
  * Description of ActionableResponse
  *
- * @author lachlan
+ * @author predakanga
  */
 abstract class ActionableResponse implements IResponse {
     abstract public function runAction();

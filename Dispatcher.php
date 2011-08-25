@@ -9,7 +9,7 @@ use Fossil\Requests\BaseRequest,
 /**
  * Description of Dispatcher
  *
- * @author lachlan
+ * @author predakanga
  * 
  * @F:Object("Dispatcher")
  */
