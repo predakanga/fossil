@@ -48,12 +48,22 @@ class Annotations {
      * @param string $annotation
      * @return \AddendumPP\Annotation[]
      */
-    public function getAnnotations($class, $annotation = false) {
+    public function getClassAnnotations($class, $annotation = false) {
         if(!$annotation)
             return $this->reader->getClassAnnotations(new ReflectionClass($class));
         
         $annotation = $this->resolveName($annotation);
         return array_filter($this->reader->getClassAnnotations(new ReflectionClass($class)), function($thisAnno) use($annotation) {
+            return ("\\" . get_class($thisAnno)) == $annotation;
+        });
+    }
+    
+    public function getPropertyAnnotations($reflProp, $annotation = false) {
+        if(!$annotation)
+            return $this->reader->getPropertyAnnotations($reflProp);
+        
+        $annotation = $this->resolveName($annotation);
+        return array_filter($this->reader->getPropertyAnnotations($reflProp), function($thisAnno) use($annotation) {
             return ("\\" . get_class($thisAnno)) == $annotation;
         });
     }
@@ -69,6 +79,11 @@ class Annotations {
         return array_filter($classes, function($class) use($reader, $annotation) {
             return ($reader->getClassAnnotation(new ReflectionClass($class), $annotation) != null);
         });
+    }
+    
+    public function getClassesWithAnnotation($annotation) {
+        $classes = get_declared_classes();
+        return $this->filterClassesByAnnotation($classes, $annotation);
     }
 }
 

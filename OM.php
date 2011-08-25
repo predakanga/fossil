@@ -82,9 +82,9 @@ class OM {
             }
         }
         // Once we've loaded all files, grab the list of objects
-        $allObjects = self::Annotations()->filterClassesByAnnotation(get_declared_classes(), "F:Object");
+        $allObjects = self::Annotations()->getClassesWithAnnotation("F:Object");
         foreach($allObjects as $object) {
-            $annotations = self::Annotations()->getAnnotations($object, "F:Object");
+            $annotations = self::Annotations()->getClassAnnotations($object, "F:Object");
             foreach($annotations as $objAnno) {
                 $type = $objAnno->value ?: $objAnno->type;
                 if(!isset(self::$classes[$type]))
