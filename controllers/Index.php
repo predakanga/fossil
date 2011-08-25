@@ -25,8 +25,17 @@ class Index extends AutoController {
     }
     
     public function runStore(\Fossil\Requests\BaseRequest $req) {
-        OM::Cache()->set("test", $req->args['value']);
-        return NULL;
+        $inputForm = OM::Form("ItemStorage");
+        
+        // Show the form if it's not been submitted or is invalid
+        if(!$inputForm->isSubmitted() || !$inputForm->isValidSubmission())
+            return new TemplateResponse("item_input");
+        
+        // Save it if it has
+        OM::Cache()->set("test", $inputForm->item);
+        
+        // And redirect to the visibility page
+        return new RedirectResponse("index.php?controller=index&action=retrieve");
     }
     
     public function runRetrieve() {
