@@ -1,6 +1,6 @@
 <?php
 
-namespace Fossil;
+namespace Fossil\Controllers;
 
 /**
  * Description of ControllerFactory

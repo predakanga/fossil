@@ -1,6 +1,6 @@
 <?php
 
-namespace Fossil;
+namespace Fossil\Requests;
 
 /**
  * Description of RequestFactory
@@ -14,9 +14,9 @@ class RequestFactory {
      */
     public function getEntryRequest() {
         if(PHP_SAPI == "cli") {
-            return new Requests\CliRequest();
+            return new CliRequest();
         } else {
-            return new Requests\WebRequest();
+            return new WebRequest();
         }
     }
 }
