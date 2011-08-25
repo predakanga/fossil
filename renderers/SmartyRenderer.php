@@ -26,11 +26,11 @@ class SmartyRenderer {
         }
     }
     
-    public function render(BaseResponse $resp) {
-        $tpl = $this->smarty->createTemplate($resp->template . ".tpl");
+    public function render($templateName, $templateData) {
+        $tpl = $this->smarty->createTemplate($templateName . ".tpl");
         $tpl->assign('errors', OM::Error()->getLog());
-        $tpl->assign('title', $resp->template);
-        foreach($resp->data as $key => $val) {
+        $tpl->assign('title', $templateName);
+        foreach($templateData as $key => $val) {
             $tpl->assign($key, $val);
         }
         $tpl->display();

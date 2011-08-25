@@ -3,16 +3,11 @@
 namespace Fossil\Responses;
 
 /**
- * Description of BaseResponse
+ * Description of IResponse
  *
  * @author predakanga
  */
-class BaseResponse {
-    public $template;
-    public $data;
-    public $nextRequest;
-    
-    public function runAction() {}
+interface IResponse {
 }
 
 ?>

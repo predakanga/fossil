@@ -2,7 +2,9 @@
 
 namespace Fossil\Controllers;
 
-use Fossil\OM;
+use Fossil\OM,
+    Fossil\Responses\TemplateResponse,
+    Fossil\Responses\RedirectResponse;
 
 /**
  * Description of Default
@@ -15,11 +17,11 @@ class Index extends AutoController {
     }
     
     public function runIndex() {
-        return new \Fossil\Responses\DataResponse("index", array("label" => "default"));
+        return new TemplateResponse("index", array("label" => "default"));
     }
     
     public function runOther() {
-        return new \Fossil\Responses\RedirectResponse("index.php");
+        return new RedirectResponse("index.php");
     }
     
     public function runStore(\Fossil\Requests\BaseRequest $req) {
@@ -28,7 +30,7 @@ class Index extends AutoController {
     }
     
     public function runRetrieve() {
-        return new \Fossil\Responses\DataResponse("retrieve", array("item" => OM::Cache("test")));
+        return new TemplateResponse("retrieve", array("item" => OM::Cache("test")));
     }
 }
 ?>

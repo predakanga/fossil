@@ -2,16 +2,25 @@
 
 namespace Fossil\Responses;
 
+use Fossil\OM;
+
 /**
  * Description of DataResponse
  *
  * @author predakanga
  */
-class DataResponse extends BaseResponse {
+class TemplateResponse extends RenderableResponse {
+    private $templateName;
+    private $templateData;
+    
     public function __construct($template, $args) {
-        $this->template = $template;
-        $this->data = $args;
-        $this->nextRequest = null;
+        $this->templateName = $template;
+        $this->templateData = $args;
+    }
+    
+    public function render() {
+        parent::render();
+        OM::Renderer()->render($this->templateName, $this->templateData);
     }
 }
 

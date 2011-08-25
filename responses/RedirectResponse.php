@@ -7,11 +7,8 @@ namespace Fossil\Responses;
  *
  * @author predakanga
  */
-class RedirectResponse extends BaseResponse {
+class RedirectResponse extends ActionableResponse {
     public function __construct($url) {
-        $this->template = null;
-        $this->data = null;
-        $this->nextRequest = null;
         $this->url = $url;
     }
     

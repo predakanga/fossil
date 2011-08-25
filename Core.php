@@ -18,24 +18,15 @@ use Fossil\OM;
  */
 class Core {
 	public function run() {
-            // Start by collecting the request info
-            $req = OM::Request()->getEntryRequest();
-            // Run the loop of requests
-            do
-            {
-                $resp = OM::Controller($req->controller)->run($req);
-                if(!$resp)
-                    return;
-                if($resp->nextRequest)
-                    $req = $resp->nextRequest;
-                else
-                    $req = null;
-                
-                $resp->runAction();
-            } while($req);
-            // Then with our final data, select the appropriate adaptor and output
-            if($resp->data) {
-                OM::Renderer()->render($resp);
-            }
-        }
+        // Main loop process:
+        // Parse out the main request
+        $req = OM::Request()->getEntryRequest();
+        // Dispatch the request
+        OM::Dispatcher()->runRequest($req);
+        // fastcgi_finish_request() if available
+        if(function_exists("fastcgi_finish_request"))
+            fastcgi_finish_request();
+        // Run any registered background tasks
+        return;
+    }
 }

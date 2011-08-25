@@ -11,8 +11,9 @@ use Fossil\Responses\BaseResponse;
  * @F:Object(type = "Renderer", name = "Development")
  */
 class DevelRenderer {
-    public function render(BaseResponse $resp) {
-        var_dump($resp);
+    public function render($templateName, $templateData) {
+        echo "Page name: $templateName\n\n";
+        var_dump($templateData);
     }
 }
 
