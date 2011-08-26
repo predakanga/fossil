@@ -18,7 +18,7 @@ class Setup extends AutoController {
     }
     
     public function runCheckCompatibility(BaseRequest $req) {
-        return new RedirectResponse("http://www.google.com");
+        return new TemplateResponse("setup/checkCompat");
     }
 }
 

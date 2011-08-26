@@ -14,16 +14,6 @@ Designed for Rapid Application Design and Development, Fossil provides everythin
     <li>Integrate with other services, with REST, JSON and SOAP support</li>
     <li>Keep your site blazing fast, with extensive caching and optimizations</li>
 </ul>
-<br />
-<h2>Getting Started</h2>
-<ul>
-    <li>Check compatibility</li>
-    <li>Select drivers</li>
-    <li>Configure drivers</li>
-    <li>Select plugins (optional)</li>
-    <li>Run tests (optional)</li>
-    <li>Start coding</li>
-</ul>
 <div class="box-2">
     <a class="boxLink" href="?controller=setup&action=checkCompatibility">Start &gt;</a>
 </div>
