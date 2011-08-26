@@ -17,7 +17,9 @@ abstract class AutoController extends BaseController {
         return call_user_func(array($this, $actionMethod), $req);
     }
     
-    abstract public function indexAction();
+    public function indexAction() {
+        return "index";
+    }
 }
 
 ?>

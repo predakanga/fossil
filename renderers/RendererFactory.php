@@ -15,7 +15,7 @@ class RendererFactory {
         // Find the correct render layer, select it, and throw a SelectionChangedException
         $rendererName = OM::Settings("Fossil", "renderer");
         if(!$rendererName) {
-            $rendererName = "Development";
+            $rendererName = "Smarty";
         } else {
             $rendererName = $rendererName["driver"];
         }

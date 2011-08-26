@@ -1,7 +1,0 @@
----
-cache:
-  driver: Memcached
-renderer:
-  driver: Smarty
-...
-

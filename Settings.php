@@ -13,7 +13,14 @@ class Settings {
     
     public function __construct() {
         $this->store = array();
-        $this->store['Fossil'] = yaml_parse_file("settings.yml");
+        if(file_exists('settings.yml'))
+            $this->store['Fossil'] = yaml_parse_file("settings.yml");
+    }
+    
+    public function bootstrapped() {
+        if(!isset($this->store['Fossil']))
+            return false;
+        return true;
     }
     
     public function get($section, $setting, $default = null) {

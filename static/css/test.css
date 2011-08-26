@@ -4,7 +4,7 @@ html, body {
 }
 
 .main_col {
-	height: 100%;
+	min-height: 100%;
 	background: #FFF;
 }
 
@@ -15,6 +15,21 @@ html, body {
 
 h1 {
 	margin-bottom: 0;
+}
+
+a.boxLink {
+    cursor: pointer;
+    display: block;
+    padding: 0.4em 20px;
+    font-weight: bold;
+    background-color: #666;
+    color: #fff;
+    text-align: center;
+    text-decoration: none;
+}
+
+a.boxLink:hover {
+    text-decoration: underline;
 }
 
 #errors th:first-child {
@@ -39,4 +54,20 @@ h1 {
 
 #errors .backtrace {
 	display: none;
+}
+
+/* For modern browsers */
+.cf:before,
+.cf:after {
+    content:"";
+    display:table;
+}
+
+.cf:after {
+    clear:both;
+}
+
+/* For IE 6/7 (trigger hasLayout) */
+.cf {
+    zoom:1;
 }

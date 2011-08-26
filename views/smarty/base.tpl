@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
-<head>
+<head>{block name=assignations}{/block}
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <title>Fossil - {$title}</title>
 <link href="static/css/reset.css" media="all" rel="stylesheet" type="text/css" />
@@ -19,9 +19,10 @@ google.load("jquery", "1.6.2");
 </head>
 <body>
 	
-<div class="grid-centered main_col">
+<div class="grid-centered main_col cf">
 	<div class="box-16-expand">
-		<div class="box no-margin"><h1>{$title|capitalize}</h1></div>
+		<div class="box no-margin"><h1>{$title_verbose|default:{$title|capitalize}}</h1></div>
+        {block name=content_layout}
 		<div class="box-16-expand">
 			<ul class="menu-horizontal no-margin">
 				<li class="current"><a>Home</a></li>
@@ -43,6 +44,7 @@ google.load("jquery", "1.6.2");
 				<div class="box">Poll or similar</div>
 			</div>
 		</div>
+        {/block}
         {include file='errors.tpl'}
 	</div>
 </div>
