@@ -18,20 +18,42 @@ This page is intended to inform you about any missing or incorrect dependencies.
 <h3>Required Dependencies</h3>
 <table>
     <thead>
-        <tr><th></th><th>Name</th><th>Type</th><th>Website</th></tr>
+        <tr><th></th><th>Name</th><th>Version</th><th>Type</th><th>Website</th></tr>
     </thead>
     <tbody>
-        <tr><td></td><td>Smarty</td><td>Template engine</td><td>http://www.smarty.com</td></tr>
+        {foreach $Required as $name => $data}
+        <tr>
+            <td>
+                {if $data.Result}<img src="static/images/icon-check.png" alt="OK" />
+                {else}<img src="static/images/icon-cross.png" alt="Not OK" />{/if}
+            </td>
+            <td>{$name}</td>
+            <td>{$data.Version}</td>
+            <td>{$data.Type}</td>
+            <td>{$data.URL}</td>
+        </tr>
+        {/foreach}
     </tbody>
 </table>
 
 <h3>Optional Dependencies</h3>
 <table>
     <thead>
-        <tr><th></th><th>Name</th><th>Type</th><th>Website</th></tr>
+        <tr><th></th><th>Name</th><th>Version</th><th>Type</th><th>Website</th></tr>
     </thead>
     <tbody>
-        <tr><td></td><td>PHPUnit</td><td>Testing</td><td>http://www.phpunit.de</td></tr>
+        {foreach $Optional as $name => $data}
+        <tr>
+            <td>
+                {if $data.Result}<img src="static/images/icon-check.png" alt="OK" />
+                {else}<img src="static/images/icon-cross.png" alt="Not OK" />{/if}
+            </td>
+            <td>{$name}</td>
+            <td>{$data.Version}</td>
+            <td>{$data.Type}</td>
+            <td>{$data.URL}</td>
+        </tr>
+        {/foreach}
     </tbody>
 </table>
 

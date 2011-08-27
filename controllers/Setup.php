@@ -18,7 +18,53 @@ class Setup extends AutoController {
     }
     
     public function runCheckCompatibility(BaseRequest $req) {
-        return new TemplateResponse("setup/checkCompat");
+        // Dependency data
+        // TODO: Have some way of genericizing this
+        $deps['Required'] = array(
+            'PHP' => array('Version' => '>= 5.3', 'URL' => 'http://www.php.net', 'Type' => 'Runtime', 'Test' => function() {
+                if(!defined('PHP_VERSION_ID'))
+                    return false;
+                if(PHP_VERSION_ID < 50300)
+                    return false;
+                return true;
+            }),
+            'Smarty' => array('Version' => '>= 3', 'URL' => 'http://www.smarty.net', 'Type' => 'Templating Engine', 'Test' => function() {
+                // TODO: Looser coupling for Smarty
+                if(!file_exists('libs/smarty/distribution/libs/Smarty.class.php'))
+                    return false;
+                require_once('libs/smarty/distribution/libs/Smarty.class.php');
+                
+                if(!defined('\Smarty::SMARTY_VERSION'))
+                    return false;
+                // Use this test to account for SVN versions of Smarty using Smarty3 as opposed to Smarty-3
+                $placement = strpos(\Smarty::SMARTY_VERSION, '3');
+                if($placement && $placement <= 8)
+                        return true;
+                return false;
+            })
+        );
+        $deps['Optional'] = array(
+            'PHPUnit' => array('Version' => '>= 3.5', 'URL' => 'http://www.phpunit.de', 'Type' => 'Testing', 'Test' => function() {
+                if(!file_exists(stream_resolve_include_path('PHPUnit/Autoload.php')))
+                    return false;
+                require_once('PHPUnit/Autoload.php');
+                $version = \PHPUnit_Runner_Version::id();
+                $version_comp = explode(".", $version);
+                if($version_comp[0] == 3 && $version_comp[1] >= 5)
+                    return true;
+                return false;
+            })
+        );
+        
+        // Compile the above dependency arrays into tested instances
+        $data = array_map(function($typeArray) {
+            return array_map(function($depArray) {
+                $depArray['Result'] = $depArray['Test']();
+                return $depArray;
+            }, $typeArray);
+        }, $deps);
+        
+        return new TemplateResponse("setup/checkCompat", $data);
     }
 }
 
