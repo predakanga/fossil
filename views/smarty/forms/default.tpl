@@ -1,24 +1,26 @@
+<div class="box-6">
 {if $action}
-<form action="{$action}" method="{$method}">
+    <form action="{$action}" method="{$method}">
 {else}
-<form method="{$method}">
+    <form method="{$method}">
 {/if}
-    <input type="hidden" name="form_id" value="{$form_id}" />
+        <input type="hidden" name="form_id" value="{$form_id}" />
 {foreach $fields as $field}
-<label for="{$field.name}">{$field.label}</label>
+        <label for="{$field.name}">{$field.label}:</label>
 {if $field.type == "select"}
-    <select name="{$field.name}">
+        <select name="{$field.name}">
 {foreach $field.options as $opt}
-        <option value="{$opt.value}">{$opt.label}</option>
+            <option value="{$opt.value}">{$opt.label}</option>
 {/foreach}
-    </select><br />
+        </select><br />
 {else}
 {if $field.value}
-    <input type="{$field.type}" name="{$field.name}" value="{$field.value}">
+        <input type="{$field.type}" name="{$field.name}" value="{$field.value}">
 {else}
-    <input type="{$field.type}" name="{$field.name}">
+        <input type="{$field.type}" name="{$field.name}">
 {/if}</input>
 {/if}
 {/foreach}
-    <input type="submit" value="Submit"></input>
-</form>
+        <input type="submit" value="Submit"></input>
+    </form>
+</div>

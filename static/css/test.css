@@ -100,3 +100,16 @@ ul.icon-list li.bullet {
 ul.icon-list li.arrow {
     background-image: url(../images/icon-arrow.png);
 }
+
+.box-6 form label {
+    float: left;
+    width: 30%;
+    margin-right: 0.5em;
+    padding-top: 0.8em;
+    font-weight: bold;
+    text-align: right;
+}
+
+.box-6 form select {
+    width: 40%;
+}

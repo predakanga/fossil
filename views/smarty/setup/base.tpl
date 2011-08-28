@@ -22,7 +22,7 @@
         </div>
     </div>
     <div class="box-12-expand-left">
-        <div class="box no-margin">
+        <div class="box no-margin cf">
             {block name=content}Content goes here{/block}
         </div>
     </div>
