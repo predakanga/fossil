@@ -10,7 +10,11 @@
 {if $field.type == "select"}
         <select name="{$field.name}">
 {foreach $field.options as $opt}
+{if $field.value && $field.value == $opt.value}
+            <option value="{$opt.value}" selected>{$opt.label}</option>
+{else}
             <option value="{$opt.value}">{$opt.label}</option>
+{/if}
 {/foreach}
         </select><br />
 {else}

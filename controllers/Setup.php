@@ -3,6 +3,7 @@
 namespace Fossil\Controllers;
 
 use Fossil\OM,
+    Fossil\Settings,
     Fossil\Requests\BaseRequest,
     Fossil\Responses\TemplateResponse,
     Fossil\Responses\RedirectResponse;
@@ -93,6 +94,7 @@ class Setup extends AutoController {
     
     public function runSelectDrivers(BaseRequest $req) {
         $driverForm = OM::Form("DriverSelection");
+        $sideSet = new Settings("temp_settings.yml");
         
         if(!$driverForm->isSubmitted()) {
             // Build the list of possible drivers
@@ -100,11 +102,29 @@ class Setup extends AutoController {
             $driverForm->setFieldOptions('templateDriver', $this->getClassDrivers('Renderer'));
             $driverForm->setFieldOptions('dbDriver', $this->getClassDrivers('Database'));
             // Prepopulate the form with our existings values if temp_settings.yml exists
+            if($sideSet->bootstrapped()) {
+                $cacheSet = $sideSet->get('Fossil', 'cache');
+                if($cacheSet) {
+                    $driverForm->cacheDriver = $cacheSet['driver'];
+                }
+                $tmplSet = $sideSet->get('Fossil', 'renderer');
+                if($tmplSet) {
+                    $driverForm->templateDriver = $tmplSet['driver'];
+                }
+                $dbSet = $sideSet->get('Fossil', 'database');
+                if($tmplSet) {
+                    $driverForm->dbDriver = $dbSet['driver'];
+                }
+            }
             // And render
             return new TemplateResponse("setup/selectDrivers");
         }
         
         // Otherwise, set the drivers in the temp file
+        $sideSet->set('Fossil', 'cache', array('driver' => $driverForm->cacheDriver));
+        $sideSet->set('Fossil', 'database', array('driver' => $driverForm->dbDriver));
+        $sideSet->set('Fossil', 'renderer', array('driver' => $driverForm->templateDriver));
+        
         // And forward to configureDrivers
         return new RedirectResponse("?controller=setup&action=configureDrivers");
     }
