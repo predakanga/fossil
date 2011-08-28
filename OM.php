@@ -239,6 +239,10 @@ class OM {
 		return self::$instances[$type];
 	}
 	
+    public static function getAll($type) {
+        return self::$classes[$type];
+    }
+    
 	/**
 	 * Checks whether the manager has an instance of a given type
 	 * 

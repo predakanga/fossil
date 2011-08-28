@@ -10,15 +10,15 @@ namespace Fossil\Forms;
  */
 class DriverSelection extends BaseForm {
     /**
-     * @F:FormField(type="select")
+     * @F:FormField(type="select", label="Cache driver")
      */
     public $cacheDriver;
     /**
-     * @F:FormField(type="select", options="MySQL,PgSQL,SQLite")
+     * @F:FormField(type="select", label="DB driver")
      */
     public $dbDriver;
     /**
-     * @F:FormField(type="select")
+     * @F:FormField(type="select", label="Template driver")
      */
     public $templateDriver;
 }

@@ -9,6 +9,16 @@ namespace Fossil\Caches;
  * @F:Object(type = "Cache", name = "NoCache")
  */
 class NoCache extends BaseCache {
+    public static function usable() {
+        return true;
+    }
+    public static function getName() {
+        return "None";
+    }
+    public static function getVersion() {
+        return 1.0;
+    }
+    
     public function __construct($args = NULL) {
         // Empty options for the bit bucket
         parent::__construct(array());

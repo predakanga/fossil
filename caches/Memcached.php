@@ -29,6 +29,16 @@ class Memcached extends BaseCache {
         return $cacheOpts['options']; 
     }
     
+    public static function usable() {
+        return extension_loaded('memcached');
+    }
+    public static function getName() {
+        return "Memcached";
+    }
+    public static function getVersion() {
+        return 1.0;
+    }
+    
     public function __construct($args = NULL) {
         // If args == NULL, we're doing a default construction, load default options
         if($args === NULL)

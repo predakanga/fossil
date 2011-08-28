@@ -13,6 +13,7 @@ use Fossil\OM;
  */
 class FormFactory {
     private $knownForms;
+    private $formInstances = array();
     
     public function __construct() {
         $this->knownForms = array();
@@ -23,7 +24,9 @@ class FormFactory {
     }
     
     public function get($formName) {
-        return new $this->knownForms[$formName];
+        if(!isset($this->formInstances[$formName]))
+                $this->formInstances[$formName] = new $this->knownForms[$formName];
+        return $this->formInstances[$formName];
     }
     
     public function getSubmittedForms() {

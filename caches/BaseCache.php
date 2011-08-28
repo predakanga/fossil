@@ -2,12 +2,14 @@
 
 namespace Fossil\Caches;
 
+use Fossil\Interfaces\IDriver;
+
 /**
  * Description of BaseCache
  *
  * @author predakanga
  */
-abstract class BaseCache {
+abstract class BaseCache implements IDriver {
     protected $options;
     
     public function __construct($args = NULL) {
