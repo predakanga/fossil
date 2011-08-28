@@ -1,10 +1,16 @@
+{if !$multiform}
 <div class="box-6">
 {if $action}
     <form action="{$action}" method="{$method}">
 {else}
     <form method="{$method}">
 {/if}
+{/if}
+{if $multiform}
+        <input type="hidden" name="form_id[]" value="{$form_id}" />
+{else}
         <input type="hidden" name="form_id" value="{$form_id}" />
+{/if}
 {foreach $fields as $field}
         <label for="{$field.name}">{$field.label}:</label>
 {if $field.type == "select"}
@@ -25,6 +31,8 @@
 {/if}</input>
 {/if}
 {/foreach}
+{if !$multiform}
         <input type="submit" value="Submit"></input>
     </form>
 </div>
+{/if}

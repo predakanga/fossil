@@ -74,7 +74,11 @@ abstract class BaseForm {
     public function isSubmitted() {
         // FIXME: Do we always want to populate forms from the topmost request?
         $request = OM::Dispatcher()->getTopRequest();
-        if(isset($request->args['form_id']) && $request->args['form_id'] == $this->form_identifier)
+        if(!isset($request->args['form_id']))
+            return false;
+        if(is_array($request->args['form_id']) && in_array($this->form_identifier, $request->args['form_id']))
+            return true;
+        elseif(!is_array($request->args['form_id']) && $request->args['form_id'] == $this->form_identifier)
             return true;
         return false;
     }

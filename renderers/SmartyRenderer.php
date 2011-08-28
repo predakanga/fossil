@@ -30,7 +30,8 @@ class SmartyRenderer extends BaseRenderer {
         }
         $this->smarty->registerPlugin('function', 'form', array($this, 'formFunction'));
         $this->smarty->registerPlugin('block', 'link', array($this, 'linkFunction'));
-        $this->smarty->registerFilter('output', array($this, "smarty_outputfilter_tidyrepairhtml"));
+        $this->smarty->registerPlugin('block', 'multiform', array($this, 'multiformFunction'));
+        //$this->smarty->registerFilter('output', array($this, "smarty_outputfilter_tidyrepairhtml"));
     }
     
     public function render($templateName, $templateData) {
@@ -47,6 +48,12 @@ class SmartyRenderer extends BaseRenderer {
     function formFunction($params, $smarty) {
         // First of all, set up an array with the appropriate data
         $data = array();
+        // Check whether we're in a multiform tag
+        $data['multiform'] = false;
+        foreach($smarty->_tag_stack as $tag) {
+            if($tag[0] == "multiform")
+                $data['multiform'] = true;
+        }
         $form = OM::Form($params['name']);
         
         $data['method'] = "POST";
@@ -76,6 +83,25 @@ class SmartyRenderer extends BaseRenderer {
         
         $formTpl = $this->smarty->createTemplate("forms" . DIRECTORY_SEPARATOR . $form->getTemplate() . ".tpl", $data);
         return $formTpl->fetch();
+    }
+    
+    function multiformFunction($params, $content, $smarty, &$repeat) {
+        // Only process on the closing tag
+        if($repeat)
+            return;
+        $method = "POST";
+        if(isset($params['method']))
+            $method = $params['method'];
+        
+        if(isset($params['action'])) {
+            $preamble = "<form method=\"$method\" action=\"" . $params['action'] . "\">";
+        } else {
+            $preamble = "<form method=\"$method\">";
+        }
+        $postamble = "<input type=\"submit\" value=\"Submit\" />\n</form>";
+        return $preamble . "\n" .
+               $content . "\n" .
+               $postamble;
     }
     
     function linkFunction($params, $content, $smarty, &$repeat) {

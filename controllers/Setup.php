@@ -128,6 +128,10 @@ class Setup extends AutoController {
         // And forward to configureDrivers
         return new RedirectResponse("?controller=setup&action=configureDrivers");
     }
+    
+    public function runConfigureDrivers(BaseRequest $req) {
+        return new TemplateResponse("setup/configDrivers");
+    }
 }
 
 ?>
