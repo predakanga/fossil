@@ -74,11 +74,32 @@ class Setup extends AutoController {
         return new TemplateResponse("setup/checkCompat", $data);
     }
 
+    private function getClassDrivers($type) {
+        $toRet = array();
+        foreach(OM::getAll($type) as $classArr) {
+            $class = $classArr['fqcn'];
+            if(\is_subclass_of($class, '\\Fossil\\Interfaces\\IDriver')) {
+                // Check that it's usable
+                if(!$class::usable())
+                    continue;
+                // Grab it's name
+                $nameAnno = OM::Annotations()->getClassAnnotations($class, 'F:Object');
+                $name = $nameAnno[0]->name;
+                $toRet[$name] = $class::getName();
+            }
+        }
+        return $toRet;
+    }
+    
     public function runSelectDrivers(BaseRequest $req) {
         $driverForm = OM::Form("DriverSelection");
         
         if(!$driverForm->isSubmitted()) {
             // Build the list of possible drivers
+            $driverForm->setFieldOptions('cacheDriver', $this->getClassDrivers('Cache'));
+            $driverForm->setFieldOptions('templateDriver', $this->getClassDrivers('Renderer'));
+            $driverForm->setFieldOptions('dbDriver', $this->getClassDrivers('Database'));
+            // Prepopulate the form with our existings values if temp_settings.yml exists
             // And render
             return new TemplateResponse("setup/selectDrivers");
         }

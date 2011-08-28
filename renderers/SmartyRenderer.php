@@ -11,12 +11,16 @@ use Fossil\Responses\BaseResponse,
  * @author predakanga
  * @F:Object(type = "Renderer", name = "Smarty")
  */
-class SmartyRenderer {
+class SmartyRenderer extends BaseRenderer {
     /**
      *
      * @var \Smarty
      */
     private $smarty;
+    
+    public static function getName() { return "Smarty"; }
+    public static function getVersion() { return 1.0; }
+    public static function usable() { /* TODO: Real test here */ return true; }
     
     public function __construct() {
         require_once("libs/smarty/distribution/libs/Smarty.class.php");
