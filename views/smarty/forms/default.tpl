@@ -12,9 +12,9 @@
         <input type="hidden" name="form_id" value="{$form_id}" />
 {/if}
 {foreach $fields as $field}
-        <label for="{$field.name}">{$field.label}:</label>
+        <label for="{$form_id}_{$field.name}">{$field.label}:</label>
 {if $field.type == "select"}
-        <select name="{$field.name}">
+        <select id="{$form_id}_{$field.name}" name="{$field.name}">
 {foreach $field.options as $opt}
 {if $field.value && $field.value == $opt.value}
             <option value="{$opt.value}" selected>{$opt.label}</option>
@@ -25,10 +25,10 @@
         </select><br />
 {else}
 {if $field.value}
-        <input type="{$field.type}" name="{$field.name}" value="{$field.value}">
+        <input id="{$form_id}_{$field.name}" type="{$field.type}" name="{$field.name}" value="{$field.value}" />
 {else}
-        <input type="{$field.type}" name="{$field.name}">
-{/if}</input>
+        <input id="{$form_id}_{$field.name}" type="{$field.type}" name="{$field.name}" />
+{/if}
 {/if}
 {/foreach}
 {if !$multiform}

@@ -7,7 +7,7 @@
 <div class="box-16-expand">
     <div class="box-4-expand-right">
         <div class="box">
-            <h3 class="no-margin">Getting Started</h2>
+            <h3 class="no-margin">Getting Started</h3>
             {block name=toc}
             <ul class="icon-list">
                 <li class="arrow">Introduction</li>

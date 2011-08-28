@@ -56,12 +56,13 @@ class SmartyRenderer extends BaseRenderer {
         }
         $form = OM::Form($params['name']);
         
-        $data['method'] = "POST";
+        $data['method'] = "post";
         if(isset($params['method']))
             $data['method'] = $params['method'];
         
+        $data['action'] = htmlentities($_SERVER['REQUEST_URI']);
         if(isset($params['action']))
-            $data['action'] = $params['action'];
+            $data['action'] = htmlentities($params['action']);
         
         $data['form_id'] = $form->getIdentifier();
         
@@ -89,15 +90,16 @@ class SmartyRenderer extends BaseRenderer {
         // Only process on the closing tag
         if($repeat)
             return;
-        $method = "POST";
+        $method = "post";
         if(isset($params['method']))
             $method = $params['method'];
         
+        $action = htmlentities($_SERVER['REQUEST_URI']);
         if(isset($params['action'])) {
-            $preamble = "<form method=\"$method\" action=\"" . $params['action'] . "\">";
-        } else {
-            $preamble = "<form method=\"$method\">";
+            $action = htmlentities($params['action']);
         }
+        
+        $preamble = "<form method=\"$method\" action=\"$action\">";
         $postamble = "<input type=\"submit\" value=\"Submit\" />\n</form>";
         return $preamble . "\n" .
                $content . "\n" .
@@ -128,9 +130,9 @@ class SmartyRenderer extends BaseRenderer {
         // TODO: Use a router-supplied mapping for this
         $url = $_SERVER['PHP_SELF'] . "?";
         $url .= "controller=" . urlencode($target['controller']);
-        $url .= "&action=" . urlencode($target['action']);
+        $url .= "&amp;action=" . urlencode($target['action']);
         foreach($params as $key => $value) {
-            $url .= "&" . urlencode($key) . "=" . urlencode($value);
+            $url .= "&amp;" . urlencode($key) . "=" . urlencode($value);
         }
         
         return "<a href=\"$url\"$classStr>" . $content . "</a>";
