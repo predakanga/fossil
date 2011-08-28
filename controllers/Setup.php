@@ -19,6 +19,7 @@ class Setup extends AutoController {
     
     public function runCheckCompatibility(BaseRequest $req) {
         // Dependency data
+        $data = array();
         // TODO: Have some way of genericizing this
         $deps['Required'] = array(
             'PHP' => array('Version' => '>= 5.3', 'URL' => 'http://www.php.net', 'Type' => 'Runtime', 'Test' => function() {
@@ -56,15 +57,35 @@ class Setup extends AutoController {
             })
         );
         
+        // Simple var to keep track of whether all required dependencies were met
+        $result = true;
         // Compile the above dependency arrays into tested instances
-        $data = array_map(function($typeArray) {
-            return array_map(function($depArray) {
-                $depArray['Result'] = $depArray['Test']();
-                return $depArray;
-            }, $typeArray);
-        }, $deps);
+        foreach($deps as $typeKey => &$typeArr) {
+            foreach($typeArr as &$dep) {
+                $dep['Result'] = $dep['Test']();
+                if($typeKey == 'Required' && !$dep['Result'])
+                    $result = false;
+            }
+        }
+        $data = array_merge($data, $deps);
+        
+        $data['allOK'] = $result;
         
         return new TemplateResponse("setup/checkCompat", $data);
+    }
+
+    public function runSelectDrivers(BaseRequest $req) {
+        $driverForm = OM::Form("DriverSelection");
+        
+        if(!$driverForm->isSubmitted()) {
+            // Build the list of possible drivers
+            // And render
+            return new TemplateResponse("setup/selectDrivers");
+        }
+        
+        // Otherwise, set the drivers in the temp file
+        // And forward to configureDrivers
+        return new RedirectResponse("?controller=setup&action=configureDrivers");
     }
 }
 

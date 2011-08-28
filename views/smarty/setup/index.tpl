@@ -15,7 +15,7 @@ Designed for Rapid Application Design and Development, Fossil provides everythin
     <li>Keep your site blazing fast, with extensive caching and optimizations</li>
 </ul>
 <div class="box-2">
-    <a class="boxLink" href="?controller=setup&action=checkCompatibility">Start &gt;</a>
+    {link action="checkCompatibility" cssClass="boxLink"}Start &gt;{/link}
 </div>
 <br /><br />
 

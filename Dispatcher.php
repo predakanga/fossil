@@ -14,11 +14,10 @@ use Fossil\Requests\BaseRequest,
  * @F:Object("Dispatcher")
  */
 class Dispatcher {
-    private $topReq;
+    private $reqStack = array();
     
     public function runRequest(BaseRequest $req, $react = true) {
-        if($this->topReq === NULL)
-            $this->topReq = $req;
+        array_push($this->reqStack, $req);
         
         // To allow HMVC style requests, return the response early if we're not to react
         $response = $req->run();
@@ -32,11 +31,16 @@ class Dispatcher {
             $response->runAction();
         }
         
+        array_pop($this->reqStack);
         return $response;
     }
     
     public function getTopRequest() {
-        return $this->topReq;
+        return $this->reqStack[0];
+    }
+    
+    public function getCurrentRequest() {
+        return $this->reqStack[count($this->reqStack)-1];
     }
 }
 

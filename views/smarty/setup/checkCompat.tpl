@@ -1,7 +1,7 @@
 {extends file="setup/base.tpl"}
 {block name=toc}
 <ul class="icon-list">
-    <li class="check">Introduction</li>
+    <li class="check">{link}Introduction{/link}</li>
     <li class="arrow">Check compatibility</li>
     <li class="bullet">Select drivers</li>
     <li class="bullet">Configure drivers</li>
@@ -57,5 +57,12 @@ This page is intended to inform you about any missing or incorrect dependencies.
     </tbody>
 </table>
 
-
+{if $allOK}
+<div class="box-2">
+    {link cssClass="boxLink" action="selectDrivers"}Next &gt;{/link}
+</div>
+{else}
+Please install/upgrade all required dependencies to continue.
+{/if}
+<br /><br />
 {/block}

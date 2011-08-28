@@ -10,6 +10,9 @@ namespace Fossil\Annotations;
 class FormField extends Annotation {
     public $type = "text";
     public $fieldName = null;
+    public $options = "";
+    public $label = null;
+    public $default = null;
 }
 
 ?>
