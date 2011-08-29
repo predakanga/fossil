@@ -8,7 +8,7 @@ namespace Fossil\Forms;
  * @author predakanga
  * @F:Form(name = "SmartyConfig")
  */
-class Smarty extends BaseDriverForm {
+class SmartyConfig extends BaseDriverForm {
     /** @F:FormField(label="Tidy output", type="checkbox") */
     public $useTidy;
 }

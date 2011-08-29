@@ -16,7 +16,7 @@
 Go for it.
 </p>
 <div class="box-2">
-    {link action="checkCompatibility" cssClass="boxLink"}Start &gt;{/link}
+    {link controller="index" cssClass="boxLink"}Start &gt;{/link}
 </div>
 <br /><br />
 

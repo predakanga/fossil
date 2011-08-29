@@ -9,9 +9,8 @@ use Fossil\Interfaces\IDriverForm;
  *
  * @author predakanga
  */
-class BaseDriverform extends BaseForm implements IDriverForm {
+class BaseDriverForm extends BaseForm implements IDriverForm {
     public function toConfig() {
-        // Simple, naïve code
         $toRet = array();
         foreach($this->form_fields as $name => $data) {
             $toRet[$data['fieldName']] = $this->$name;

@@ -33,7 +33,7 @@ class Autoloader {
 	 */
 	static public function registerAutoloader() {
 		// First, add our loading function to the SPL autoload stack
-		spl_autoload_register(array("\Fossil\Autoloader", "autoload"));
+		spl_autoload_register(array("\\Fossil\\Autoloader", "autoload"));
 		// Then add in our own namespace
 		self::addNamespacePath("Fossil", __DIR__);
         // Also add in the default Doctrine classloader, to pass off responsibility

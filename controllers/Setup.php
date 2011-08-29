@@ -161,16 +161,13 @@ class Setup extends AutoController {
         if($submitted) {
             // Save settings
             if($dbForm) {
-                $dbSet['config'] = $dbForm->toConfig();
-                $sideSet->set('Fossil', 'database', $dbSet);
+                $sideSet['Fossil']['database']['config'] = $dbForm->toConfig();
             }
             if($cacheForm) {
-                $cacheSet['config'] = $cacheForm->toConfig();
-                $sideSet->set('Fossil', 'cache', $cacheSet);
+                $sideSet['Fossil']['cache']['config'] = $cacheForm->toConfig();
             }
             if($rendererForm) {
-                $rendererSet['config'] = $rendererForm->toConfig();
-                $sideSet->set('Fossil', 'renderer', $rendererSet);
+                $sideSet['Fossil']['renderer']['config'] = $rendererForm->toConfig();
             }
             // And push on to the next step
             return new RedirectResponse("?controller=setup&action=finished");
@@ -185,6 +182,7 @@ class Setup extends AutoController {
     }
     
     public function runFinished(BaseRequest $req) {
+        rename('temp_settings.yml', 'settings.yml');
         return new TemplateResponse("setup/finished");
     }
 }

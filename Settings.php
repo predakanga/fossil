@@ -8,7 +8,7 @@ namespace Fossil;
  * @author predakanga
  * @F:Object("Settings")
  */
-class Settings {
+class Settings implements \ArrayAccess {
     private $store;
     private $backingFile;
     
@@ -19,10 +19,34 @@ class Settings {
             $this->store['Fossil'] = yaml_parse_file($backingFile);
     }
     
+    public function __destruct() {
+        // Because with offsetGet-by-ref we don't know when Fossil changes...
+        if(isset($this->store['Fossil']))
+            file_put_contents($this->backingFile, yaml_emit($this->store['Fossil']));
+    }
+    
     public function bootstrapped() {
         if(!isset($this->store['Fossil']))
             return false;
         return true;
+    }
+    
+    public function offsetExists($key) {
+        return isset($this->store[$key]);
+    }
+    
+    public function &offsetGet($key) {
+        return $this->store[$key];
+    }
+    
+    public function offsetSet($key, $value) {
+        $this->store[$key] = $value;
+        if($key == "Fossil")
+            file_put_contents($this->backingFile, yaml_emit($this->store['Fossil']));
+    }
+    
+    public function offsetUnset($key) {
+        unset($this->store[$key]);
     }
     
     public function get($section, $setting, $default = null) {
