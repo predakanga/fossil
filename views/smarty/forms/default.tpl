@@ -17,7 +17,7 @@
         <select id="{$form_id}_{$field.name}" name="{$field.name}">
 {foreach $field.options as $opt}
 {if $field.value && $field.value == $opt.value}
-            <option value="{$opt.value}" selected>{$opt.label}</option>
+            <option value="{$opt.value}" selected="selected">{$opt.label}</option>
 {else}
             <option value="{$opt.value}">{$opt.label}</option>
 {/if}
