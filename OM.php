@@ -62,7 +62,7 @@ class OM {
         }
         // Otherwise, build up a document with everything we need, and emit it
         $quickstart = array();
-        $quickstart['cache'] = self::Cache()->getSetup();
+        //$quickstart['cache'] = self::Cache()->getSetup();
 
         // And output the document
         file_put_contents(__DIR__ . '/.quickstart.yml', yaml_emit($quickstart));
@@ -100,6 +100,7 @@ class OM {
         // TODO: Probably register the shutdown func only when dirty is set
         register_shutdown_function(array(__CLASS__, "shutdown"));
         self::Error()->init(E_ALL | E_STRICT);
+        /*
         // Load the basic settings from 'quickstart.yml'
         $basics = yaml_parse_file(__DIR__ . '/.quickstart.yml');
         // Return if we have no quickstart settings
@@ -109,7 +110,7 @@ class OM {
         if(isset($basics['cache'])) {
             // Bypass the setTypeInstance function so as not to dirty the context
             self::$instances['Cache'] = new $basics['cache']['fqcn']($basics['cache']['options']);
-        }
+        }*/
     }
         
     public static function getRuntime() {

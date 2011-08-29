@@ -16,11 +16,26 @@
 
 <div class="box-6">
 {multiform}
-Driver form:<br />
-{form name="DriverSelection"}
+Database config:<br />
+{if $dbForm}
+{form name=$dbForm}
+{else}
+<p>No configuration needed.</p>
+{/if}
 <br />
-Item storage form:<br />
-{form name="ItemStorage"}
+Cache config:<br />
+{if $cacheForm}
+{form name=$cacheForm}
+{else}
+<p>No configuration needed.</p>
+{/if}
+<br />
+Renderer config:<br />
+{if $rendererForm}
+{form name=$rendererForm}
+{else}
+<p>No configuration needed.</p>
+{/if}
 {/multiform}
 </div>
 <br /><br />

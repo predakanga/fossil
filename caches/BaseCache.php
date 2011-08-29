@@ -10,15 +10,14 @@ use Fossil\Interfaces\IDriver;
  * @author predakanga
  */
 abstract class BaseCache implements IDriver {
-    protected $options;
+    protected $config;
     
-    public function __construct($args = NULL) {
-        $this->options = $args;
+    public function __construct($config = NULL) {
+        $this->config = $config;
     }
     
-    public function getSetup() {
-        return array('fqcn' => get_class($this),
-                     'options' => $this->options);
+    public function getConfig() {
+        return $this->config;
     }
     
     abstract public function has($key);

@@ -113,3 +113,7 @@ ul.icon-list li.arrow {
 .box-6 form select {
     width: 40%;
 }
+
+.box-6 form input[type='checkbox'] {
+    height: 2em;
+}

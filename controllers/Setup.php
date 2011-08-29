@@ -130,7 +130,62 @@ class Setup extends AutoController {
     }
     
     public function runConfigureDrivers(BaseRequest $req) {
-        return new TemplateResponse("setup/configDrivers");
+        $sideSet = new Settings("temp_settings.yml");
+        
+        $cacheSet = $sideSet->get('Fossil', 'cache');
+        $rendererSet = $sideSet->get('Fossil', 'renderer');
+        $dbSet = $sideSet->get('Fossil', 'database');
+        
+        if(!$cacheSet || !$rendererSet || !$dbSet)
+            return new RedirectResponse("?controller=setup&action=selectDrivers");
+        
+        $cacheDriver = OM::getAll("Cache");
+        $cacheDriver = $cacheDriver[$cacheSet['driver']];
+        $rendererDriver = OM::getAll("Renderer");
+        $rendererDriver = $rendererDriver[$rendererSet['driver']];
+        $dbDriver = OM::getAll("Database");
+        $dbDriver = $dbDriver[$dbSet['driver']];
+        
+        $dbForm = $dbDriver['fqcn']::getForm();
+        $cacheForm = $cacheDriver['fqcn']::getForm();
+        $rendererForm = $rendererDriver['fqcn']::getForm();
+        
+        $submitted = true;
+        if($dbForm && !$dbForm->isSubmitted())
+            $submitted = false;
+        if($cacheForm && !$cacheForm->isSubmitted())
+            $submitted = false;
+        if($rendererForm && !$rendererForm->isSubmitted())
+            $submitted = false;
+        
+        if($submitted) {
+            // Save settings
+            if($dbForm) {
+                $dbSet['config'] = $dbForm->toConfig();
+                $sideSet->set('Fossil', 'database', $dbSet);
+            }
+            if($cacheForm) {
+                $cacheSet['config'] = $cacheForm->toConfig();
+                $sideSet->set('Fossil', 'cache', $cacheSet);
+            }
+            if($rendererForm) {
+                $rendererSet['config'] = $rendererForm->toConfig();
+                $sideSet->set('Fossil', 'renderer', $rendererSet);
+            }
+            // And push on to the next step
+            return new RedirectResponse("?controller=setup&action=finished");
+        }
+        
+        // Otherwise, render the form
+        $data = array('dbForm' => $dbForm ? $dbForm->getIdentifier() : null,
+                      'cacheForm' => $cacheForm ? $cacheForm->getIdentifier() : null,
+                      'rendererForm' => $rendererForm ? $rendererForm->getIdentifier() : null);
+        
+        return new TemplateResponse("setup/configDrivers", $data);
+    }
+    
+    public function runFinished(BaseRequest $req) {
+        return new TemplateResponse("setup/finished");
     }
 }
 

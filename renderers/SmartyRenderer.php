@@ -21,8 +21,12 @@ class SmartyRenderer extends BaseRenderer {
     public static function getName() { return "Smarty"; }
     public static function getVersion() { return 1.0; }
     public static function usable() { /* TODO: Real test here */ return true; }
+    public static function getForm() { return OM::Form("SmartyConfig"); }
     
-    public function __construct() {
+    public function __construct($config = null) {
+        if(!$config)
+            $config = array('useTidy' => false);
+        parent::__construct($config);
         require_once("libs/smarty/distribution/libs/Smarty.class.php");
         $this->smarty = new \Smarty();
         foreach(OM::FS()->roots() as $root) {
@@ -31,7 +35,8 @@ class SmartyRenderer extends BaseRenderer {
         $this->smarty->registerPlugin('function', 'form', array($this, 'formFunction'));
         $this->smarty->registerPlugin('block', 'link', array($this, 'linkFunction'));
         $this->smarty->registerPlugin('block', 'multiform', array($this, 'multiformFunction'));
-        //$this->smarty->registerFilter('output', array($this, "smarty_outputfilter_tidyrepairhtml"));
+        if($config['useTidy'])
+            $this->smarty->registerFilter('output', array($this, "smarty_outputfilter_tidyrepairhtml"));
     }
     
     public function render($templateName, $templateData) {

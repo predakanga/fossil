@@ -39,22 +39,26 @@ class Memcached extends BaseCache {
         return 1.0;
     }
     
-    public function __construct($args = NULL) {
+    public static function getForm() {
+        return null;
+    }
+    
+    public function __construct($config = NULL) {
         // If args == NULL, we're doing a default construction, load default options
-        if($args === NULL)
-            $args = $this->getDefaultOptions();
+        if($config === NULL)
+            $config = $this->getDefaultOptions();
         
-        parent::__construct($args);
+        parent::__construct($config);
         
         // Conditionally use a persistent connection
-        if(isset($args['id'])) {
-            $this->mc = new \Memcached($args['id']);
+        if(isset($config['id'])) {
+            $this->mc = new \Memcached($config['id']);
         } else {
             $this->mc = new \Memcached();
         }
         // And if we don't have any servers (i.e. not persistent), add them
         if(!count($this->mc->getServerList()))
-            $this->mc->addServers($args['servers']);
+            $this->mc->addServers($config['servers']);
     }
     
     public function has($key) {

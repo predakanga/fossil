@@ -18,6 +18,9 @@ class NoCache extends BaseCache {
     public static function getVersion() {
         return 1.0;
     }
+    public static function getForm() {
+        return null;
+    }
     
     public function __construct($args = NULL) {
         // Empty options for the bit bucket
