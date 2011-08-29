@@ -9,8 +9,8 @@ namespace Fossil\Forms;
  * @F:Form(name = "SQLiteConfig")
  */
 class SQLiteConfig extends BaseDriverForm {
-    /** @F:FormField(label = "Filename") */
-    public $sqlite_filename;
+    /** @F:FormField(label = "Filename", fieldName = "sqlite_filename") */
+    public $filename;
 }
 
 ?>

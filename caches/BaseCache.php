@@ -20,6 +20,14 @@ abstract class BaseCache implements IDriver {
         return $this->config;
     }
     
+    protected function getDefaultConfig() {
+        $cacheOpts = OM::Settings("Fossil", "cache", NULL);
+        if($cacheOpts && isset($cacheOpts['config'])) {
+            return $cacheOpts['config'];
+        }
+        return NULL;
+    }
+    
     abstract public function has($key);
     abstract public function get($key);
     abstract public function set($key, $value);

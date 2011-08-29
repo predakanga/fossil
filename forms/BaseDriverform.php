@@ -13,7 +13,7 @@ class BaseDriverForm extends BaseForm implements IDriverForm {
     public function toConfig() {
         $toRet = array();
         foreach($this->form_fields as $name => $data) {
-            $toRet[$data['fieldName']] = $this->$name;
+            $toRet[$name] = $this->$name;
         }
         return $toRet;
     }

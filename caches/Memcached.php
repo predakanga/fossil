@@ -16,17 +16,16 @@ class Memcached extends BaseCache {
      */
     private $mc;
     
-    private function getDefaultOptions() {
+    protected function getDefaultConfig() {
         // Grab options from the settings
-        $cacheOpts = OM::Settings("Fossil", "cache", NULL);
-        if(!$cacheOpts || !isset($cacheOpts['options'])) {
-            // Default settings
-            $cacheOpts['options']['id'] = "fossil";
-            $cacheOpts['options']['servers'] = array();
-            $cacheOpts['options']['servers'][] = array("host" => "localhost",
-                                                       "port" => 11211);
+        $config = parent::getDefaultConfig();
+        if(!$config) {
+            $config = array('id' => 'fossil',
+                            'servers' => array('host' => 'localhost',
+                                               'port' => 11211));
         }
-        return $cacheOpts['options']; 
+        
+        return $config;
     }
     
     public static function usable() {
@@ -46,7 +45,7 @@ class Memcached extends BaseCache {
     public function __construct($config = NULL) {
         // If args == NULL, we're doing a default construction, load default options
         if($config === NULL)
-            $config = $this->getDefaultOptions();
+            $config = $this->getDefaultConfig();
         
         parent::__construct($config);
         

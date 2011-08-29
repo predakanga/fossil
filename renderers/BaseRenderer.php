@@ -2,7 +2,8 @@
 
 namespace Fossil\Renderers;
 
-use Fossil\Interfaces\IDriver;
+use Fossil\OM,
+    Fossil\Interfaces\IDriver;
 
 /**
  * Description of BaseRenderer
@@ -18,6 +19,14 @@ abstract class BaseRenderer implements IDriver {
     
     public function getConfig() {
         return $this->config;
+    }
+    
+    protected function getDefaultConfig() {
+        $cacheOpts = OM::Settings("Fossil", "renderer", NULL);
+        if($cacheOpts && isset($cacheOpts['config'])) {
+            return $cacheOpts['config'];
+        }
+        return NULL;
     }
     
     abstract public function render($templateName, $templateData);

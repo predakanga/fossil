@@ -9,10 +9,10 @@ namespace Fossil\Forms;
  * @F:Form(name = "MemcachedConfig")
  */
 class MemcachedConfig extends BaseDriverForm {
-    /** @F:FormField(label = "Host") */
-    public $memcached_host = "localhost";
-    /** @F:FormField(label = "Port") */
-    public $memcached_port = 11211;
+    /** @F:FormField(label = "Host", fieldName="memcached_host") */
+    public $host = "localhost";
+    /** @F:FormField(label = "Port", fieldName="memcached_port") */
+    public $port = 11211;
 }
 
 ?>

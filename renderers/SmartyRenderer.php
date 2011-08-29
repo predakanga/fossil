@@ -23,9 +23,19 @@ class SmartyRenderer extends BaseRenderer {
     public static function usable() { /* TODO: Real test here */ return true; }
     public static function getForm() { return OM::Form("SmartyConfig"); }
     
+    protected function getDefaultConfig() {
+        $config = parent::getDefaultConfig();
+        if(!$config) {
+            return array('useTidy' => false);
+        }
+        
+        return $config;
+    }
+    
     public function __construct($config = null) {
         if(!$config)
-            $config = array('useTidy' => false);
+            $config = $this->getDefaultConfig();
+        
         parent::__construct($config);
         require_once("libs/smarty/distribution/libs/Smarty.class.php");
         $this->smarty = new \Smarty();

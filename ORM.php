@@ -39,10 +39,7 @@ class ORM {
         $config->setQueryCacheImpl($cache);
 
         // database configuration parameters (6)
-        $conn = array(
-            'driver' => 'pdo_sqlite',
-            'path' => 'db.sqlite',
-        );
+        $conn = array('pdo' => OM::Database()->getPDO());
 
         // obtaining the entity manager (7)
         $this->evm = new Doctrine\Common\EventManager();

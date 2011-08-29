@@ -19,6 +19,16 @@ abstract class BaseDatabase implements IDriver {
     public function getConfig() {
         return $this->config;
     }
+    
+    protected function getDefaultConfig() {
+        $cacheOpts = OM::Settings("Fossil", "database", NULL);
+        if($cacheOpts && isset($cacheOpts['config'])) {
+            return $cacheOpts['config'];
+        }
+        return NULL;
+    }
+    
+    abstract public function getPDO();
 }
 
 ?>
