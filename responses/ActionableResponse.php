@@ -2,6 +2,8 @@
 
 namespace Fossil\Responses;
 
+use Fossil\Interfaces\IResponse;
+
 /**
  * Description of ActionableResponse
  *
