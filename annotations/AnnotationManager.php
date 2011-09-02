@@ -1,12 +1,13 @@
 <?php
 
-namespace Fossil;
+namespace Fossil\Annotations;
 
-use \Doctrine\Common\Annotations\AnnotationReader,
+use \Fossil\Autoloader,
+    \Doctrine\Common\Annotations\AnnotationReader,
     \Doctrine\Common\Annotations\AnnotationRegistry,
     \ReflectionClass;
 
-class Annotations {
+class AnnotationManager {
     /**
      * @var AnnotationReader
      */
@@ -54,7 +55,7 @@ class Annotations {
         
         $annotation = $this->resolveName($annotation);
         return array_filter($this->reader->getClassAnnotations(new ReflectionClass($class)), function($thisAnno) use($annotation) {
-            return ("\\" . get_class($thisAnno)) == $annotation;
+            return is_a($thisAnno, $annotation);
         });
     }
     
@@ -64,7 +65,18 @@ class Annotations {
         
         $annotation = $this->resolveName($annotation);
         return array_filter($this->reader->getPropertyAnnotations($reflProp), function($thisAnno) use($annotation) {
-            return ("\\" . get_class($thisAnno)) == $annotation;
+            return is_a($thisAnno, $annotation);
+        });
+    }
+    
+    public function getMethodAnnotations($reflMethod, $annotation = false) {
+        if(!$annotation)
+            return $this->reader->getMethodAnnotation ($reflMethod);
+        
+        $annotation = $this->resolveName($annotation);
+        return array_filter($this->reader->getMethodAnnotations($reflMethod), function ($thisAnno) use ($annotation) {
+            // Check inheritance
+            return is_a($thisAnno, $annotation);
         });
     }
     

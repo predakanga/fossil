@@ -11,6 +11,7 @@ class SourceDirectoryFilter extends \RecursiveFilterIterator {
 	public static $DIR_FILTERS = array('.git',
                                        'libs',
                                        'plugins',
+                                       'compiled',
                                        'templates_c');
     // Use of require_once filters index.php, so this is all we need to worry about
     public static $FILE_FILTERS = array('cli-config.php');

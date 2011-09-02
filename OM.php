@@ -33,6 +33,7 @@ class OM {
 	 * @var array
 	 */
 	private static $instances = array();
+    private static $extensionClasses = array();
         
     private static $startupTime = 0;
     
@@ -49,7 +50,7 @@ class OM {
 	 */
 	private static $classes = array(
         'FS' => array('default' => array('fqcn' => '\\Fossil\\Filesystem', 'takesContext' => false)),
-        'Annotations' => array('default' => array('fqcn' => '\\Fossil\\Annotations', 'takesContext' => false)),
+        'Annotations' => array('default' => array('fqcn' => '\\Fossil\\Annotations\\AnnotationManager', 'takesContext' => false)),
         'Error' => array('default' => array('fqcn' => '\\Fossil\\ErrorManager', 'takesContext' => false))
     );
     private static $dirty = false;
@@ -92,6 +93,7 @@ class OM {
                 self::$classes[$type][$objAnno->name] = array('fqcn' => '\\' . $object, 'takesContext' => $objAnno->takesContext);
             }
         }
+        static::$extensionClasses = self::Annotations()->getClassesWithAnnotation("F:ExtensionClass");
     }
 
     public static function setup() {
@@ -172,7 +174,12 @@ class OM {
 	 * @param string $name The name of the provider to use
 	 * @return void
 	 */
-	public static function select($type, $name) {
+	public static function select($type, $name, $fqcn = null) {
+        if($fqcn) {
+            self::setTypeInstance($type, new $fqcn);
+            return;
+        }
+        
 		// Pre-condition: $name must be known as a $type
 		// Post-condition: There will be an instance of $type stored in the OM
 		$newInstance = NULL;
@@ -242,6 +249,23 @@ class OM {
 	
     public static function getAll($type) {
         return self::$classes[$type];
+    }
+    
+    public static function getBaseObjects() {
+        // TODO: Determine whether to only compile in-use objects or not
+        $classList = array();
+        
+        foreach(self::$classes as $classArr) {
+            foreach($classArr as $classDat) {
+                $classList[] = $classDat['fqcn'];
+            }
+        }
+        
+        return $classList;
+    }
+    
+    public static function getExtensionClasses() {
+        return static::$extensionClasses;
     }
     
 	/**
