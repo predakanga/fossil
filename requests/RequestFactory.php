@@ -2,6 +2,8 @@
 
 namespace Fossil\Requests;
 
+use Fossil\OM;
+
 /**
  * Description of RequestFactory
  *
@@ -14,10 +16,11 @@ class RequestFactory {
      */
     public function getEntryRequest() {
         if(PHP_SAPI == "cli") {
-            return new CliRequest();
+            $class = OM::_("Requests", "CliRequest");
         } else {
-            return new WebRequest();
+            $class = OM::_("Requests", "WebRequest");
         }
+        return new $class;
     }
 }
 

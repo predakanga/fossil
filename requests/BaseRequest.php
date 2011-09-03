@@ -8,6 +8,7 @@ use Fossil\OM;
  * Description of BaseRequest
  *
  * @author predakanga
+ * @F:Instanced
  */
 abstract class BaseRequest {
     public $controller;
