@@ -173,6 +173,8 @@ EOT;
         foreach($compiledMethods as $method) {
             $compiledMethodText .= sprintf($methodText, $method['access'], $method['name'], $method['source']);
         }
+        if($targetParent[0] == '\\')
+            $targetParent = substr($targetParent, 1);
         $compiledClassText = sprintf($classText, $targetNamespace, $newClassName, $targetParent, $compiledMethodText);
         
         $this->saveClass($targetNamespace . "\\" . $newClassName, $compiledClassText);
