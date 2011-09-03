@@ -8,6 +8,7 @@ use Fossil\OM;
  * Description of DataResponse
  *
  * @author predakanga
+ * @F:Instanced("Template")
  */
 class TemplateResponse extends RenderableResponse {
     private $templateName;

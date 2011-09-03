@@ -2,6 +2,8 @@
 
 namespace Fossil\Controllers;
 
+use Fossil\Exceptions\NoSuchActionException;
+
 /**
  * Description of AutoController
  *
@@ -13,6 +15,10 @@ abstract class AutoController extends BaseController {
         $action = $req->action ?: $this->indexAction();
         // Compute the method name
         $actionMethod = "run" . ucfirst(strtolower($action));
+        
+        if(!method_exists($this, $actionMethod))
+            throw new NoSuchActionException($req->controller, $action);
+        
         // And try to call it on ourselves
         return call_user_func(array($this, $actionMethod), $req);
     }

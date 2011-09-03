@@ -19,16 +19,22 @@ class Dispatcher {
     public function runRequest(BaseRequest $req, $react = true) {
         array_push($this->reqStack, $req);
         
-        // To allow HMVC style requests, return the response early if we're not to react
-        $response = $req->run();
-        
-        if(!$react)
-            return $response;
-        
-        if($response instanceof RenderableResponse) {
-            $response->render();
-        } else if($response instanceof ActionableResponse) {
-            $response->runAction();
+        try {
+            // To allow HMVC style requests, return the response early if we're not to react
+            $response = $req->run();
+
+            if(!$react)
+                return $response;
+
+            if($response instanceof RenderableResponse) {
+                $response->render();
+            } else if($response instanceof ActionableResponse) {
+                $response->runAction();
+            }
+        } catch(\Exception $e) {
+            $internalRqCls = OM::_("Requests", "InternalRequest");
+            $errorReq = new $internalRqCls("error", "show", array('e' => $e));
+            $this->runRequest($errorReq);
         }
         
         array_pop($this->reqStack);

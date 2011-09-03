@@ -2,6 +2,10 @@
 
 namespace Fossil\Controllers;
 
+use Fossil\OM,
+    Fossil\Exceptions\NoSuchClassException,
+    Fossil\Exceptions\NoSuchControllerException;
+
 /**
  * Description of ControllerFactory
  *
@@ -13,8 +17,14 @@ class ControllerFactory {
         // TODO: Implement some real logic here
         $controllerName = $controllerName ?: "index";
         // Load the controller
-        $controllerClass = "Fossil\\Controllers\\" . ucfirst(strtolower($controllerName));
-        return new $controllerClass;
+        try
+        {
+            $ctrlClass = OM::_("Controllers", ucfirst(strtolower($controllerName)));
+        } catch(NoSuchClassException $e) {
+            throw new NoSuchControllerException($controllerName);
+        }
+        
+        return new $ctrlClass;
     }
 }
 
