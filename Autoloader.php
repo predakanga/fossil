@@ -87,7 +87,7 @@ class Autoloader {
                         return;
                     }
             }
-            array_push($resolvePath, lcfirst(array_pop($classPaths)));
+            array_unshift($resolvePath, lcfirst(array_pop($classPaths)));
         } while(count($classPaths) > 0);
 	}
 	
