@@ -15,11 +15,11 @@ use Fossil\OM,
 class ControllerFactory {
     public function get($controllerName = NULL) {
         // TODO: Implement some real logic here
-        $controllerName = $controllerName ?: "index";
+        $controllerName = ucfirst(strtolower($controllerName ?: "index"));
         // Load the controller
         try
         {
-            $ctrlClass = OM::_("Controllers", ucfirst(strtolower($controllerName)));
+            return OM::obj("Controllers", $controllerName)->create();
         } catch(NoSuchClassException $e) {
             throw new NoSuchControllerException($controllerName);
         }

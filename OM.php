@@ -11,6 +11,18 @@ namespace Fossil;
 
 use Fossil\Exceptions\NoSuchClassException;
 
+class InstanceWrapper {
+    private $reflClass;
+
+    public function __construct($fqcn) {
+        $this->reflClass = new \ReflectionClass($fqcn);
+    }
+
+    public function create() {
+        return $this->reflClass->newInstanceArgs(func_get_args());
+    }
+}
+
 /**
  * The object manager class
  * 
@@ -29,37 +41,36 @@ use Fossil\Exceptions\NoSuchClassException;
  * 
  */
 class OM {
-	/**
-	 * Maps type to current instance
-	 * 
-	 * @var array
-	 */
-	private static $instances = array();
+    /**
+     * Maps type to current instance
+     * 
+     * @var array
+     */
+    private static $instances = array();
     private static $extensionClasses = array();
     private static $classMap = array();
     private static $scannedClasses = array();
-        
+    private static $instanceWrappers = array();
+
     private static $startupTime = 0;
-    
-	/**
-	 * Maps type to potential provider name
-	 * 
-	 * Provider keys:
-	 * ['fqcn']         => Fully Qualified Class Name
-	 * ['default']      => Whether this provider is to be used by default
+
+    /**
+     * Maps type to potential provider name
+     * 
+     * Provider keys:
+     * ['fqcn']         => Fully Qualified Class Name
+     * ['default']      => Whether this provider is to be used by default
      * ['takesContext'] => Whether this provider has a constructor which
      *                     takes the previous provider instance for context
-	 * 
-	 * @var array
-	 */
-	private static $singletonClasses = array(
+     * 
+     * @var array
+     */
+    private static $singletonClasses = array(
         'FS' => array('default' => array('fqcn' => '\\Fossil\\Filesystem', 'takesContext' => false)),
         'Annotations' => array('default' => array('fqcn' => '\\Fossil\\Annotations\\AnnotationManager', 'takesContext' => false)),
         'Error' => array('default' => array('fqcn' => '\\Fossil\\ErrorManager', 'takesContext' => false))
     );
-    private static $instancedClasses = array(
-        
-    );
+    private static $instancedClasses = array();
     private static $dirty = false;
 
     // Destructor, to update the quickstart file
@@ -79,10 +90,10 @@ class OM {
     private static function scanForSingletonObjects() {
         $allClasses = self::Annotations()->getClassesWithAnnotation("F:Object");
         foreach($allClasses as $class) {
-            if(isset(static::$scannedClasses[$class]))
+            if(isset(self::$scannedClasses[$class]))
                 continue;
-            static::$scannedClasses[$class] = true;
-            
+            self::$scannedClasses[$class] = true;
+
             $annotations = self::Annotations()->getClassAnnotations($class, "F:Object");
             foreach($annotations as $objAnno) {
                 $type = $objAnno->value ?: $objAnno->type;
@@ -92,15 +103,15 @@ class OM {
             }
         }
     }
-    
+
     private static function scanForInstancedObjects() {
         $allClasses = self::Annotations()->getClassesWithAnnotation("F:Instanced");
-        
+
         foreach($allClasses as $class) {
             if(isset(self::$scannedClasses[$class]))
                 continue;
             self::$scannedClasses[$class] = true;
-            
+
             $annotations = self::Annotations()->getClassAnnotations($class, "F:Instanced");
             foreach($annotations as $objAnno) {
                 if(!isset($objAnno->type)) {
@@ -111,7 +122,7 @@ class OM {
                 } else {
                     $type = $objAnno->type;
                 }
-                
+
                 if(isset($objAnno->name)) {
                     $name = $objAnno->name;
                 } elseif(isset($objAnno->value)) {
@@ -119,18 +130,18 @@ class OM {
                 } else {
                     $name = substr($class, strrpos($class, "\\")+1);
                 }
-                
+
                 if(!isset(self::$instancedClasses[$type]))
                     self::$instancedClasses[$type] = array();
                 self::$instancedClasses[$type][$name] = $class;
             }
         }
     }
-    
+
     private static function scanForObjects($root) {
         // Get all php files below this directory, excluding libs and static
         $files = OM::FS()->sourceFiles($root);
-        
+
         foreach($files as $file) {
             try
             {
@@ -142,7 +153,7 @@ class OM {
         }
         self::scanForSingletonObjects();
         self::scanForInstancedObjects();
-        static::$extensionClasses = self::Annotations()->getClassesWithAnnotation("F:ExtensionClass");
+        self::$extensionClasses = self::Annotations()->getClassesWithAnnotation("F:ExtensionClass");
     }
 
     public static function setup() {
@@ -163,19 +174,19 @@ class OM {
             self::$instances['Cache'] = new $basics['cache']['fqcn']($basics['cache']['options']);
         }*/
     }
-        
+
     public static function getRuntime() {
         return microtime(true) - self::$startupTime;
     }
-	/**
-	 * Initialize the object manager without cache
-	 * 
-	 * Scans the codebase immediately to discover classes for
-	 * the object manager to manage
-	 * 
-	 * @return void
-	 */
-	public static function init() {
+    /**
+     * Initialize the object manager without cache
+     * 
+     * Scans the codebase immediately to discover classes for
+     * the object manager to manage
+     * 
+     * @return void
+     */
+    public static function init() {
         // Regular functionality:
         // Scan local namespace for objects
         self::scanForObjects(self::FS()->fossilRoot());
@@ -187,81 +198,84 @@ class OM {
         // Do compilation
         OM::Compiler()->bootstrap();
         self::$classMap = OM::Compiler()->compileAll();
-	}
-	
-	/**
-	 * Initialize the object manager with cache
-	 * 
-	 * Reads the configuration minimally to establish a
-	 * connection to the cache, which is used to store
-	 * information on what classes are available to the OM
-	 * 
-	 *  @return bool Whether cached state could be loaded
-	 */
-	public static function cachedInit() {
+    }
+
+    /**
+     * Initialize the object manager with cache
+     * 
+     * Reads the configuration minimally to establish a
+     * connection to the cache, which is used to store
+     * information on what classes are available to the OM
+     * 
+     *  @return bool Whether cached state could be loaded
+     */
+    public static function cachedInit() {
         if(!self::has("Cache"))
             return false;
         return false;
-	}
-	
-	/**
-	 * Scans the codebase and stores all the found objects in the cache
-	 * 
-	 * Used by the deployment tool to ensure that there's
-	 * a primed cache ready for use in release mode
-	 * 
-	 * @return void
-	 */
-	public static function primeCache() {
-		
-	}
-	
-	/**
-	 * Select which provider to use for a type
-	 * 
-	 * Creates an instance of the new provider immediately,
-	 * passing the old provider to the new one as required
-	 * 
-	 * Pre-condition: $name must be known as a $type
-	 * 
-	 * @param string $type The type which is being managed
-	 * @param string $name The name of the provider to use
-	 * @return void
-	 */
-	public static function select($type, $name, $fqcn = null) {
+    }
+
+    /**
+     * Scans the codebase and stores all the found objects in the cache
+     * 
+     * Used by the deployment tool to ensure that there's
+     * a primed cache ready for use in release mode
+     * 
+     * @return void
+     */
+    public static function primeCache() {
+
+    }
+
+    /**
+     * Select which provider to use for a type
+     * 
+     * Creates an instance of the new provider immediately,
+     * passing the old provider to the new one as required
+     * 
+     * Pre-condition: $name must be known as a $type
+     * 
+     * @param string $type The type which is being managed
+     * @param string $name The name of the provider to use
+     * @return void
+     */
+    public static function select($type, $name, $fqcn = null) {
         if($fqcn) {
             self::setTypeInstance($type, new $fqcn);
             return;
         }
-        
-		// Pre-condition: $name must be known as a $type
-		// Post-condition: There will be an instance of $type stored in the OM
-		$newInstance = NULL;
-		$oldInstance = NULL;
-		// Remove the current instance before instantiating the new one
-		if(isset(static::$instances[$type])) {
-			$oldInstance = static::$instances[$type];
-			self::$instances[$type] = NULL;
-		}
-		// Then create the new instance, giving it context if it wants it
-		$typeInfo = self::$singletonClasses[$type][$name];
-		if($typeInfo['takesContext']) {
-			$newInstance = new $typeInfo['fqcn']($oldInstance);
-		} else {
-			$newInstance = new $typeInfo['fqcn'];
-		}
+
+        // Pre-condition: $name must be known as a $type
+        // Post-condition: There will be an instance of $type stored in the OM
+        $newInstance = NULL;
+        $oldInstance = NULL;
+        // Remove the current instance before instantiating the new one
+        if(isset(self::$instances[$type])) {
+            $oldInstance = self::$instances[$type];
+            self::$instances[$type] = NULL;
+        }
+        // Then create the new instance, giving it context if it wants it
+        $typeInfo = self::$singletonClasses[$type][$name];
+        $class = $typeInfo['fqcn'];
+        if(isset(self::$classMap[$class]))
+            $class = self::$classMap[$class];
+        if($typeInfo['takesContext']) {
+            $newInstance = new $class($oldInstance);
+        } else {
+            $newInstance = new $class;
+        }
         self::setTypeInstance($type, $newInstance);
-	}
-    
+    }
+
     private static function setTypeInstance($type, $instance) {
         // We only care about cache when setting the dirty status
         if($type == "Cache") {
             self::$dirty = true;
         }
-        
+
         self::$instances[$type] = $instance;
     }
-    
+
     private static function selectDefault($type) {
         // First off, check that we know about this type
         if(!isset(self::$singletonClasses[$type])) {
@@ -272,10 +286,15 @@ class OM {
             $typeInfo = self::$singletonClasses[$type]['default'];
         else
             $typeInfo = reset(self::$singletonClasses[$type]);
+
+        $class = $typeInfo['fqcn'];
+        if(isset(self::$classMap[$class]))
+            $class = self::$classMap[$class];
+
         // Instantiate it
         try
         {
-            $newInstance = new $typeInfo['fqcn'];
+            $newInstance = new $class;
         }
         catch(\Fossil\Exceptions\SelectionChangedException $e) {
             return;
@@ -283,13 +302,13 @@ class OM {
         // And store it
         self::setTypeInstance($type, $newInstance);
     }
-	
-    public static function _($typeOrFqcn, $subtype = null) {
+
+    private static function resolveInstanceClass($typeOrFqcn, $subtype = null) {
         if($subtype) {
             if(!isset(self::$instancedClasses[$typeOrFqcn]) || !isset(self::$instancedClasses[$typeOrFqcn][$subtype]))
                 // TODO: Throw exception;
                 throw new NoSuchClassException($typeOrFqcn, $subtype);
-            
+
             $typeOrFqcn = self::$instancedClasses[$typeOrFqcn][$subtype];
         }
         if(isset(self::$classMap[$typeOrFqcn]))
@@ -297,96 +316,106 @@ class OM {
         // Fallback, if none was found
         return $typeOrFqcn;
     }
-    
-	/**
-	 * Get an object of the requested type
-	 * 
-	 * Instantiates the object if none yet exists.
-	 * Throws an exception if the object manager doesn't
-	 * know about the requested type
-	 * 
-	 * @param string $type The type to retrieve
-	 * @return mixed An instance of the requested type
-	 */
-	public static function get($type) {
-		if(!isset(self::$instances[$type])) {
+
+    public static function obj($typeOrFqcn, $subtype = null) {
+        $actualClass = self::resolveInstanceClass($typeOrFqcn, $subtype);
+
+        if(!isset(self::$instanceWrappers[$actualClass]))
+            self::$instanceWrappers[$actualClass] = new InstanceWrapper($actualClass);
+
+        return self::$instanceWrappers[$actualClass];
+    }
+
+    /**
+     * Get an object of the requested type
+     * 
+     * Instantiates the object if none yet exists.
+     * Throws an exception if the object manager doesn't
+     * know about the requested type
+     * 
+     * @param string $type The type to retrieve
+     * @return mixed An instance of the requested type
+     */
+    public static function get($type) {
+        if(!isset(self::$instances[$type])) {
             self::selectDefault($type);
-		}
-		return self::$instances[$type];
-	}
-	
+        }
+        return self::$instances[$type];
+    }
+
     public static function getAll($type) {
         return self::$singletonClasses[$type];
     }
-    
+
     public static function getBaseObjects() {
         // TODO: Determine whether to only compile in-use objects or not
         $classList = array();
-        
+
         foreach(self::$singletonClasses as $classArr) {
             foreach($classArr as $classDat) {
                 // Don't return already compiled objects - that way, madness lies
-                if(!strpos($classDat['fqcn'], 'Fossil\\Compiled') === 0)
+                if(strpos($classDat['fqcn'], '\\Fossil\\Compiled') !== 0) {
                     $classList[] = $classDat['fqcn'];
+                }
             }
         }
-        foreach(static::$instancedClasses as $typeArr) {
+        foreach(self::$instancedClasses as $typeArr) {
             foreach($typeArr as $type)
                 $classList[] = $type;
         }
-        
+
         return $classList;
     }
-    
+
     public static function getExtensionClasses() {
-        return static::$extensionClasses;
+        return self::$extensionClasses;
     }
-    
-	/**
-	 * Checks whether the manager has an instance of a given type
-	 * 
-	 * @param string $type The type to check for
-	 * @return string TRUE if the type has been instantiated
-	 */
-	public static function has($type) {
-		return isset(self::$instances[$type]);
-	}
-	
-	/**
-	 * Checks whether the manager knows about a given type
-	 * 
-	 * Can also be used to check for a specific provider's
-	 * availability by passing it's name as the second parameter
-	 * 
-	 * @param string $type The name of the type to check for
-	 * @param mixed $name The name of the provider to check for, or NULL
-	 */
-	public static function knows($type, $name=NULL) {
-		if(!isset(self::$singletonClasses[$type]))
-			return false;
-		if($name && !isset(self::$singletonClasses[$type][$name]))
-			return false;
-		return true;
-	}
-	
-	/**
-	 * Static magic method calls
-	 * 
-	 * Used to implement singleton access functions
-	 * 
-	 * @param string $type The type to access
-	 * @param mixed $args Should always be array()
-	 * @throws BadMethodCallException
-	 * @return mixed A singleton instance of the requested type
-	 */
-	public static function __callStatic($type, $args) {
-		if(isset(self::$instances[$type]) || isset(self::$singletonClasses[$type])) {
+
+    /**
+     * Checks whether the manager has an instance of a given type
+     * 
+     * @param string $type The type to check for
+     * @return string TRUE if the type has been instantiated
+     */
+    public static function has($type) {
+        return isset(self::$instances[$type]);
+    }
+
+    /**
+     * Checks whether the manager knows about a given type
+     * 
+     * Can also be used to check for a specific provider's
+     * availability by passing it's name as the second parameter
+     * 
+     * @param string $type The name of the type to check for
+     * @param mixed $name The name of the provider to check for, or NULL
+     */
+    public static function knows($type, $name=NULL) {
+        if(!isset(self::$singletonClasses[$type]))
+            return false;
+        if($name && !isset(self::$singletonClasses[$type][$name]))
+            return false;
+        return true;
+    }
+
+    /**
+     * Static magic method calls
+     * 
+     * Used to implement singleton access functions
+     * 
+     * @param string $type The type to access
+     * @param mixed $args Should always be array()
+     * @throws BadMethodCallException
+     * @return mixed A singleton instance of the requested type
+     */
+    public static function __callStatic($type, $args) {
+        if(isset(self::$instances[$type]) || isset(self::$singletonClasses[$type])) {
             $obj = self::get($type);
             if(count($args) > 0)
                 return call_user_func_array(array($obj, 'get'), $args);
             else
                 return self::get($type);
-		}
-		throw new \BadMethodCallException("Method '$type' does not exist");
-	}
+        }
+        throw new \BadMethodCallException("Method '$type' does not exist");
+    }
 }

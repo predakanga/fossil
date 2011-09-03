@@ -16,9 +16,9 @@ class RequestFactory {
      */
     public function getEntryRequest() {
         if(PHP_SAPI == "cli") {
-            $class = OM::_("Requests", "CliRequest");
+            $class = OM::obj("Requests", "CliRequest")->create();
         } else {
-            $class = OM::_("Requests", "WebRequest");
+            $class = OM::obj("Requests", "WebRequest")->create();
         }
         return new $class;
     }

@@ -32,8 +32,7 @@ class Dispatcher {
                 $response->runAction();
             }
         } catch(\Exception $e) {
-            $internalRqCls = OM::_("Requests", "InternalRequest");
-            $errorReq = new $internalRqCls("error", "show", array('e' => $e));
+            $errorReq = OM::obj("Requests", "InternalRequest")->create("error", "show", array('e' => $e));
             $this->runRequest($errorReq);
         }
         
