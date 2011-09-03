@@ -15,7 +15,7 @@ class Compiler {
         $parts = explode("\\", $fqcn);
         $real_parts = array_slice($parts, 1);
         $filename = array_pop($real_parts);
-        $dirpath = implode(DIRECTORY_SEPARATOR, array_map(lcfirst, $real_parts));
+        $dirpath = implode(DIRECTORY_SEPARATOR, array_map(function($a) { return lcfirst($a); }, $real_parts));
         
         if(!is_dir($dirpath))
             mkdir($dirpath, 0777, true);
@@ -197,18 +197,23 @@ EOT;
         if($followBase)
             $current_objects[] = $base;
         
+        $compilationNeeded = false;
+        
         $new_base = $base;
         foreach($tree as $leaf) {
             if(is_array($leaf) && $leaf[0] != "*") {
                 // Compilation leaf
                 $new_base = $this->compileClass($leaf[0], $leaf[1], $new_base);
+                $compilationNeeded = true;
             } elseif(!is_array($leaf)) {
                 // Reparent leaf
                 $new_base = $this->reparentClass($leaf, $new_base);
+                $compilationNeeded = true;
                 $current_objects[] = $leaf;
             } else {
                 // Reparent, without affecting the new base
-                $this->compileTree($new_base, array_slice($leaf, 1), false);
+                if($compilationNeeded)
+                    $this->compileTree($new_base, array_slice($leaf, 1), false);
             }
         }
         foreach($current_objects as $class)
