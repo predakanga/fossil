@@ -8,6 +8,7 @@ namespace Fossil;
 class Compiler {
     protected $baseNamespace = "Compiled\\";
     protected $baseDir = "compiled";
+    protected $classMap = array();
     
     protected function saveClass($fqcn, $source) {
         // Work out the file path
@@ -68,6 +69,15 @@ class Compiler {
                 $retArr[] = $extClass;
                 $retArr = array_merge($retArr, $this->getClassExtensionTree($extClass));
             }
+        }
+        // Finally, check non-extension classes
+        $nonExtClasses = OM::Annotations()->filterClassesByAnnotation(get_declared_classes(), "F:ExtensionClass", true);
+        foreach($nonExtClasses as $nonExtClass) {
+            if(get_parent_class($nonExtClass) != $class)
+                continue;
+            $subTree = array("*", $nonExtClass);
+            $subTree = array_merge($subTree, $this->getClassExtensionTree($nonExtClass));
+            $retArr[] = $subTree;
         }
         return $retArr;
     }
@@ -171,25 +181,38 @@ EOT;
     }
     
     protected function launchCompile($class) {
+        // If it's already been compiled, just return
+        if(isset($this->classMap[$class]))
+            return;
+        
         // Gather the class tree for this class
         $classTree = $this->getClassExtensionTree($class);
-        
         return $this->compileTree($class, $classTree);
     }
     
-    protected function compileTree($base, $tree) {
+    protected function compileTree($base, $tree, $followBase = true) {
         if(count($tree) == 0)
             return $base;
+        $current_objects = array();
+        if($followBase)
+            $current_objects[] = $base;
+        
         $new_base = $base;
         foreach($tree as $leaf) {
-            if(is_array($leaf)) {
+            if(is_array($leaf) && $leaf[0] != "*") {
                 // Compilation leaf
                 $new_base = $this->compileClass($leaf[0], $leaf[1], $new_base);
             } elseif(!is_array($leaf)) {
                 // Reparent leaf
                 $new_base = $this->reparentClass($leaf, $new_base);
+                $current_objects[] = $leaf;
+            } else {
+                // Reparent, without affecting the new base
+                $this->compileTree($new_base, array_slice($leaf, 1), false);
             }
         }
+        foreach($current_objects as $class)
+            $this->classMap[$class] = $new_base;
         return $new_base;
     }
     
@@ -198,11 +221,9 @@ EOT;
         foreach(OM::getBaseObjects() as $class) {
             $this->launchCompile($class);
         }
+        return $this->classMap;
     }
     
-    /**
-     * @F:TimeCall()
-     */
     public function bootstrap() {
         // The bootstrapping simply compiles itself, so that an enhanced compiler can be used as provided
         $newTopClass = $this->launchCompile(__CLASS__);

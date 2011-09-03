@@ -257,7 +257,9 @@ class OM {
         
         foreach(self::$classes as $classArr) {
             foreach($classArr as $classDat) {
-                $classList[] = $classDat['fqcn'];
+                // Don't return already compiled objects - that way, madness lies
+                if(!strpos($classDat['fqcn'], 'Fossil\\Compiled') === 0)
+                    $classList[] = $classDat['fqcn'];
             }
         }
         

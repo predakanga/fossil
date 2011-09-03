@@ -85,11 +85,15 @@ class AnnotationManager {
      * @param string $annotation
      * @return string[]
      */
-    public function filterClassesByAnnotation($classes, $annotation) {
+    public function filterClassesByAnnotation($classes, $annotation, $negativeFilter = false) {
         $annotation = $this->resolveName($annotation);
         $reader = $this->reader;
-        return array_filter($classes, function($class) use($reader, $annotation) {
-            return ($reader->getClassAnnotation(new ReflectionClass($class), $annotation) != null);
+        return array_filter($classes, function($class) use($reader, $annotation, $negativeFilter) {
+            $anno = $reader->getClassAnnotation(new ReflectionClass($class), $annotation);
+            if($negativeFilter)
+                return $anno == null;
+            else
+                return $anno != null;
         });
     }
     
