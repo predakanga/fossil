@@ -9,6 +9,8 @@
 
 namespace Fossil;
 
+use Fossil\Exceptions\NoSuchClassException;
+
 /**
  * The object manager class
  * 
@@ -34,6 +36,8 @@ class OM {
 	 */
 	private static $instances = array();
     private static $extensionClasses = array();
+    private static $classMap = array();
+    private static $scannedClasses = array();
         
     private static $startupTime = 0;
     
@@ -48,10 +52,13 @@ class OM {
 	 * 
 	 * @var array
 	 */
-	private static $classes = array(
+	private static $singletonClasses = array(
         'FS' => array('default' => array('fqcn' => '\\Fossil\\Filesystem', 'takesContext' => false)),
         'Annotations' => array('default' => array('fqcn' => '\\Fossil\\Annotations\\AnnotationManager', 'takesContext' => false)),
         'Error' => array('default' => array('fqcn' => '\\Fossil\\ErrorManager', 'takesContext' => false))
+    );
+    private static $instancedClasses = array(
+        
     );
     private static $dirty = false;
 
@@ -69,6 +76,57 @@ class OM {
         file_put_contents(__DIR__ . '/.quickstart.yml', yaml_emit($quickstart));
     }
 
+    private static function scanForSingletonObjects() {
+        $allClasses = self::Annotations()->getClassesWithAnnotation("F:Object");
+        foreach($allClasses as $class) {
+            if(isset(static::$scannedClasses[$class]))
+                continue;
+            static::$scannedClasses[$class] = true;
+            
+            $annotations = self::Annotations()->getClassAnnotations($class, "F:Object");
+            foreach($annotations as $objAnno) {
+                $type = $objAnno->value ?: $objAnno->type;
+                if(!isset(self::$singletonClasses[$type]))
+                    self::$singletonClasses[$type] = array();
+                self::$singletonClasses[$type][$objAnno->name] = array('fqcn' => '\\' . $class, 'takesContext' => $objAnno->takesContext);
+            }
+        }
+    }
+    
+    private static function scanForInstancedObjects() {
+        $allClasses = self::Annotations()->getClassesWithAnnotation("F:Instanced");
+        
+        foreach($allClasses as $class) {
+            if(isset(self::$scannedClasses[$class]))
+                continue;
+            self::$scannedClasses[$class] = true;
+            
+            $annotations = self::Annotations()->getClassAnnotations($class, "F:Instanced");
+            foreach($annotations as $objAnno) {
+                if(!isset($objAnno->type)) {
+                    // Check the class's namespace
+                    $reflClass = new \ReflectionClass($class);
+                    $namespace = $reflClass->getNamespaceName();
+                    $type = substr($namespace, strrpos($namespace, '\\')+1);
+                } else {
+                    $type = $objAnno->type;
+                }
+                
+                if(isset($objAnno->name)) {
+                    $name = $objAnno->name;
+                } elseif(isset($objAnno->value)) {
+                    $name = $objAnno->value;
+                } else {
+                    $name = substr($class, strrpos($class, "\\")+1);
+                }
+                
+                if(!isset(self::$instancedClasses[$type]))
+                    self::$instancedClasses[$type] = array();
+                self::$instancedClasses[$type][$name] = $class;
+            }
+        }
+    }
+    
     private static function scanForObjects($root) {
         // Get all php files below this directory, excluding libs and static
         $files = OM::FS()->sourceFiles($root);
@@ -82,17 +140,8 @@ class OM {
             {
             }
         }
-        // Once we've loaded all files, grab the list of objects
-        $allObjects = self::Annotations()->getClassesWithAnnotation("F:Object");
-        foreach($allObjects as $object) {
-            $annotations = self::Annotations()->getClassAnnotations($object, "F:Object");
-            foreach($annotations as $objAnno) {
-                $type = $objAnno->value ?: $objAnno->type;
-                if(!isset(self::$classes[$type]))
-                    self::$classes[$type] = array();
-                self::$classes[$type][$objAnno->name] = array('fqcn' => '\\' . $object, 'takesContext' => $objAnno->takesContext);
-            }
-        }
+        self::scanForSingletonObjects();
+        self::scanForInstancedObjects();
         static::$extensionClasses = self::Annotations()->getClassesWithAnnotation("F:ExtensionClass");
     }
 
@@ -127,12 +176,17 @@ class OM {
 	 * @return void
 	 */
 	public static function init() {
-            // Regular functionality:
-            // Scan local namespace for objects
-            self::scanForObjects(self::FS()->fossilRoot());
-            // Load settings up, set up drivers
-            // Scan plugin namespaces for objects
-            // Do compilation
+        // Regular functionality:
+        // Scan local namespace for objects
+        self::scanForObjects(self::FS()->fossilRoot());
+        // Load settings up, set up drivers
+        // Register plugins
+        // Scan plugin namespaces for objects
+        foreach(self::FS()->pluginRoots() as $root)
+            self::scanForObjects($root);
+        // Do compilation
+        OM::Compiler()->bootstrap();
+        self::$classMap = OM::Compiler()->compileAll();
 	}
 	
 	/**
@@ -190,7 +244,7 @@ class OM {
 			self::$instances[$type] = NULL;
 		}
 		// Then create the new instance, giving it context if it wants it
-		$typeInfo = self::$classes[$type][$name];
+		$typeInfo = self::$singletonClasses[$type][$name];
 		if($typeInfo['takesContext']) {
 			$newInstance = new $typeInfo['fqcn']($oldInstance);
 		} else {
@@ -210,14 +264,14 @@ class OM {
     
     private static function selectDefault($type) {
         // First off, check that we know about this type
-        if(!isset(self::$classes[$type])) {
+        if(!isset(self::$singletonClasses[$type])) {
             // TODO: Throw an exception if the type isn't known
         }
         // By default, just use the element named default, or the first if none exists
-        if(isset(self::$classes[$type]['default']))
-            $typeInfo = self::$classes[$type]['default'];
+        if(isset(self::$singletonClasses[$type]['default']))
+            $typeInfo = self::$singletonClasses[$type]['default'];
         else
-            $typeInfo = reset(self::$classes[$type]);
+            $typeInfo = reset(self::$singletonClasses[$type]);
         // Instantiate it
         try
         {
@@ -230,6 +284,20 @@ class OM {
         self::setTypeInstance($type, $newInstance);
     }
 	
+    public static function _($typeOrFqcn, $subtype = null) {
+        if($subtype) {
+            if(!isset(self::$instancedClasses[$typeOrFqcn]) || !isset(self::$instancedClasses[$typeOrFqcn][$subtype]))
+                // TODO: Throw exception;
+                throw new NoSuchClassException($typeOrFqcn, $subtype);
+            
+            $typeOrFqcn = self::$instancedClasses[$typeOrFqcn][$subtype];
+        }
+        if(isset(self::$classMap[$typeOrFqcn]))
+            return self::$classMap[$typeOrFqcn];
+        // Fallback, if none was found
+        return $typeOrFqcn;
+    }
+    
 	/**
 	 * Get an object of the requested type
 	 * 
@@ -248,19 +316,23 @@ class OM {
 	}
 	
     public static function getAll($type) {
-        return self::$classes[$type];
+        return self::$singletonClasses[$type];
     }
     
     public static function getBaseObjects() {
         // TODO: Determine whether to only compile in-use objects or not
         $classList = array();
         
-        foreach(self::$classes as $classArr) {
+        foreach(self::$singletonClasses as $classArr) {
             foreach($classArr as $classDat) {
                 // Don't return already compiled objects - that way, madness lies
                 if(!strpos($classDat['fqcn'], 'Fossil\\Compiled') === 0)
                     $classList[] = $classDat['fqcn'];
             }
+        }
+        foreach(static::$instancedClasses as $typeArr) {
+            foreach($typeArr as $type)
+                $classList[] = $type;
         }
         
         return $classList;
@@ -290,9 +362,9 @@ class OM {
 	 * @param mixed $name The name of the provider to check for, or NULL
 	 */
 	public static function knows($type, $name=NULL) {
-		if(!isset(self::$classes[$type]))
+		if(!isset(self::$singletonClasses[$type]))
 			return false;
-		if($name && !isset(self::$classes[$type][$name]))
+		if($name && !isset(self::$singletonClasses[$type][$name]))
 			return false;
 		return true;
 	}
@@ -308,7 +380,7 @@ class OM {
 	 * @return mixed A singleton instance of the requested type
 	 */
 	public static function __callStatic($type, $args) {
-		if(isset(self::$instances[$type]) || isset(self::$classes[$type])) {
+		if(isset(self::$instances[$type]) || isset(self::$singletonClasses[$type])) {
             $obj = self::get($type);
             if(count($args) > 0)
                 return call_user_func_array(array($obj, 'get'), $args);
