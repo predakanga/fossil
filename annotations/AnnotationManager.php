@@ -50,13 +50,19 @@ class AnnotationManager {
      * @return \AddendumPP\Annotation[]
      */
     public function getClassAnnotations($class, $annotation = false) {
+        $startAnnos = array();
+        if(get_parent_class($class)) {
+            $startAnnos = $this->getClassAnnotations(get_parent_class($class), $annotation);
+        }
+        
         if(!$annotation)
-            return $this->reader->getClassAnnotations(new ReflectionClass($class));
+            return array_merge($startAnnos, $this->reader->getClassAnnotations(new ReflectionClass($class)));
         
         $annotation = $this->resolveName($annotation);
-        return array_filter($this->reader->getClassAnnotations(new ReflectionClass($class)), function($thisAnno) use($annotation) {
+        return array_merge($startAnnos,
+               array_filter($this->reader->getClassAnnotations(new ReflectionClass($class)), function($thisAnno) use($annotation) {
             return is_a($thisAnno, $annotation);
-        });
+        }));
     }
     
     public function getPropertyAnnotations($reflProp, $annotation = false) {
@@ -80,6 +86,19 @@ class AnnotationManager {
         });
     }
     
+    public function classHasAnnotation($class, $annotation, $recursive = true) {
+        $annotation = $this->resolveName($annotation);
+        
+        $anno = $this->reader->getClassAnnotation(new ReflectionClass($class), $annotation);
+        
+        if($anno)
+            return true;
+        elseif($recursive && get_parent_class($class))
+            return $this->classHasAnnotation(get_parent_class($class), $annotation, $recursive);
+        else
+            return false;
+    }
+    
     /**
      * @param string[] $classes
      * @param string $annotation
@@ -87,13 +106,12 @@ class AnnotationManager {
      */
     public function filterClassesByAnnotation($classes, $annotation, $negativeFilter = false) {
         $annotation = $this->resolveName($annotation);
-        $reader = $this->reader;
-        return array_filter($classes, function($class) use($reader, $annotation, $negativeFilter) {
-            $anno = $reader->getClassAnnotation(new ReflectionClass($class), $annotation);
+        $self = $this;
+        return array_filter($classes, function($class) use($annotation, $negativeFilter, $self) {
             if($negativeFilter)
-                return $anno == null;
+                return !$self->classHasAnnotation($class, $annotation);
             else
-                return $anno != null;
+                return $self->classHasAnnotation($class, $annotation);
         });
     }
     
