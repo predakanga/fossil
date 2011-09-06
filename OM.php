@@ -196,7 +196,8 @@ class OM {
         foreach(self::FS()->pluginRoots() as $root)
             self::scanForObjects($root);
         // Do compilation
-        OM::Compiler()->bootstrap();
+        $tempClassMap = OM::Compiler()->bootstrap();
+        OM::Compiler()->setClassMap($tempClassMap);
         self::$classMap = OM::Compiler()->compileAll();
     }
 
@@ -306,7 +307,6 @@ class OM {
     private static function resolveInstanceClass($typeOrFqcn, $subtype = null) {
         if($subtype) {
             if(!isset(self::$instancedClasses[$typeOrFqcn]) || !isset(self::$instancedClasses[$typeOrFqcn][$subtype]))
-                // TODO: Throw exception;
                 throw new NoSuchClassException($typeOrFqcn, $subtype);
 
             $typeOrFqcn = self::$instancedClasses[$typeOrFqcn][$subtype];

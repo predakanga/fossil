@@ -222,21 +222,26 @@ EOT;
             $this->classMap[$class] = $new_base;
         return $new_base;
     }
-    
+
     public function compileAll() {
         // Get a list of all objects for compilation
-        foreach(OM::getBaseObjects() as $class) {
+        foreach (OM::getBaseObjects() as $class) {
             $this->launchCompile($class);
         }
         return $this->classMap;
     }
-    
+
     public function bootstrap() {
         // The bootstrapping simply compiles itself, so that an enhanced compiler can be used as provided
-        $newTopClass = $this->launchCompile(__CLASS__);
+        $newTopClass = $this->launchCompile("\\" . __CLASS__);
         if($newTopClass != get_class($this)) {
             OM::select("Compiler", null, $newTopClass);
         }
+        return $this->classMap;
+    }
+    
+    public function setClassMap($classMap) {
+        $this->classMap = $classMap;
     }
 }
 
