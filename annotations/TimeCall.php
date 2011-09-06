@@ -9,6 +9,7 @@ class TimeCall extends Compilation {
         $end = microtime(true);
         
         echo "$funcname on " . get_class($this) . " took " . ($end-$start) . "\n";
+        return $retval;
     }
 }
 
