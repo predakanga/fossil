@@ -2,6 +2,8 @@
 
 namespace Fossil;
 
+require_once("Introspection/Introspector.php");
+
 /**
  * @F:Object("Compiler")
  */
@@ -9,31 +11,31 @@ class Compiler {
     protected $baseNamespace = "Compiled\\";
     protected $baseDir = "compiled";
     protected $classMap = array();
-    
+
     protected function saveClass($fqcn, $source) {
         // Work out the file path
         $parts = explode("\\", $fqcn);
         $real_parts = array_slice($parts, 1);
         $filename = array_pop($real_parts);
         $dirpath = implode(DIRECTORY_SEPARATOR, array_map(function($a) { return lcfirst($a); }, $real_parts));
-        
+
         if(!is_dir($dirpath))
             mkdir($dirpath, 0777, true);
-        
+
         file_put_contents($dirpath . DIRECTORY_SEPARATOR . $filename . ".php", $source);
     }
-    
+
     protected function basename($fqcn) {
         return substr($fqcn, strrpos($fqcn, "\\")+1);
     }
     protected function nsname($fqcn) {
         return substr($fqcn, 0, strrpos($fqcn, "\\"));
     }
-    
+
     protected function getAccessStr($access) {
         return implode(' ', \Reflection::getModifierNames($access));
     }
-    
+
     protected function transformNamespace($inputNamespace) {
         $baseNamespace = "Fossil\\Compiled\\";
         $inputArr = explode("\\", $inputNamespace);
@@ -81,28 +83,30 @@ class Compiler {
         }
         return $retArr;
     }
-    
+
     protected function reparentClass($class, $targetParent) {
         $newName = $this->transformNamespace($class);
         $newClassName = $this->basename($class);
         $targetNamespace = $this->transformNamespace($this->nsname($class));
-        
+
         // Grab the original class's source
         $reflClass = new \ReflectionClass($class);
         $fileSource = file($reflClass->getFileName());
         
-        $start = $reflClass->getStartLine()-1;
-        $length = $reflClass->getEndLine() - $start;
+        $introspector = new \Introspector();
+        $fileInfo = $introspector->parseFile($reflClass->getFileName());
+        $classInfo = $fileInfo->findClass($this->basename($class));
         
-        $classSource = implode("", array_slice($fileSource, $start, $length));
+        $classSource = $classInfo->getSource();
+        
         // TODO: Decide whether to bring in the rest of the file too - probably
         //       safest to, but needs the implementation of a tokenizer first,
         //       to properly grab the reparented class
-        
+
         // Use a regex to replace the name and parent
         $newClassStr = "class $newClassName extends \\$targetParent";
         $classSource = preg_replace('/^[^\n]*\s*class\s+\S+\s+extends\s+\S+\s+/S', $newClassStr, $classSource);
-        
+
         $pageSource = <<<'EOT'
 <?php
 namespace %s;
@@ -110,23 +114,29 @@ namespace %s;
 %s
 EOT;
         $this->saveClass($newName, sprintf($pageSource, $targetNamespace, $classSource));
-        
+
         return $this->transformNamespace($class);
     }
-    
+
     protected function compileClass($class, $compileClass, $targetParent) {
         $newName = $this->transformNamespace($class) . "_" . $this->basename(get_class($compileClass));
         $newClassName = $this->basename($class) . "_" . $this->basename(get_class($compileClass));
         $targetNamespace = $this->transformNamespace($this->nsname($class));
-        
+
         // Grab the source...
         $compiledMethods = array();
         $reflClass = new \ReflectionClass($class);
         $reflMethods = $reflClass->getMethods();
-        
+
         $reflAnno = new \ReflectionClass($compileClass);
-        $reflCall = $reflAnno->getMethod("call");
-        $classFile = file($reflCall->getFileName());
+        
+        $introspector = new \Introspector();
+        $compileFileInfo = $introspector->parseFile($reflAnno->getFileName());
+        $compileClassInfo = $compileFileInfo->findClass($this->basename(get_class($compileClass)));
+        
+        $fileInfo = $introspector->parseFile($reflClass->getFileName());
+        $classInfo = $fileInfo->findClass($this->basename($class));
+        
         foreach($reflMethods as $reflMethod) {
             // First, make sure it's locally implemented
             if($reflMethod->class != $class)
@@ -137,14 +147,22 @@ EOT;
                 $newMethod['name'] = $reflMethod->name;
                 $newMethod['access'] = $this->getAccessStr($reflMethod->getModifiers());
                 
-                $start = $reflCall->getStartLine();
-                $length = ($reflCall->getEndLine() - $start) - 1;
+                $methodInfo = $classInfo->getMethod($reflMethod->name);
+                $newMethod['args'] = "(";
+                foreach($methodInfo->getArguments() as $arg) {
+                    $newMethod['args'] .= $arg->getSource() . ", ";
+                }
+                if(strlen($newMethod['args']) > 2)
+                    $newMethod['args'] = substr($newMethod['args'], 0, count($newMethod['args'])-3);
+                $newMethod['args'] .= ")";
+
+                $methodInfo = $compileClassInfo->getMethod("call");
                 
-                $newMethod['source'] = implode("", array_slice($classFile, $start, $length));
+                $newMethod['source'] = trim($methodInfo->getBlock()->getSource(), " \t\n\r\0\x0B{}");
                 $compiledMethods[] = $newMethod;
             }
         }
-        
+
         // Construct the new class
         $classText = <<<'EOT'
 <?php
@@ -154,53 +172,53 @@ class %s extends \%s {
     private function completeCall($funcname, $args) {
         return call_user_func_array("parent::$funcname", $args);
     }
-    
+
 %s
 }
 EOT;
     $methodText = <<<'EOT'
-    %s function %s() {
+    %s function %s%s {
         $args = func_get_args();
         $funcname = __FUNCTION__;
 
-%s
+        %s
     }
 
 EOT;
-    
+
         $compiledMethodText = "";
         $compiledClassText = "";
         foreach($compiledMethods as $method) {
-            $compiledMethodText .= sprintf($methodText, $method['access'], $method['name'], $method['source']);
+            $compiledMethodText .= sprintf($methodText, $method['access'], $method['name'], $method['args'], $method['source']);
         }
         if($targetParent[0] == '\\')
             $targetParent = substr($targetParent, 1);
         $compiledClassText = sprintf($classText, $targetNamespace, $newClassName, $targetParent, $compiledMethodText);
-        
+
         $this->saveClass($targetNamespace . "\\" . $newClassName, $compiledClassText);
-        
+
         return $newName;
     }
-    
+
     protected function launchCompile($class) {
         // If it's already been compiled, just return
         if(isset($this->classMap[$class]))
             return;
-        
+
         // Gather the class tree for this class
         $classTree = $this->getClassExtensionTree($class);
         return $this->compileTree($class, $classTree);
     }
-    
+
     protected function compileTree($base, $tree, $followBase = true) {
         if(count($tree) == 0)
             return $base;
         $current_objects = array();
         if($followBase)
             $current_objects[] = $base;
-        
+
         $compilationNeeded = false;
-        
+
         $new_base = $base;
         foreach($tree as $leaf) {
             if(is_array($leaf) && $leaf[0] != "*") {
