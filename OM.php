@@ -141,7 +141,7 @@ class OM {
     private static function scanForObjects($root) {
         // Get all php files below this directory, excluding libs and static
         $files = OM::FS()->sourceFiles($root);
-
+        
         foreach($files as $file) {
             try
             {

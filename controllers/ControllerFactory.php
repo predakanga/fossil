@@ -14,7 +14,6 @@ use Fossil\OM,
  */
 class ControllerFactory {
     public function get($controllerName = NULL) {
-        // TODO: Implement some real logic here
         $controllerName = ucfirst(strtolower($controllerName ?: "index"));
         // Load the controller
         try

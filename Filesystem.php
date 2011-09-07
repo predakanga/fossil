@@ -7,12 +7,16 @@
 
 namespace Fossil;
 
+if(!defined('D_S'))
+    define('D_S', DIRECTORY_SEPARATOR);
+
 class SourceDirectoryFilter extends \RecursiveFilterIterator {
 	public static $DIR_FILTERS = array('.git',
                                        'libs',
                                        'plugins',
                                        'compiled',
-                                       'templates_c');
+                                       'templates_c',
+                                       'scratch');
     // Use of require_once filters index.php, so this is all we need to worry about
     public static $FILE_FILTERS = array('cli-config.php');
 	
@@ -49,12 +53,23 @@ class Filesystem {
         return __DIR__;
     }
     
+    public function overlayRoot() {
+        return null;
+    }
+    
     public function pluginRoots() {
-        return array();
+        $toRet = array();
+        
+        $enabledPlugins = OM::Plugins()->getEnabledPlugins();
+        foreach($enabledPlugins as $pluginName) {
+            $plugin = OM::Plugins($pluginName);
+            $toRet[] = $plugin['root'];
+        }
+        return $toRet;
     }
     
     public function sourceFiles($root) {
-        $dirIter = new \RecursiveDirectoryIterator(__DIR__);
+        $dirIter = new \RecursiveDirectoryIterator($root);
         $filterIter = new SourceDirectoryFilter($dirIter);
         $iterIter = new \RecursiveIteratorIterator($filterIter);
         $regexIter = new \RegexIterator($iterIter, '/\\.php$/');

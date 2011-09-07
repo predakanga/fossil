@@ -46,6 +46,17 @@ class Compiler {
             return implode("\\", array_merge(array("Fossil","Compiled","Overlay"), array_slice($inputArr, 1)));
         }
     }
+
+    protected function launchCompile($class) {
+        // If it's already been compiled, just return
+        if(isset($this->classMap[$class]))
+            return;
+
+        // Gather the class tree for this class
+        $classTree = $this->getClassExtensionTree($class);
+        return $this->compileTree($class, $classTree);
+    }
+    
     public function getClassExtensionTree($class) {
         if($class[0] == '\\')
             $class = substr($class, 1);
@@ -82,6 +93,40 @@ class Compiler {
             $retArr[] = $subTree;
         }
         return $retArr;
+    }
+
+    protected function compileTree($base, $tree, $followBase = true) {
+        if(count($tree) == 0)
+            return $base;
+        
+        $current_objects = array();
+        if($followBase)
+            $current_objects[] = $base;
+
+        $compilationNeeded = false;
+
+        $new_base = $base;
+        foreach($tree as $leaf) {
+            if(is_array($leaf) && $leaf[0] != "*") {
+                // Compilation leaf
+                $new_base = $this->compileClass($leaf[0], $leaf[1], $new_base);
+                $compilationNeeded = true;
+            } elseif(!is_array($leaf)) {
+                // Reparent leaf
+                $new_base = $this->reparentClass($leaf, $new_base);
+                $compilationNeeded = true;
+                $current_objects[] = $leaf;
+            } else {
+                // Reparent, without affecting the new base
+                if($compilationNeeded)
+                    $this->compileTree($new_base, array_slice($leaf, 1), false);
+                else
+                    $this->compileTree($leaf[1], array_slice($leaf, 2));
+            }
+        }
+        foreach($current_objects as $class)
+            $this->classMap[$class] = $new_base;
+        return $new_base;
     }
 
     protected function reparentClass($class, $targetParent) {
@@ -198,47 +243,6 @@ EOT;
         $this->saveClass($targetNamespace . "\\" . $newClassName, $compiledClassText);
 
         return $newName;
-    }
-
-    protected function launchCompile($class) {
-        // If it's already been compiled, just return
-        if(isset($this->classMap[$class]))
-            return;
-
-        // Gather the class tree for this class
-        $classTree = $this->getClassExtensionTree($class);
-        return $this->compileTree($class, $classTree);
-    }
-
-    protected function compileTree($base, $tree, $followBase = true) {
-        if(count($tree) == 0)
-            return $base;
-        $current_objects = array();
-        if($followBase)
-            $current_objects[] = $base;
-
-        $compilationNeeded = false;
-
-        $new_base = $base;
-        foreach($tree as $leaf) {
-            if(is_array($leaf) && $leaf[0] != "*") {
-                // Compilation leaf
-                $new_base = $this->compileClass($leaf[0], $leaf[1], $new_base);
-                $compilationNeeded = true;
-            } elseif(!is_array($leaf)) {
-                // Reparent leaf
-                $new_base = $this->reparentClass($leaf, $new_base);
-                $compilationNeeded = true;
-                $current_objects[] = $leaf;
-            } else {
-                // Reparent, without affecting the new base
-                if($compilationNeeded)
-                    $this->compileTree($new_base, array_slice($leaf, 1), false);
-            }
-        }
-        foreach($current_objects as $class)
-            $this->classMap[$class] = $new_base;
-        return $new_base;
     }
 
     public function compileAll() {

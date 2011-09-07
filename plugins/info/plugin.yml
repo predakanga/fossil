@@ -1,0 +1,7 @@
+---
+name: info
+version: 0.0.1
+description: Provides access to PHPInfo
+dependencies:
+    - name: fossil
+...

@@ -1,0 +1,7 @@
+---
+name: regression
+version: 0.0.1
+description: Regression test for most of the compiler's features
+dependencies:
+    - name: fossil
+...

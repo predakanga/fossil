@@ -1,0 +1,9 @@
+---
+name: users
+version: 0.0.1
+description: >-
+    This plugin provides a basic user system for Fossil, based on a user & role system.
+    Includes annotations and views for basic user signup and authentication.
+dependencies:
+    - name: fossil
+...
