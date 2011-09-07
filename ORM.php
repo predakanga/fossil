@@ -2,6 +2,81 @@
 
 namespace Fossil;
 
+use Doctrine\DBAL\Schema\Comparator,
+        Doctrine\DBAL\Schema\Schema,
+        Doctrine\ORM\Tools\SchemaTool,
+        Doctrine\ORM\EntityManager,
+        Doctrine\ORM\Mapping\Driver\AnnotationDriver,
+        Doctrine\Common\Annotations\AnnotationReader,
+        Doctrine\Common\Annotations\AnnotationRegistry;
+
+class CustomComparator extends Comparator {
+    public function compare(Schema $fromSchema, Schema $toSchema) {
+        $diff = parent::compare($fromSchema, $toSchema);
+        
+        $diff->removedTables = array();
+        $diff->orphanedForeignKeys = array();
+        
+        return $diff;
+    }
+
+}
+
+class CustomSchemaTool extends SchemaTool {
+    protected $__em;
+    protected $__platform;
+    
+    public function __construct(EntityManager $em) {
+        $this->__em = $em;
+        $this->__platform = $em->getConnection()->getDatabasePlatform();
+        
+        parent::__construct($em);
+    }
+    
+    public function getUpdateSchemaSql(array $classes, $saveMode=false)
+    {
+        $sm = $this->__em->getConnection()->getSchemaManager();
+
+        $fromSchema = $sm->createSchema();
+        $toSchema = $this->getSchemaFromMetadata($classes);
+
+        $comparator = new CustomComparator();
+        $schemaDiff = $comparator->compare($fromSchema, $toSchema);
+
+        if ($saveMode) {
+            return $schemaDiff->toSaveSql($this->__platform);
+        } else {
+            return $schemaDiff->toSql($this->__platform);
+        }
+    }
+}
+
+class CustomAnnotationDriver extends AnnotationDriver {
+    public function addPaths(array $paths)
+    {
+        $this->_paths = array_unique(array_merge($this->_paths, $paths));
+        $this->_classNames = null;
+    }
+    
+    /**
+     * Factory method for the Annotation Driver
+     *
+     * @param array|string $paths
+     * @param AnnotationReader $reader
+     * @return AnnotationDriver
+     * 
+     * @note Have to include this method to, due to no late-static-binding
+     */
+    static public function create($paths = array(), AnnotationReader $reader = null)
+    {
+        if ($reader == null) {
+            $reader = new AnnotationReader();
+            $reader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
+        }
+        return new self($reader, $paths);
+    }
+}
+
 /**
  * Description of ORM
  *
@@ -11,12 +86,14 @@ namespace Fossil;
 class ORM {
     protected $em;
     protected $evm;
+    protected $config;
+    protected $driver;
     
     public function __construct() {
         $appEnv = "development";
         
         // Use basic default EM for now
-        $config = new Doctrine\ORM\Configuration(); // (2)
+        $config = new \Doctrine\ORM\Configuration(); // (2)
 
         // Proxy Configuration (3)
         $config->setProxyDir(__DIR__.'/proxies');
@@ -26,8 +103,16 @@ class ORM {
         // Mapping Configuration (4)
         //$driverImpl = new Doctrine\ORM\Mapping\Driver\XmlDriver(__DIR__."/config/mappings/xml");
         //$driverImpl = new Doctrine\ORM\Mapping\Driver\XmlDriver(__DIR__."/config/mappings/yml");
-        $driverImpl = $config->newDefaultAnnotationDriver(__DIR__."/models");
-        $config->setMetadataDriverImpl($driverImpl);
+        
+        // Register the Doctrine annotations ourselves, as it's usually done by $config->newDefaultAnnotationDriver()
+        AnnotationRegistry::registerFile('Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php');
+
+        $this->driver = CustomAnnotationDriver::create(OM::FS()->fossilRoot() . D_S . "models");
+        
+        if(OM::FS()->overlayRoot())
+            $this->driver->addPaths((array)(OM::FS()->overlayRoot() . D_S . "models"));
+        
+        $config->setMetadataDriverImpl($this->driver);
 
         // Caching Configuration (5)
         if ($appEnv == "development") {
@@ -38,18 +123,29 @@ class ORM {
         $config->setMetadataCacheImpl($cache);
         $config->setQueryCacheImpl($cache);
 
-        // database configuration parameters (6)
-        $conn = array('pdo' => OM::Database()->getPDO());
-
-        // obtaining the entity manager (7)
-        $this->evm = new Doctrine\Common\EventManager();
-        $this->em = \Doctrine\ORM\EntityManager::create($conn, $config, $evm);
+        $this->config = $config;
+        
+        $this->evm = new \Doctrine\Common\EventManager();
+    }
+    
+    public function registerPaths() {
+        $pluginsWithModels = array_filter(OM::FS()->pluginRoots(), function($root) {
+            return is_dir($root . D_S . "models");
+        });
+        $this->driver->addPaths(array_map(function($root) {
+            return $root . D_S . "models";    
+        }, $pluginsWithModels));
     }
     
     /**
      * @return \Doctrine\ORM\EntityManager
      */
     public function getEM() {
+        // Lazy connecting to the DB
+        if(!$this->em) {
+            $conn = array('pdo' => OM::Database()->getPDO(), 'dbname' => null);
+            $this->em = EntityManager::create($conn, $this->config, $this->evm);
+        }
         return $this->em;
     }
     
@@ -58,6 +154,20 @@ class ORM {
      */
     public function getEVM() {
         return $this->evm;
+    }
+    
+    public function flush() {
+        if($this->em)
+            $this->em->flush();
+    }
+    
+    public function ensureSchema($retainDeleted = true) {
+        if($retainDeleted) {
+            $schemaTool = new CustomSchemaTool($this->getEM());
+        } else
+            $schemaTool = new SchemaTool($this->getEM());
+        
+        $schemaTool->updateSchema($this->getEM()->getMetadataFactory()->getAllMetadata());
     }
 }
 

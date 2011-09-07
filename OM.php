@@ -206,6 +206,10 @@ class OM {
         self::primeCache();
         // TODO: Only save cache conditionally
         self::saveCache();
+        // Finally, register plugins with the ORM
+        self::ORM()->registerPaths();
+        // And ensure that we have them
+        self::ORM()->ensureSchema();
     }
 
     /**
@@ -239,6 +243,9 @@ class OM {
         if(self::getFossilMtime() > $cachedData['mtime'])
             return false;
         
+        // Finally, register plugins with the ORM
+        self::ORM()->registerPaths();
+        
         return true;
     }
 
@@ -264,6 +271,7 @@ class OM {
         self::scanForObjects(self::FS()->fossilRoot());
         // Load settings up, set up drivers
         self::get('Cache');
+        self::ORM()->ensureSchema();
         // Register plugins
         // TODO: Move to auto-plugin loader
         OM::Plugins()->loadEnabledPlugins();

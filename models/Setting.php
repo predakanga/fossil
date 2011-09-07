@@ -14,6 +14,12 @@ class Setting extends Model {
      * @var int
      */
     public $id;
+    
+    /** @Column(type="string") */
+    public $name;
+    
+    /** @Column(type="string") */
+    public $value;
 }
 
 ?>
