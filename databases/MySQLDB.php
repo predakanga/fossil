@@ -21,7 +21,7 @@ class MySQLDB extends BaseDatabase {
     public function getPDO() {
         if(!$this->pdo) {
             $dsn = "mysql:host={$this->config['host']};dbname={$this->config['db']};port={$this->config['port']}";
-            $this->pdo = new \PDO($dsn, $this->config['user'], $this->config['pass']);
+            $this->pdo = new \PDO($dsn, $this->config['user'], $this->config['pass'], array(\PDO::ATTR_PERSISTENT));
         }
         return $this->pdo;
     }
