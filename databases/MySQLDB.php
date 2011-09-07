@@ -18,15 +18,6 @@ class MySQLDB extends BaseDatabase {
     
     protected $pdo;
     
-    public function __construct($config = null) {
-        // If we don't have params, throw an error
-        // TODO: Make this a proper exception
-        if(!$config)
-            $config = $this->getDefaultConfig();
-        
-        parent::__construct($config);
-    }
-    
     public function getPDO() {
         if(!$this->pdo) {
             $dsn = "mysql:host={$this->config['host']};dbname={$this->config['db']};port={$this->config['port']}";

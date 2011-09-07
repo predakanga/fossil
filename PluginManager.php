@@ -50,7 +50,7 @@ class PluginManager {
     public function get($pluginName) {
         if($this->has($pluginName))
             return $this->availablePlugins[$pluginName];
-        throw new Exception("Plugin not found: $pluginName");
+        throw new \Exception("Plugin not found: $pluginName");
     }
     
     public function findAvailablePlugins($root) {

@@ -2,7 +2,8 @@
 
 namespace Fossil\Databases;
 
-use Fossil\Interfaces\IDriver;
+use Fossil\Interfaces\IDriver,
+    Fossil\OM;
 
 /**
  * Description of BaseDatabase
@@ -10,9 +11,12 @@ use Fossil\Interfaces\IDriver;
  * @author predakanga
  */
 abstract class BaseDatabase implements IDriver {
-    private $config;
+    protected $config;
     
     public function __construct($config = null) {
+        if(!$config)
+            $config = $this->getDefaultConfig();
+        
         $this->config = $config;
     }
     
@@ -21,9 +25,10 @@ abstract class BaseDatabase implements IDriver {
     }
     
     protected function getDefaultConfig() {
-        $cacheOpts = OM::Settings("Fossil", "database", NULL);
-        if($cacheOpts && isset($cacheOpts['config'])) {
-            return $cacheOpts['config'];
+        $dbOpts = OM::Settings("Fossil", "database", NULL);
+        
+        if($dbOpts && isset($dbOpts['config'])) {
+            return $dbOpts['config'];
         }
         return NULL;
     }

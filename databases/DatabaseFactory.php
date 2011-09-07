@@ -2,6 +2,8 @@
 
 namespace Fossil\Databases;
 
+use Fossil\OM;
+
 /**
  * Description of DatabaseFactory
  *
@@ -11,7 +13,7 @@ namespace Fossil\Databases;
 class DatabaseFactory {
     public function __construct() {
         // Find the correct DB layer, select it, and throw a SelectionChangedException
-        $dbName = OM::Settings("Fossil", "db");
+        $dbName = OM::Settings("Fossil", "database");
         if(!$dbName) {
             $dbName = "SQLite";
         } else {

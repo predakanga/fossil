@@ -16,14 +16,7 @@ class SQLiteDB extends BaseDatabase {
     public static function usable() { return extension_loaded('pdo') && in_array("sqlite", \PDO::getAvailableDrivers()); }
     public static function getForm() { return OM::Form("SQLiteConfig"); }
     
-    public function __construct($config = null) {
-        // If we don't have params, throw an error
-        // TODO: Make this a proper exception
-        if(!$config)
-            $config = $this->getDefaultConfig();
-        
-        parent::__construct($config);
-    }
+    protected $pdo;
     
     public function getPDO() {
         if(!$this->pdo) {
