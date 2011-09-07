@@ -27,21 +27,36 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Fossil\Plugins\Users\Models;
+namespace Fossil\Plugins\Users\Controllers;
+
+use \Fossil\OM,
+    Fossil\Plugins\Users\Models\User;
 
 /**
+ * Description of login
+ *
  * @author predakanga
- * @Entity
  */
-class User extends \Fossil\Models\Model {
-    /**
-     * @Id @GeneratedValue @Column(type="integer")
-     * @var int
-     */
-    public $id;
+class Login extends \Fossil\Controllers\AutoController {
+    public function indexAction() {
+        return "login";
+    }
     
-    /** @Column() */
-    public $name;
+    public function runLogin($req) {
+        $a = new User();
+        $a->name = "Lachlan";
+//        $a->save();
+        
+        return OM::obj("Responses", "Template")->create("fossil:users:login", array());
+    }
+    
+    public function runLogout($req) {
+        
+    }
+    
+    public function runSignup($req) {
+        
+    }
 }
 
 ?>

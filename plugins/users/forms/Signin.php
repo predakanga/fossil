@@ -27,21 +27,19 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Fossil\Plugins\Users\Models;
+namespace Fossil\Plugins\Users\Forms;
 
 /**
+ * Description of Signin
+ *
  * @author predakanga
- * @Entity
+ * @F:Form(name = "Signin")
  */
-class User extends \Fossil\Models\Model {
-    /**
-     * @Id @GeneratedValue @Column(type="integer")
-     * @var int
-     */
-    public $id;
-    
-    /** @Column() */
-    public $name;
+class Signin extends \Fossil\Forms\BaseForm {
+    /** @F:FormField() */
+    public $user;
+    /** @F:FormField(type = "password") */
+    public $pass;
 }
 
 ?>
