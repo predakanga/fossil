@@ -16,6 +16,10 @@ class CacheFactory {
         $cacheName = OM::Settings("Fossil", "cache");
         if(!$cacheName) {
             $cacheName = "NoCache";
+            if(extension_loaded("apc")) {
+                if(ini_get("apc.enabled") == 1)
+                    $cacheName = "APC";
+            }
         } else {
             $cacheName = $cacheName["driver"];
         }

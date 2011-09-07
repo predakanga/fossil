@@ -16,6 +16,7 @@ class AnnotationManager {
      * @var string[]
      */
     private $namespaces;
+    private $annotationCache;
     
     private function registerNamespaceAlias($namespace, $alias) {
         $this->namespaces[$alias] = $namespace;
@@ -31,7 +32,7 @@ class AnnotationManager {
         return $annoName;
     }
     
-    public function __construct() {
+    public function __construct($annotations = null) {
         // Register our own class loader with the annotation registry
         AnnotationRegistry::registerLoader(function($class) {
             Autoloader::autoload($class);
@@ -42,6 +43,51 @@ class AnnotationManager {
         $this->reader = new AnnotationReader();
         $this->reader->setIgnoreNotImportedAnnotations(true);
         $this->registerNamespaceAlias("\\Fossil\\Annotations\\", "F");
+        
+        if($annotations) {
+            $this->annotationCache = $annotations;
+        } else {
+            $this->updateAnnotations();
+        }
+    }
+    
+    public function updateAnnotations() {
+        $this->annotationCache = $this->gatherAnnotations();
+    }
+    
+    public function gatherAnnotations() {
+        $allAnnotations = array();
+        foreach(get_declared_classes() as $class) {
+            $classData = array();
+            $classData['methods'] = array();
+            $classData['properties'] = array();
+            
+            $reflClass = new \ReflectionClass($class);
+            if($reflClass->getParentClass())
+                $classData['parent'] = $reflClass->getParentClass()->name;
+            $classData['annos'] = $this->reader->getClassAnnotations($reflClass);
+            
+            foreach($reflClass->getMethods() as $method) {
+                $methodAnnos = $this->reader->getMethodAnnotations($method);
+                
+                if(count($methodAnnos))
+                    $classData['methods'][$method->name] = $methodAnnos;
+            }
+            foreach($reflClass->getProperties() as $prop) {
+                $propAnnos = $this->reader->getPropertyAnnotations($prop);
+                
+                if(count($propAnnos))
+                    $classData['properties'][$prop->name] = $propAnnos;
+            }
+            // Special logic... we only want to store classes that actually contain or inherit annotations
+            if(!count($classData['annos']) && !count($classData['methods']) && !count($classData['properties'])) {
+                // Check that the parent isn't stored
+                if(!(isset($classData['parent']) && isset($allAnnotations[$classData['parent']])))
+                    continue;
+            }
+            $allAnnotations[$class] = $classData;
+        }
+        return $allAnnotations;
     }
     
     /**
@@ -51,36 +97,60 @@ class AnnotationManager {
      */
     public function getClassAnnotations($class, $annotation = false) {
         $startAnnos = array();
-        if(get_parent_class($class)) {
-            $startAnnos = $this->getClassAnnotations(get_parent_class($class), $annotation);
+        
+        if($class[0] == '\\')
+            $class = substr($class, 1);
+        
+        if(!isset($this->annotationCache[$class]))
+            return array();
+        
+        $classData = $this->annotationCache[$class];
+        if(isset($classData['parent'])) {
+            $startAnnos = $this->getClassAnnotations($classData['parent'], $annotation);
         }
         
         if(!$annotation)
-            return array_merge($startAnnos, $this->reader->getClassAnnotations(new ReflectionClass($class)));
+            return array_merge($startAnnos, $classData['annos']);
         
         $annotation = $this->resolveName($annotation);
         return array_merge($startAnnos,
-               array_filter($this->reader->getClassAnnotations(new ReflectionClass($class)), function($thisAnno) use($annotation) {
+               array_filter($classData['annos'], function($thisAnno) use($annotation) {
             return is_a($thisAnno, $annotation);
         }));
     }
     
-    public function getPropertyAnnotations($reflProp, $annotation = false) {
+    public function getPropertyAnnotations(\ReflectionProperty $reflProp, $annotation = false) {
+        $class = $reflProp->getDeclaringClass()->name;
+        $prop = $reflProp->name;
+        
+        if(!isset($this->annotationCache[$class]))
+            return array();
+        if(!isset($this->annotationCache[$class]['properties'][$prop]))
+            return array();
+        
         if(!$annotation)
-            return $this->reader->getPropertyAnnotations($reflProp);
+            return $this->annotationCache[$class]['properties'][$prop];
         
         $annotation = $this->resolveName($annotation);
-        return array_filter($this->reader->getPropertyAnnotations($reflProp), function($thisAnno) use($annotation) {
+        return array_filter($this->annotationCache[$class]['properties'][$prop], function($thisAnno) use($annotation) {
             return is_a($thisAnno, $annotation);
         });
     }
     
-    public function getMethodAnnotations($reflMethod, $annotation = false) {
+    public function getMethodAnnotations(\ReflectionMethod $reflMethod, $annotation = false) {
+        $class = $reflMethod->getDeclaringClass()->name;
+        $method = $reflMethod->name;
+        
+        if(!isset($this->annotationCache[$class]))
+            return array();
+        if(!isset($this->annotationCache[$class]['methods'][$method]))
+            return array();
+        
         if(!$annotation)
-            return $this->reader->getMethodAnnotation ($reflMethod);
+            return $this->annotationCache[$class]['methods'][$method];
         
         $annotation = $this->resolveName($annotation);
-        return array_filter($this->reader->getMethodAnnotations($reflMethod), function ($thisAnno) use ($annotation) {
+        return array_filter($this->annotationCache[$class]['methods'][$method], function ($thisAnno) use ($annotation) {
             // Check inheritance
             return is_a($thisAnno, $annotation);
         });
@@ -89,14 +159,12 @@ class AnnotationManager {
     public function classHasAnnotation($class, $annotation, $recursive = true) {
         $annotation = $this->resolveName($annotation);
         
-        $anno = $this->reader->getClassAnnotation(new ReflectionClass($class), $annotation);
+        foreach($this->getClassAnnotations($class) as $anno) {
+            if(is_a($anno, $annotation))
+                return true;
+        }
         
-        if($anno)
-            return true;
-        elseif($recursive && get_parent_class($class))
-            return $this->classHasAnnotation(get_parent_class($class), $annotation, $recursive);
-        else
-            return false;
+        return false;
     }
     
     /**
@@ -116,7 +184,8 @@ class AnnotationManager {
     }
     
     public function getClassesWithAnnotation($annotation) {
-        $classes = get_declared_classes();
+        $classes = array_keys($this->annotationCache);
+        
         return $this->filterClassesByAnnotation($classes, $annotation);
     }
 }

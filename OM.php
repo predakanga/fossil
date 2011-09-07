@@ -158,6 +158,7 @@ class OM {
             {
             }
         }
+        self::Annotations()->updateAnnotations();
         self::scanForSingletonObjects();
         self::scanForInstancedObjects();
         self::$extensionClasses = self::Annotations()->getClassesWithAnnotation("F:ExtensionClass");
@@ -231,6 +232,7 @@ class OM {
         self::$singletonClasses = $cachedData['singleton'];
         self::$instancedClasses = $cachedData['instanced'];
         self::$classMap = $cachedData['classMap'];
+        self::$instances['Annotations'] = new Annotations\AnnotationManager($cachedData['annotations']);
         
         // Then after loading the plugin manager etc, check mtimes again, just in case
         self::Plugins()->loadEnabledPlugins();
@@ -243,7 +245,8 @@ class OM {
     public static function getFossilMtime() {
         // Check the source files, and settings.yml
         $mtimes = array_map(function($file) { return filemtime($file); }, self::FS()->allSourceFiles());
-        $mtimes[] = filemtime('settings.yml');
+        if(file_exists('settings.yml'))
+            $mtimes[] = filemtime('settings.yml');
         return max($mtimes);
     }
     
@@ -278,6 +281,7 @@ class OM {
         $cachedData['singleton'] = self::$singletonClasses;
         $cachedData['instanced'] = self::$instancedClasses;
         $cachedData['classMap'] = self::$classMap;
+        $cachedData['annotations'] = self::Annotations()->gatherAnnotations();
         $cachedData['mtime'] = self::getFossilMtime();
         
         OM::Cache()->set("fossil_state", $cachedData);

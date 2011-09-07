@@ -12,7 +12,7 @@ class DriverSelection extends BaseForm {
     /**
      * @F:FormField(type="select", label="Cache driver")
      */
-    public $cacheDriver;
+    public $cacheDriver = "APC";
     /**
      * @F:FormField(type="select", label="DB driver")
      */
