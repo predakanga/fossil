@@ -202,22 +202,9 @@ class OM {
      * @return void
      */
     public static function init() {
-        // Regular functionality:
-        // Scan local namespace for objects
-        self::scanForObjects(self::FS()->fossilRoot());
-        // Load settings up, set up drivers
-        self::get('Cache');
-        // Register plugins
-        OM::Plugins()->enablePlugin("users");
-        OM::Plugins()->enablePlugin("info");
-//        OM::Plugins()->enablePlugin("regression");
-        // Scan plugin namespaces for objects
-        foreach(self::FS()->pluginRoots() as $root)
-            self::scanForObjects($root);
-        // Do compilation
-        $tempClassMap = OM::Compiler()->bootstrap();
-        OM::Compiler()->setClassMap($tempClassMap);
-        self::$classMap = OM::Compiler()->compileAll();
+        self::primeCache();
+        // TODO: Only save cache conditionally
+        self::saveCache();
     }
 
     /**
@@ -232,9 +219,34 @@ class OM {
     public static function cachedInit() {
         if(!self::has("Cache"))
             return false;
-        return false;
+        
+        $cachedData = OM::Cache("fossil_state");
+        if(!$cachedData)
+            return false;
+        
+        // Check the mtimes of basic classes
+        if(self::getFossilMtime() > $cachedData['mtime'])
+            return false;
+        
+        self::$singletonClasses = $cachedData['singleton'];
+        self::$instancedClasses = $cachedData['instanced'];
+        self::$classMap = $cachedData['classMap'];
+        
+        // Then after loading the plugin manager etc, check mtimes again, just in case
+        self::Plugins()->loadEnabledPlugins();
+        if(self::getFossilMtime() > $cachedData['mtime'])
+            return false;
+        
+        return true;
     }
 
+    public static function getFossilMtime() {
+        // Check the source files, and settings.yml
+        $mtimes = array_map(function($file) { return filemtime($file); }, self::FS()->allSourceFiles());
+        $mtimes[] = filemtime('settings.yml');
+        return max($mtimes);
+    }
+    
     /**
      * Scans the codebase and stores all the found objects in the cache
      * 
@@ -244,9 +256,33 @@ class OM {
      * @return void
      */
     public static function primeCache() {
-
+        // Regular functionality:
+        // Scan local namespace for objects
+        self::scanForObjects(self::FS()->fossilRoot());
+        // Load settings up, set up drivers
+        self::get('Cache');
+        // Register plugins
+        // TODO: Move to auto-plugin loader
+        OM::Plugins()->loadEnabledPlugins();
+        // Scan plugin namespaces for objects
+        foreach(self::FS()->pluginRoots() as $root)
+            self::scanForObjects($root);
+        // Do compilation
+        $tempClassMap = OM::Compiler()->bootstrap();
+        OM::Compiler()->setClassMap($tempClassMap);
+        self::$classMap = OM::Compiler()->compileAll();
     }
 
+    public static function saveCache() {
+        $cachedData = array();
+        $cachedData['singleton'] = self::$singletonClasses;
+        $cachedData['instanced'] = self::$instancedClasses;
+        $cachedData['classMap'] = self::$classMap;
+        $cachedData['mtime'] = self::getFossilMtime();
+        
+        OM::Cache()->set("fossil_state", $cachedData);
+    }
+    
     /**
      * Select which provider to use for a type
      * 

@@ -128,6 +128,12 @@ class PluginManager {
             return;
         unset($this->enabledPlugins[$pluginName]);
     }
+    
+    public function loadEnabledPlugins() {
+        $this->enablePlugin("users");
+        $this->enablePlugin("info");
+//        $this->enablePlugin("regression");
+    }
 }
 
 ?>

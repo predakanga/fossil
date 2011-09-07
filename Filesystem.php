@@ -60,6 +60,8 @@ class Filesystem {
     public function pluginRoots() {
         $toRet = array();
         
+        if(!OM::knows("Plugins"))
+            return $toRet;
         $enabledPlugins = OM::Plugins()->getEnabledPlugins();
         foreach($enabledPlugins as $pluginName) {
             $plugin = OM::Plugins($pluginName);
