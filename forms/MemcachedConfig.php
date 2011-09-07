@@ -13,6 +13,16 @@ class MemcachedConfig extends BaseDriverForm {
     public $host = "localhost";
     /** @F:FormField(label = "Port", fieldName="memcached_port") */
     public $port = 11211;
+    
+    public function toConfig() {
+        $toRet = array();
+        $toRet['id'] = "fossil";
+        $toRet['servers'] = array();
+        $toRet['servers'][] = array('host' => $this->host,
+                                    'port' => $this->port);
+        
+        return $toRet;
+    }
 }
 
 ?>

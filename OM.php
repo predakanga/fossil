@@ -72,7 +72,12 @@ class OM {
     );
     private static $instancedClasses = array();
     private static $dirty = false;
-
+    
+    protected static function makeDirty() {
+        self::$dirty = true;
+        register_shutdown_function(array(__CLASS__, "shutdown"));
+    }
+    
     // Destructor, to update the quickstart file
     public static function shutdown() {
         if(file_exists(".quickstart.yml") && !self::$dirty) {
@@ -81,9 +86,11 @@ class OM {
         }
         // Otherwise, build up a document with everything we need, and emit it
         $quickstart = array();
-        //$quickstart['cache'] = self::Cache()->getSetup();
+        $quickstart['cache'] = array('fqcn' => get_class(self::Cache()),
+                                     'config' => self::Cache()->getConfig());
 
         // And output the document
+        // TODO: Output to the correct directory
         file_put_contents(__DIR__ . '/.quickstart.yml', yaml_emit($quickstart));
     }
 
@@ -160,10 +167,18 @@ class OM {
         self::$startupTime = microtime(true);
         // Set up a shutdown function to handle writing out the quickstart file
         // TODO: Probably register the shutdown func only when dirty is set
-        register_shutdown_function(array(__CLASS__, "shutdown"));
         self::Error()->init(E_ALL | E_STRICT);
-        /*
+        
         // Load the basic settings from 'quickstart.yml'
+        if(!file_exists(__DIR__ . '/.quickstart.yml'))
+            return;
+        // Ignore the quickstart if it's newer than settings.yml
+        if(file_exists(__DIR__ . '/settings.yml')) {
+            if(filemtime('.quickstart.yml') < filemtime('settings.yml')) {
+                unlink('.quickstart.yml');
+                return;
+            }
+        }
         $basics = yaml_parse_file(__DIR__ . '/.quickstart.yml');
         // Return if we have no quickstart settings
         if(!$basics)
@@ -171,8 +186,8 @@ class OM {
         // If we have settings, grab the cache
         if(isset($basics['cache'])) {
             // Bypass the setTypeInstance function so as not to dirty the context
-            self::$instances['Cache'] = new $basics['cache']['fqcn']($basics['cache']['options']);
-        }*/
+            self::$instances['Cache'] = new $basics['cache']['fqcn']($basics['cache']['config']);
+        }
     }
 
     public static function getRuntime() {
@@ -191,7 +206,11 @@ class OM {
         // Scan local namespace for objects
         self::scanForObjects(self::FS()->fossilRoot());
         // Load settings up, set up drivers
+        self::get('Cache');
         // Register plugins
+        OM::Plugins()->enablePlugin("users");
+        OM::Plugins()->enablePlugin("info");
+//        OM::Plugins()->enablePlugin("regression");
         // Scan plugin namespaces for objects
         foreach(self::FS()->pluginRoots() as $root)
             self::scanForObjects($root);
@@ -271,7 +290,7 @@ class OM {
     private static function setTypeInstance($type, $instance) {
         // We only care about cache when setting the dirty status
         if($type == "Cache") {
-            self::$dirty = true;
+            self::makeDirty();
         }
 
         self::$instances[$type] = $instance;
@@ -341,6 +360,14 @@ class OM {
             self::selectDefault($type);
         }
         return self::$instances[$type];
+    }
+    
+    public static function getSpecific($type, $name) {
+        if(!isset(self::$singletonClasses[$type]))
+            throw new Exception("Unknown type: $type");
+        if(!isset(self::$singletonClasses[$type][$name]))
+            throw new Exception("Unknown class of type $type: $name");
+        return self::$singletonClasses[$type][$name];
     }
 
     public static function getAll($type) {

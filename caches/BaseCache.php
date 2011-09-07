@@ -2,7 +2,8 @@
 
 namespace Fossil\Caches;
 
-use Fossil\Interfaces\IDriver;
+use Fossil\Interfaces\IDriver,
+    Fossil\OM;
 
 /**
  * Description of BaseCache
