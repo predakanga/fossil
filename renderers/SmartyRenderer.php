@@ -47,10 +47,17 @@ class SmartyRenderer extends BaseRenderer {
         $this->smarty->registerPlugin('block', 'multiform', array($this, 'multiformFunction'));
         if($config['useTidy'])
             $this->smarty->registerFilter('output', array($this, "smarty_outputfilter_tidyrepairhtml"));
+        $this->smarty->registerResource("fossil", array(array($this, "smarty_resource_get_template"),
+                                                        array($this, "smarty_resource_get_timestamp"),
+                                                        array($this, "smarty_resource_get_secure"),
+                                                        array($this, "smarty_resource_get_trusted")));
     }
     
     public function render($templateName, $templateData) {
-        $tpl = $this->smarty->createTemplate($templateName . ".tpl");
+        if(strpos($templateName, "fossil:") !== 0)
+            $templateName = $templateName . ".tpl";
+        
+        $tpl = $this->smarty->createTemplate($templateName);
         $tpl->assign('errors', OM::Error()->getLog());
         $tpl->assign('title', $templateName);
         foreach($templateData as $key => $val) {
@@ -186,6 +193,54 @@ class SmartyRenderer extends BaseRenderer {
 
         }
         return $source;
+    }
+    
+    function resolve_template_name($name) {
+        $pluginName = NULL;
+        if(strpos($name, ":") !== FALSE) {
+            $pluginName = substr($name, 0, strpos($name, ":"));
+            $name = substr($name, strpos($name, ":")+1);
+        }
+        $appendix = "views" . D_S . "smarty" . D_S . implode(D_S, explode("\\", $name)) . ".tpl";
+        
+        if($pluginName) {
+            $plugin = OM::Plugins($pluginName);
+            return $plugin['root'] . D_S . $appendix;
+        } else {
+            $overlayRoot = OM::FS()->overlayRoot();
+            if(file_exists($overlayRoot . D_S . $appendix))
+                return $overlayRoot . D_S . $appendix;
+            else
+                return OM::FS()->fossilRoot() . D_S . $appendix;
+        }
+    }
+    
+    function smarty_resource_get_template($tpl_name, &$tpl_source, $smarty) {
+        $filePath = $this->resolve_template_name($tpl_name);
+        
+        if(!file_exists($filePath))
+            return false;
+        
+        $tpl_source = file_get_contents($filePath);
+        return true;
+    }
+    
+    function smarty_resource_get_timestamp($tpl_name, &$tpl_timestamp, $smarty) {
+        $filePath = $this->resolve_template_name($tpl_name);
+        
+        if(!file_exists($filePath))
+            return false;
+        
+        $tpl_timestamp = filemtime($filePath);
+        return true;
+    }
+    
+    function smarty_resource_get_secure($tpl_name, $smarty) {
+        return true;
+    }
+    
+    function smarty_resource_get_trusted($tpl_name, $smarty) {
+        return;
     }
 }
 

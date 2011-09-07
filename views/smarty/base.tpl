@@ -38,7 +38,7 @@ google.load("jquery", "1.6.2");
 		</div>
 		<div class="box-14-expand push-1">
 			<div class="box-9">
-				<div class="box">{block name=content}Main content goes here{/block}</div>
+				<div class="box cf">{block name=content}Main content goes here{/block}</div>
 			</div>
 			<div class="box-5">
 				<div class="box">Poll or similar</div>
