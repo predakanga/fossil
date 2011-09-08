@@ -14,13 +14,13 @@ class Setting extends Model {
      * @Id @GeneratedValue @Column(type="integer")
      * @var int
      */
-    public $id;
+    protected $id;
     
     /** @Column(type="string") */
-    public $name;
+    protected $name;
     
     /** @Column(type="string") */
-    public $value;
+    protected $value;
 }
 
 ?>

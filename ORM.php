@@ -195,9 +195,10 @@ class ORM {
                         $instance->save();
                     }
                 }
+                // Flush after each model, so that subsequent models can use the new entities
+                self::flush();
             }
         }
-        self::flush();
     }
 }
 

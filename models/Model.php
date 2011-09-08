@@ -85,6 +85,22 @@ abstract class Model {
         }
     }
 
+    public function __set($key, $value) {
+        $this->set($key, $value);
+    }
+    
+    public function __get($key) {
+        return $this->$key;
+    }
+    
+    public function __isset($key) {
+        return isset($this->$key);
+    }
+    
+    public function __unset($key) {
+        unset($this->$key);
+    }
+    
     public static function __callStatic($method, $arguments)
     {
         return call_user_func_array(
@@ -95,8 +111,25 @@ abstract class Model {
     
     public static function createFromArray($data) {
         $model = new static();
+        $classMetadata = OM::ORM()->getEM()->getClassMetadata(get_called_class());
+        
         foreach($data as $key => $value) {
-            $model->set($key, $value);
+            if($classMetadata->hasAssociation($key)) {
+                $targetClass = $classMetadata->getAssociationTargetClass($key);
+                $collection = new \Doctrine\Common\Collections\ArrayCollection();
+                
+                foreach($value as $targetData) {
+                    $targetEntity = $targetClass::findOneBy($targetData);
+                    if(!$targetEntity) {
+                        throw new Exception("Required entity not found: $targetClass (" . var_export($this->targetData) . ")");
+                    }
+                    $collection->add($targetEntity);
+                }
+                
+                $model->set($key, $collection);
+            } else {
+                $model->set($key, $value);
+            }
         }
         return $model;
     }
