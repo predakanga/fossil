@@ -11,11 +11,23 @@ use Doctrine\DBAL\Schema\Comparator,
         Doctrine\Common\Annotations\AnnotationRegistry;
 
 class CustomComparator extends Comparator {
+    public $newModels = array();
+    
     public function compare(Schema $fromSchema, Schema $toSchema) {
         $diff = parent::compare($fromSchema, $toSchema);
         
         $diff->removedTables = array();
         $diff->orphanedForeignKeys = array();
+        
+        $classes = OM::ORM()->getEM()->getMetadataFactory()->getAllMetadata();
+        foreach($diff->newTables as $newTable) {
+            $tableName = $newTable->getName();
+            foreach($classes as $class) {
+                if($class->getTableName() == $tableName)
+                    $this->newModels[] = $class->getReflectionClass()->name;
+            }
+        }
+        $this->newModels = array_unique($this->newModels);
         
         return $diff;
     }
@@ -25,6 +37,7 @@ class CustomComparator extends Comparator {
 class CustomSchemaTool extends SchemaTool {
     protected $__em;
     protected $__platform;
+    public $newModels;
     
     public function __construct(EntityManager $em) {
         $this->__em = $em;
@@ -42,6 +55,7 @@ class CustomSchemaTool extends SchemaTool {
 
         $comparator = new CustomComparator();
         $schemaDiff = $comparator->compare($fromSchema, $toSchema);
+        $this->newModels = $comparator->newModels;
 
         if ($saveMode) {
             return $schemaDiff->toSaveSql($this->__platform);
@@ -168,6 +182,22 @@ class ORM {
             $schemaTool = new SchemaTool($this->getEM());
         
         $schemaTool->updateSchema($this->getEM()->getMetadataFactory()->getAllMetadata());
+        $this->ensureInitialDatasets($schemaTool->newModels);
+    }
+    
+    protected function ensureInitialDatasets($newModels) {
+        foreach($newModels as $model) {
+            $annos = OM::Annotations()->getClassAnnotations($model, "F:InitialDataset");
+            if($annos) {
+                foreach($annos as $anno) {
+                    foreach($anno->getData() as $data) {
+                        $instance = $model::createFromArray($data);
+                        $instance->save();
+                    }
+                }
+            }
+        }
+        self::flush();
     }
 }
 

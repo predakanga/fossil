@@ -7,6 +7,7 @@ namespace Fossil\Models;
  *
  * @author predakanga
  * @Entity
+ * @F:InitialDataset("data/settings.yml")
  */
 class Setting extends Model {
     /**

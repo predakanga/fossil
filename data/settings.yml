@@ -1,0 +1,6 @@
+---
+- name: title
+  value: Your Fossil Site
+- name: plugins
+  value: ""
+...

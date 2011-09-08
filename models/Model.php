@@ -92,6 +92,14 @@ abstract class Model {
             $arguments
         );
     }
+    
+    public static function createFromArray($data) {
+        $model = new static();
+        foreach($data as $key => $value) {
+            $model->set($key, $value);
+        }
+        return $model;
+    }
 }
 
 ?>
