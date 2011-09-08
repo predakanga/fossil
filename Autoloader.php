@@ -36,6 +36,7 @@ class Autoloader {
 		spl_autoload_register(array("\\Fossil\\Autoloader", "autoload"));
 		// Then add in our own namespace
 		self::addNamespacePath("Fossil", __DIR__);
+        self::addNamespacePath("TokenReflection", stream_resolve_include_path("TokenReflection"));
         // Also add in the default Doctrine classloader, to pass off responsibility
         require_once 'Doctrine/Common/ClassLoader.php';
         self::$doctrineClassLoader = new \Doctrine\Common\ClassLoader('Doctrine');

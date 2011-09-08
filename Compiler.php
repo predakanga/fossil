@@ -2,8 +2,6 @@
 
 namespace Fossil;
 
-require_once("Introspection/Introspector.php");
-
 /**
  * @F:Object("Compiler")
  */
@@ -11,7 +9,13 @@ class Compiler {
     protected $baseNamespace = "Compiled\\";
     protected $baseDir = "compiled";
     protected $classMap = array();
+    protected $reflClassMap = array();
+    protected $broker;
 
+    public function __construct() {
+        $this->broker = new \TokenReflection\Broker(new \TokenReflection\Broker\Backend\Memory());
+    }
+    
     protected function saveClass($fqcn, $source) {
         // Work out the file path
         $parts = explode("\\", $fqcn);
@@ -129,6 +133,21 @@ class Compiler {
         return $new_base;
     }
 
+    protected function findClass($filename, $class) {
+        if(isset($this->reflClassMap[$class])) {
+            return $this->reflClassMap[$class];
+        }
+        $fileInfo = $this->broker->processFile($filename, true);
+        foreach($fileInfo->getNamespaces() as $ns) {
+            foreach($ns->getClasses() as $reflClass) {
+                if($reflClass->getName() == $class) {
+                    $this->reflClassMap[$class] = $reflClass;
+                    return $reflClass;
+                }
+            }
+        }
+    }
+    
     protected function reparentClass($class, $targetParent) {
         $newName = $this->transformNamespace($class);
         $newClassName = $this->basename($class);
@@ -138,10 +157,8 @@ class Compiler {
         $reflClass = new \ReflectionClass($class);
         $fileSource = file($reflClass->getFileName());
         
-        $introspector = new \Introspector();
-        $fileInfo = $introspector->parseFile($reflClass->getFileName());
-        $classInfo = $fileInfo->findClass($this->basename($class));
-        
+        // Use reflClass to get the FQCN
+        $classInfo = $this->findClass($reflClass->getFileName(), $reflClass->getName());
         $classSource = $classInfo->getSource();
         
         // TODO: Decide whether to bring in the rest of the file too - probably
@@ -149,11 +166,12 @@ class Compiler {
         //       to properly grab the reparented class
 
         // Use a regex to replace the name and parent
-        $newClassStr = "class $newClassName extends \\$targetParent";
-        $classSource = preg_replace('/^[^\n]*\s*class\s+\S+\s+extends\s+\S+\s+/S', $newClassStr, $classSource);
+        $newParent = "\\" . $targetParent;
+        $classSource = preg_replace('/^([^{]+extends\s+)\S+/S', "\\1$newParent", $classSource);
 
         $pageSource = <<<'EOT'
 <?php
+
 namespace %s;
 
 %s
@@ -174,13 +192,9 @@ EOT;
         $reflMethods = $reflClass->getMethods();
 
         $reflAnno = new \ReflectionClass($compileClass);
+        $compileClassInfo = $this->findClass($reflAnno->getFileName(), $reflAnno->getName());
         
-        $introspector = new \Introspector();
-        $compileFileInfo = $introspector->parseFile($reflAnno->getFileName());
-        $compileClassInfo = $compileFileInfo->findClass($this->basename(get_class($compileClass)));
-        
-        $fileInfo = $introspector->parseFile($reflClass->getFileName());
-        $classInfo = $fileInfo->findClass($this->basename($class));
+        $classInfo = $this->findClass($reflClass->getFileName(), $reflClass->getName());
         
         foreach($reflMethods as $reflMethod) {
             // First, make sure it's locally implemented
@@ -192,18 +206,18 @@ EOT;
                 $newMethod['name'] = $reflMethod->name;
                 $newMethod['access'] = $this->getAccessStr($reflMethod->getModifiers());
                 
+                // Simple solution to get the preamble
                 $methodInfo = $classInfo->getMethod($reflMethod->name);
-                $newMethod['args'] = "(";
-                foreach($methodInfo->getArguments() as $arg) {
-                    $newMethod['args'] .= $arg->getSource() . ", ";
-                }
-                if(strlen($newMethod['args']) > 2)
-                    $newMethod['args'] = substr($newMethod['args'], 0, count($newMethod['args'])-3);
-                $newMethod['args'] .= ")";
-
-                $methodInfo = $compileClassInfo->getMethod("call");
+                $fullMethodSource = $methodInfo->getSource();
+                $methodPreamble = substr($fullMethodSource, 0, strpos($fullMethodSource, "{")-1);
                 
-                $newMethod['source'] = trim($methodInfo->getBlock()->getSource(), " \t\n\r\0\x0B{}");
+                $compileMethodInfo = $compileClassInfo->getMethod("call");
+                $fullCompileSource = $compileMethodInfo->getSource();
+                $methodPostamble = substr($fullCompileSource, strpos($fullCompileSource, "{")+1);
+                
+                $newMethod['preamble'] = $methodPreamble;
+                $newMethod['postamble'] = trim($methodPostamble, " \r\n\r\0\x0B}");
+                
                 $compiledMethods[] = $newMethod;
             }
         }
@@ -222,7 +236,7 @@ class %s extends \%s {
 }
 EOT;
     $methodText = <<<'EOT'
-    %s function %s%s {
+    %s {
         $args = func_get_args();
         $funcname = __FUNCTION__;
 
@@ -234,7 +248,7 @@ EOT;
         $compiledMethodText = "";
         $compiledClassText = "";
         foreach($compiledMethods as $method) {
-            $compiledMethodText .= sprintf($methodText, $method['access'], $method['name'], $method['args'], $method['source']);
+            $compiledMethodText .= sprintf($methodText, $method['preamble'], $method['postamble']);
         }
         if($targetParent[0] == '\\')
             $targetParent = substr($targetParent, 1);
