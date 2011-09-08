@@ -81,7 +81,7 @@ abstract class Model {
         } else if ($func == 'has') {
             return $this->has($fieldName);
         } else {
-            throw new \BadMethodCallException('Method ' . $method . ' does not exist on ActiveEntity ' . get_class($this));
+            throw new \BadMethodCallException('Method ' . $method . ' does not exist on model ' . get_class($this));
         }
     }
 
