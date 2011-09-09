@@ -185,19 +185,47 @@ class ORM {
         $this->ensureInitialDatasets($schemaTool->newModels);
     }
     
+    protected function ensureDataset($model, $dataset) {
+        foreach($dataset as $data) {
+            $instance = $model::createFromArray($data);
+            $instance->save();
+        }
+        // Flush after each model, so that subsequent models can use the new entities
+        self::flush();
+    }
+    
     protected function ensureInitialDatasets($newModels) {
+        $modelData = array();
         foreach($newModels as $model) {
             $annos = OM::Annotations()->getClassAnnotations($model, "F:InitialDataset");
             if($annos) {
+                $modelData[$model] = array();
                 foreach($annos as $anno) {
-                    foreach($anno->getData() as $data) {
-                        $instance = $model::createFromArray($data);
-                        $instance->save();
-                    }
+                    $modelData[$model] = array_merge($modelData[$model], $anno->getData());
                 }
-                // Flush after each model, so that subsequent models can use the new entities
-                self::flush();
             }
+        }
+        
+        // Naive approach to autofilling data in order
+        foreach(array_keys($modelData) as $name) {
+            // If we've already added this data, skip
+            if(!isset($modelData[$name]))
+                continue;
+            // Otherwise, check for associations
+            $metadata = $this->getEM()->getClassMetadata($name);
+            foreach($metadata->getAssociationMappings() as $mapping) {
+                // Skip the owned side
+                if(isset($mapping['mappedBy']))
+                    continue;
+                $targetName = $metadata->getAssociationTargetClass($mapping['fieldName']);
+                if(isset($modelData[$targetName]) && $targetName != $name) {
+                    $this->ensureDataset($targetName, $modelData[$targetName]);
+                    unset($modelData[$targetName]);
+                }
+            }
+            // Finally, add the data
+            $this->ensureDataset($name, $modelData[$name]);
+            unset($modelData[$name]);
         }
     }
 }

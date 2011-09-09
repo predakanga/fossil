@@ -20,6 +20,7 @@ abstract class Model {
         // Automatically create ArrayCollections for associations
         foreach($this->getMetadata()->getAssociationMappings() as $mapping) {
             if($mapping['type'] & ClassMetadataInfo::TO_MANY) {
+                $field = $mapping['fieldName'];
                 $this->$field = new \Doctrine\Common\Collections\ArrayCollection();
             }
         }
@@ -128,7 +129,7 @@ abstract class Model {
                     foreach($value as $targetData) {
                         $targetEntity = $targetClass::findOneBy($targetData);
                         if(!$targetEntity) {
-                            throw new Exception("Required entity not found: $targetClass (" . var_export($this->targetData) . ")");
+                            throw new \Exception("Required entity not found: $targetClass (" . var_export($targetData, true) . ")");
                         }
                         $collection->add($targetEntity);
                     }
@@ -137,7 +138,7 @@ abstract class Model {
                 } else {
                     $targetEntity = $targetClass::findOneBy($value);
                     if(!$targetEntity) {
-                        throw new Exception("Required entity not found: $targetClass (" . var_export($this->targetData) . ")");
+                        throw new \Exception("Required entity not found: $targetClass (" . var_export($targetData, true) . ")");
                     }
                     $model->set($key, $targetEntity);
                 }
