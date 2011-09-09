@@ -346,15 +346,17 @@ class OM {
 
     private static function selectDefault($type) {
         // First off, check that we know about this type
-        if(!isset(self::$singletonClasses[$type])) {
-            // TODO: Throw an exception if the type isn't known
+        if(!isset(self::$singletonClasses[$type]) || !isset(self::$singletonClasses[$type]['default'])) {
+            $typeName = ObjectFactory::getObjectName($type);
+            if(!$typeName) {
+                throw new \Exception("No default object found for type $type");
+            }
+            self::select($type, $typeName);
+            return;
         }
-        // By default, just use the element named default, or the first if none exists
-        if(isset(self::$singletonClasses[$type]['default']))
-            $typeInfo = self::$singletonClasses[$type]['default'];
-        else
-            $typeInfo = reset(self::$singletonClasses[$type]);
-
+        
+        // By default, just use the element named default
+        $typeInfo = self::$singletonClasses[$type]['default'];
         $class = $typeInfo['fqcn'];
         if(isset(self::$classMap[$class]))
             $class = self::$classMap[$class];

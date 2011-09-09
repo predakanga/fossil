@@ -26,6 +26,14 @@ class SQLiteDB extends BaseDatabase {
         }
         return $this->pdo;
     }
+    
+    protected function getDefaultConfig() {
+        // Default driver, so it must have a default config
+        $config = parent::getDefaultConfig();
+        if(!$config) {
+            return array('filename' => 'default.db');
+        }
+    }
 }
 
 ?>
