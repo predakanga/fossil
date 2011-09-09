@@ -14,11 +14,11 @@ class PgSQLConfig extends BaseDriverForm {
     /** @F:FormField(fieldName = "pgsql_port") */
     public $port = 5432;
     /** @F:FormField(fieldName = "pgsql_db", label = "Database") */
-    public $db;
+    public $dbname;
     /** @F:FormField(fieldName = "pgsql_user") */
     public $user;
     /** @F:FormField(fieldName = "pgsql_password", type = "password", label = "Password") */
-    public $pass;
+    public $password;
 }
 
 ?>

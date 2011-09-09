@@ -20,10 +20,14 @@ class PgSQLDB extends BaseDatabase {
     
     public function getPDO() {
         if(!$this->pdo) {
-            $dsn = "pgsql:host={$this->config['host']};dbname={$this->config['db']};port={$this->config['port']}";
-            $this->pdo = new \PDO($dsn, $this->config['user'], $this->config['pass'], array(\PDO::ATTR_PERSISTENT));
+            $dsn = "pgsql:host={$this->config['host']};dbname={$this->config['dbname']};port={$this->config['port']}";
+            $this->pdo = new \PDO($dsn, $this->config['user'], $this->config['password'], array(\PDO::ATTR_PERSISTENT));
         }
         return $this->pdo;
+    }
+    
+    public function getConnectionConfig() {
+        return array_merge(array('driver' => 'pdo_pgsql'), parent::getConnectionConfig());
     }
 }
 

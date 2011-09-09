@@ -140,6 +140,11 @@ class ORM {
         $this->config = $config;
         
         $this->evm = new \Doctrine\Common\EventManager();
+        if(!OM::Database()->getConnectionConfig())
+            $conn = array('pdo' => OM::Database()->getPDO(), 'dbname' => null);
+        else
+            $conn = OM::Database()->getConnectionConfig();
+        $this->em = EntityManager::create($conn, $this->config, $this->evm);
     }
     
     public function registerPaths() {
@@ -155,11 +160,6 @@ class ORM {
      * @return \Doctrine\ORM\EntityManager
      */
     public function getEM() {
-        // Lazy connecting to the DB
-        if(!$this->em) {
-            $conn = array('pdo' => OM::Database()->getPDO(), 'dbname' => null);
-            $this->em = EntityManager::create($conn, $this->config, $this->evm);
-        }
         return $this->em;
     }
     
@@ -181,8 +181,14 @@ class ORM {
         } else
             $schemaTool = new SchemaTool($this->getEM());
         
-        $schemaTool->updateSchema($this->getEM()->getMetadataFactory()->getAllMetadata());
-        $this->ensureInitialDatasets($schemaTool->newModels);
+        try
+        {
+            $schemaTool->updateSchema($this->getEM()->getMetadataFactory()->getAllMetadata());
+            $this->ensureInitialDatasets($schemaTool->newModels);
+        }
+        catch(\Exception $e) {
+            return;
+        }
     }
     
     protected function ensureDataset($model, $dataset) {

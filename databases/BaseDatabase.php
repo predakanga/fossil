@@ -34,6 +34,9 @@ abstract class BaseDatabase implements IDriver {
     }
     
     abstract public function getPDO();
+    public function getConnectionConfig() {
+        return $this->getConfig();
+    }
 }
 
 ?>
