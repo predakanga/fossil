@@ -3,7 +3,8 @@
 namespace Fossil\Models;
 
 use Fossil\OM,
-    Fossil\Exceptions\ValidationFailedException;
+    Fossil\Exceptions\ValidationFailedException,
+    Doctrine\ORM\Mapping\ClassMetadataInfo;
 
 /**
  * Description of Model
@@ -16,9 +17,12 @@ abstract class Model {
     }
     
     public function __construct() {
-        // Automatically create ArrayCollections for relations
-        foreach($this->getMetadata()->getAssociationNames() as $field)
-            $this->$field = new \Doctrine\Common\Collections\ArrayCollection();
+        // Automatically create ArrayCollections for associations
+        foreach($this->getMetadata()->getAssociationMappings() as $mapping) {
+            if($mapping['type'] & ClassMetadataInfo::TO_MANY) {
+                $this->$field = new \Doctrine\Common\Collections\ArrayCollection();
+            }
+        }
     }
     
     public function save() {
@@ -115,18 +119,28 @@ abstract class Model {
         
         foreach($data as $key => $value) {
             if($classMetadata->hasAssociation($key)) {
+                $mapping = $classMetadata->getAssociationMapping($key);
                 $targetClass = $classMetadata->getAssociationTargetClass($key);
-                $collection = new \Doctrine\Common\Collections\ArrayCollection();
                 
-                foreach($value as $targetData) {
-                    $targetEntity = $targetClass::findOneBy($targetData);
+                if($mapping['type'] & ClassMetadataInfo::TO_MANY) {
+                    $collection = new \Doctrine\Common\Collections\ArrayCollection();
+
+                    foreach($value as $targetData) {
+                        $targetEntity = $targetClass::findOneBy($targetData);
+                        if(!$targetEntity) {
+                            throw new Exception("Required entity not found: $targetClass (" . var_export($this->targetData) . ")");
+                        }
+                        $collection->add($targetEntity);
+                    }
+
+                    $model->set($key, $collection);
+                } else {
+                    $targetEntity = $targetClass::findOneBy($value);
                     if(!$targetEntity) {
                         throw new Exception("Required entity not found: $targetClass (" . var_export($this->targetData) . ")");
                     }
-                    $collection->add($targetEntity);
+                    $model->set($key, $targetEntity);
                 }
-                
-                $model->set($key, $collection);
             } else {
                 $model->set($key, $value);
             }
