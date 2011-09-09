@@ -1,0 +1,11 @@
+---
+- domain: fossil
+  name: edit_settings
+  viewName: Edit Settings
+- domain: fossil
+  name: delete_user
+  viewName: Delete User
+- domain: fossil
+  name: edit_user
+  viewName: Edit User
+...

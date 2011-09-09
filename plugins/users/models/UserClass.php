@@ -30,24 +30,22 @@
 namespace Fossil\Plugins\Users\Models;
 
 /**
+ * Description of UserClass
+ *
+ * @author predakanga
+ * 
  * @Entity
- * @F:InitialDataset("plugins/users/data/roles.yml")
+ * @F:InitialDataset("plugins/users/data/userclasses.yml")
  */
-class Role extends \Fossil\Models\Model {
-    /**
-     * @Id @GeneratedValue @Column(type="integer")
-     * @var int
-     */
-    protected $id;
+class UserClass extends \Fossil\Models\Model {
+    /** @Id @GeneratedValue @Column(type="integer") */
+    public $id;
     /** @Column() */
-    protected $name;
-    /** @ManyToMany(targetEntity="Permission", inversedBy="roles") */
-    protected $permissions;
-    
-    /**
-     * @ManyToMany(targetEntity="User", mappedBy="roles")
-     * @var UserClass[]
-     */
-    protected $classes;
+    public $name;
+    /** @ManyToMany(targetEntity="Role", inversedBy="classes") */
+    public $roles;
+    /** @OneToMany(targetEntity="User", mappedBy="userClass") */
+    public $members;
 }
+
 ?>

@@ -32,16 +32,97 @@ namespace Fossil\Plugins\Users\Models;
 /**
  * @author predakanga
  * @Entity
+ * @F:InitialDataset("plugins/users/data/users.yml")
  */
 class User extends \Fossil\Models\Model {
     /**
      * @Id @GeneratedValue @Column(type="integer")
      * @var int
      */
-    public $id;
+    protected $id;
     
     /** @Column() */
-    public $name;
+    protected $name;
+    
+    /** @Column() */
+    protected $password;
+    
+    /**
+     * @ManyToOne(targetEntity="UserClass", inversedBy="members")
+     * @JoinColumn(name="userClass_id", referencedColumnName="id", nullable=false)
+     * @var UserClass
+     */
+    protected $userClass;
+    
+    /**
+     * @ManyToMany(targetEntity="Permission")
+     * @JoinTable(name="users_granted_permissions")
+     * @var Permission[]
+     */
+    protected $grantedPermissions;
+    /**
+     * @ManyToMany(targetEntity="Permission")
+     * @JoinTable(name="users_revoked_permissions")
+     * @var Permission[]
+     */
+    protected $revokedPermissions;
+    
+    protected function hashPassword($value) {
+        return md5($value);
+    }
+    
+    protected function setPassword($value) {
+        // Hash the password - temporary
+        $this->password = $this->hashPassword($value);
+    }
+    
+    protected function verifyPassword($value) {
+        return $this->hashPassword($value) == $this->password;
+    }
+    
+    public static function me() {
+        // TODO: Add cookie support
+        if(isset(OM::Session("FossilAuth")->user)) {
+            // Attach the user to the EM if it's not already
+            $user = OM::Session("FossilAuth")->user;
+            if(!OM::ORM()->getEM()->contains($user))
+                OM::ORM()->getEM()->merge($user);
+            return $user;
+        } else if($haveCookie) {
+            
+        }
+        return null;
+    }
+    
+    public function getRoles() {
+        return $this->userClass->roles->toArray();
+    }
+    
+    public function getPermissions() {
+        $permissions = array();
+        foreach($this->getRoles() as $role) {
+            $permissions = array_merge($permissions, $role->permissions->toArray());
+        }
+        // Add/subtract user-specific permissions
+        foreach($this->revokedPermissions as $perm) {
+            if($index = array_search($perm, $permissions, true)) {
+                unset($permissions[$index]);
+            }
+        }
+        foreach($this->grantedPermissions as $perm) {
+            if(!in_array($perm, $permissions))
+                $permissions[] = $perm;
+        }
+        return $permissions;
+    }
+    
+    public function hasRole(Role $role) {
+        return in_array($role, $this->getRoles());
+    }
+    
+    public function hasPermission(Permission $permission) {
+        return in_array($permission, $this->getPermissions());
+    }
 }
 
 ?>

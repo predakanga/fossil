@@ -186,8 +186,9 @@ class ORM {
             $schemaTool->updateSchema($this->getEM()->getMetadataFactory()->getAllMetadata());
             $this->ensureInitialDatasets($schemaTool->newModels);
         }
+        // TODO: Need to make this more specific, to ignore only on SQLite
         catch(\Exception $e) {
-            return;
+            throw $e; 
         }
     }
     

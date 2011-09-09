@@ -27,27 +27,28 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Fossil\Plugins\Users\Models;
+namespace Fossil\Plugins\Users\Annotations;
+
+use Fossil\Plugins\Users\Models\User,
+    Fossil\Plugins\Users\Models\Role;
 
 /**
- * @Entity
- * @F:InitialDataset("plugins/users/data/roles.yml")
+ * Description of RequireRole
+ *
+ * @author predakanga
  */
-class Role extends \Fossil\Models\Model {
-    /**
-     * @Id @GeneratedValue @Column(type="integer")
-     * @var int
-     */
-    protected $id;
-    /** @Column() */
-    protected $name;
-    /** @ManyToMany(targetEntity="Permission", inversedBy="roles") */
-    protected $permissions;
-    
-    /**
-     * @ManyToMany(targetEntity="User", mappedBy="roles")
-     * @var UserClass[]
-     */
-    protected $classes;
+class RequireRole extends \Fossil\Annotations\Compilation {
+    public function call($funcname, $args) {
+        $found = false;
+        foreach(User::me()->getRoles() as $role) {
+            if($role->name == $this->value)
+                $found = true;
+        }
+        if(!$found)
+            throw new Exception("Sorry, but you must be a " . $this->value . " to access this page.");
+        
+        return $this->completeCall($funcname, $args);
+    }
 }
+
 ?>

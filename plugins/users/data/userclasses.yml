@@ -1,0 +1,6 @@
+---
+- name: Administrators
+  roles:
+    - name: Administrator
+- name: Users
+...

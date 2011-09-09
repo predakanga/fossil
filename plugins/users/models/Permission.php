@@ -27,19 +27,30 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Fossil\Plugins\Users\Controllers;
+namespace Fossil\Plugins\Users\Models;
 
 /**
- * Description of Setup
+ * Description of Permission
  *
  * @author predakanga
- * @F:ExtensionClass()
+ * @Entity
+ * @F:InitialDataset("plugins/users/data/permissions.yml")
  */
-class Setup extends \Fossil\Controllers\Setup {
-    public function runEcho($args) {
-        echo "42";
-        return null;
-    }
+class Permission extends \Fossil\Models\Model {
+    /**
+     * @Id @GeneratedValue @Column(type="integer")
+     * @var int
+     */
+    protected $id;
+    /** @Column() */
+    protected $domain;
+    /** @Column() */
+    protected $name;
+    /** @Column() */
+    protected $viewName;
+    
+    /** @ManyToMany(targetEntity="Role", mappedBy="permissions") */
+    protected $roles;
 }
 
 ?>

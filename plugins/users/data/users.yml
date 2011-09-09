@@ -1,0 +1,10 @@
+---
+- name: admin
+  password: admin
+  userClass:
+    name: Administrators
+- name: guest
+  password: guest
+  userClass:
+    name: Users
+...

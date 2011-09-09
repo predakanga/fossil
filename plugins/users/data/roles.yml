@@ -1,0 +1,10 @@
+---
+- name: Administrator
+  permissions:
+    - domain: fossil
+      name: edit_settings
+    - domain: fossil
+      name: edit_user
+    - domain: fossil
+      name: delete_user
+...
