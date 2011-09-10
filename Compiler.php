@@ -49,6 +49,7 @@ class Compiler {
         $this->broker = new \TokenReflection\Broker(new \TokenReflection\Broker\Backend\Memory());
     }
     
+    /** @F:LogCall() */
     protected function saveClass($fqcn, $source) {
         // Work out the file path
         $parts = explode("\\", $fqcn);
@@ -271,6 +272,10 @@ EOT;
     $methodText = <<<'EOT'
     %s {
         $args = func_get_args();
+        static $compileArgs = null;
+        if(!$compileArgs)
+            $compileArgs = deserialize('%s');
+        
         $funcname = __FUNCTION__;
 
         %s
@@ -281,7 +286,7 @@ EOT;
         $compiledMethodText = "";
         $compiledClassText = "";
         foreach($compiledMethods as $method) {
-            $compiledMethodText .= sprintf($methodText, $method['preamble'], $method['postamble']);
+            $compiledMethodText .= sprintf($methodText, $method['preamble'], serialize($compileClass->getArgs()), $method['postamble']);
         }
         if($targetParent[0] == '\\')
             $targetParent = substr($targetParent, 1);
