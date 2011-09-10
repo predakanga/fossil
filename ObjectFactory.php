@@ -77,7 +77,7 @@ class ObjectFactory {
         return $driverName;
     }
 }
-/*
+
 // Default factories for the three core drivers
 ObjectFactory::registerType("Database", "SQLite");
 ObjectFactory::registerType("Renderer", "Smarty");
@@ -88,5 +88,5 @@ ObjectFactory::registerType("Cache", function() {
     }
     return "NoCache";
 });
-*/
+
 ?>
