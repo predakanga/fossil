@@ -37,7 +37,7 @@
 namespace Fossil\Annotations;
 
 class TimeCall extends Compilation {
-    public function call($funcname, $args) {
+    public function call($funcname, $args, $compileArgs) {
         $start = microtime(true);
         $retval = $this->completeCall($funcname, $args);
         $end = microtime(true);

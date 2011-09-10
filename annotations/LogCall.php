@@ -37,7 +37,7 @@
 namespace Fossil\Annotations;
 
 class LogCall extends Compilation {
-    public function call($funcname, $args) {
+    public function call($funcname, $args, $compileArgs) {
         print "$funcname called on " . get_class($this) . "\n";
         
         return $this->completeCall($funcname, $args);
