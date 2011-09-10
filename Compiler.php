@@ -49,7 +49,6 @@ class Compiler {
         $this->broker = new \TokenReflection\Broker(new \TokenReflection\Broker\Backend\Memory());
     }
     
-    /** @F:LogCall() */
     protected function saveClass($fqcn, $source) {
         // Work out the file path
         $parts = explode("\\", $fqcn);
