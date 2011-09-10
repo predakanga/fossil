@@ -44,6 +44,7 @@ class SourceDirectoryFilter extends \RecursiveFilterIterator {
                                        'plugins',
                                        'compiled',
                                        'templates_c',
+                                       'tests',
                                        'scratch');
     // Use of require_once filters index.php, so this is all we need to worry about
     public static $FILE_FILTERS = array('cli-config.php');
