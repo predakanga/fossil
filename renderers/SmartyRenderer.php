@@ -235,18 +235,19 @@ class SmartyRenderer extends BaseRenderer {
             $pluginName = substr($name, 0, strpos($name, ":"));
             $name = substr($name, strpos($name, ":")+1);
         }
-        $appendix = "views" . D_S . "smarty" . D_S . implode(D_S, explode("\\", $name)) . ".tpl";
+        $suffix = "views" . D_S . "smarty" . D_S . implode(D_S, explode("\\", $name)) . ".tpl";
         
         if($pluginName) {
             $plugin = OM::Plugins($pluginName);
-            return $plugin['root'] . D_S . $appendix;
+            return $plugin['root'] . D_S . $suffix;
         } else {
             $overlayRoot = OM::FS()->overlayRoot();
-            if(file_exists($overlayRoot . D_S . $appendix))
-                return $overlayRoot . D_S . $appendix;
-            else
-                return OM::FS()->fossilRoot() . D_S . $appendix;
+            foreach(array_reverse(OM::FS()->roots()) as $root) {
+                if(file_exists($root . D_S . $suffix))
+                    return $root . D_S . $suffix;
+            }
         }
+        // TODO: Throw exception
     }
     
     function smarty_resource_get_template($tpl_name, &$tpl_source, $smarty) {

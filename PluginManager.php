@@ -47,10 +47,9 @@ class PluginManager {
     
     public function __construct() {
         // Look for available plugins
-        $this->findAvailablePlugins(OM::FS()->fossilRoot());
-        
-        if(OM::FS()->overlayRoot())
-            $this->findAvailablePlugins(OM::FS()->overlayRoot());
+        foreach(OM::FS()->roots(false) as $root) {
+            $this->findAvailablePlugins($root);
+        }
     }
     
     public function get($pluginName) {

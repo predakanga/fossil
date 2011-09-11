@@ -70,20 +70,46 @@ class SourceDirectoryFilter extends \RecursiveFilterIterator {
  * @since 0.1
  */
 class Filesystem {
+    protected $overlayRoot = 0;
+    protected $appRoot = null;
+    
     /**
      * 
      * @return array List of roots in which to look for classes, templates, etc
      */
-    public function roots() {
-        return array_merge(array($this->fossilRoot()), $this->pluginRoots());
+    public function roots($includePlugins = true) {
+        $roots = array($this->fossilRoot());
+        if($this->appRoot())
+            $roots[] = $this->appRoot();
+        if($includePlugins)
+            $roots = array_merge($roots, $this->pluginRoots());
+        if($this->overlayRoot())
+            $roots[] = $this->overlayRoot();
+        
+        return $roots;
     }
     
     public function fossilRoot() {
         return __DIR__;
     }
     
+    public function appRoot() {
+        return $this->appRoot;
+    }
+    
     public function overlayRoot() {
-        return null;
+        if(!$this->overlayRoot === 0) {
+            $overlayRoot = dirname($_SERVER['SCRIPT_FILENAME']);
+            if($overlayRoot == $this->fossilRoot())
+                $this->overlayRoot = null;
+            else
+                $this->overlayRoot = $overlayRoot;
+        }
+        return $this->overlayRoot;
+    }
+    
+    public function tempDir() {
+        return OM::Settings("Fossil", "temp_dir", sys_get_temp_dir());
     }
     
     public function pluginRoots() {
