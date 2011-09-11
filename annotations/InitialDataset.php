@@ -36,18 +36,27 @@
 
 namespace Fossil\Annotations;
 
+use Fossil\OM;
+
 /**
  * Description of InitialDataset
  *
  * @author predakanga
  */
 class InitialDataset extends Annotation {
-    //put your code here
     public $format = "yml";
     public $file;
     
     public function getData() {
         $file = $this->file ?: $this->value;
+        
+        // It might be in any of the roots, so try each
+        foreach(array_reverse(OM::FS()->roots(false)) as $root) {
+            if(file_exists($root . D_S . $file)) {
+                $file = $root . D_S . $file;
+                break;
+            }
+        }
         
         if($this->format == "yml") {
             return yaml_parse_file($file);
