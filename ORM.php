@@ -143,8 +143,9 @@ class ORM {
         $config = new \Doctrine\ORM\Configuration(); // (2)
 
         // Proxy Configuration (3)
-        $config->setProxyDir(__DIR__.'/proxies');
-        $config->setProxyNamespace('Fossil\Proxies');
+        $config->setProxyDir(OM::FS()->tempDir() . D_S .'proxies');
+        $config->setProxyNamespace('Fossil\\Proxies');
+        Autoloader::addNamespacePath("Fossil\\Proxies", OM::FS()->tempDir() . D_S .'proxies');
         $config->setAutoGenerateProxyClasses(($appEnv == "development"));
 
         // Mapping Configuration (4)
