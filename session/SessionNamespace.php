@@ -49,19 +49,23 @@ class SessionNamespace {
     }
     
     public function &__get($key) {
-        return $_SESSION['namespace'][$key];
+        return $_SESSION[$this->namespace][$key];
     }
     
     public function __set($key, $value) {
-        $_SESSION['namespace'][$key] = $value;
+        $_SESSION[$this->namespace][$key] = $value;
     }
     
     public function __isset($key) {
-        return isset($_SESSION['namespace'][$key]);
+        return isset($_SESSION[$this->namespace][$key]);
     }
     
     public function __unset($key) {
-        unset($_SESSION['namespace'][$key]);
+        unset($_SESSION[$this->namespace][$key]);
+    }
+    
+    public function wipe() {
+        unset($_SESSION[$this->namespace]);
     }
 }
 
