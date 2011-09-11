@@ -545,4 +545,15 @@ class OM {
     public static function overlayNamespace() {
         return self::$overlayNS;
     }
+    
+    public static function getFossilID() {
+        $name = "Fossil";
+        if(self::$appNS) {
+            $name .= "_" . basename(self::$appNS);
+        }
+        if(self::$overlayNS) {
+            $name .= "_" . basename(self::$overlayNS);
+        }
+        return $name;
+    }
 }

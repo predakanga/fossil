@@ -122,11 +122,8 @@ class Filesystem {
     public function tempDir() {
         if(!$this->tempDir) {
             $tempDir = OM::Settings("Fossil", "temp_dir", sys_get_temp_dir());
-            $tempDir .= D_S . "Fossil";
-            if(OM::appNamespace())
-                $tempDir .= "_" . basename(OM::appNamespace());
-            if(OM::overlayNamespace())
-                $tempDir .= "_" . basename(OM::overlayNamespace());
+            $tempDir .= D_S . OM::getFossilID();
+            
             // Ensure that it exists
             if(!file_exists($tempDir)) {
                 mkdir($tempDir, 0755, true);
