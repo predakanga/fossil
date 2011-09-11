@@ -37,7 +37,8 @@
 namespace Fossil\Plugins\Users\Controllers;
 
 use \Fossil\OM,
-    Fossil\Plugins\Users\Models\User;
+    \Fossil\Plugins\Users\Models\User,
+    \Fossil\Plugins\Users\Annotations\RequireRole;
 
 /**
  * Description of login
@@ -50,19 +51,44 @@ class Login extends \Fossil\Controllers\AutoController {
     }
     
     public function runLogin($req) {
-        $a = new User();
-        $a->name = "Lachlan";
-//        $a->save();
+        $loginForm = OM::Form("Login");
+        
+        if($loginForm->isSubmitted()) {
+            $user = User::findOneBy(array('name' => $loginForm->user));
+            if(!$user || !$user->verifyPassword($loginForm->pass)) {
+                return OM::obj("Responses", "Template")->create("fossil:users:login", array('error' => 'Invalid user/pass'));
+            }
+            OM::Session("FossilAuth")->userID = $user->id;
+            // TODO: Set cookie if staySignedIn
+            return OM::obj("Responses", "Redirect")->create("?");
+        }
         
         return OM::obj("Responses", "Template")->create("fossil:users:login", array());
     }
     
     public function runLogout($req) {
+        // TODO: Invalidate the cookie
+        OM::Session("FossilAuth")->wipe();
         
+        return OM::obj("Responses", "Redirect")->create("?");
     }
     
     public function runSignup($req) {
+        $signupForm = OM::Form("Signup");
         
+        if($signupForm->isSubmitted() && $signupForm->isValidSubmission()) {
+            $user = User::findOneBy(array('name' => $signupForm->name));
+            if($user)
+                return OM::obj("Responses", "Template")->create("fossil:users:signup", array('error' => 'Username already in use'));
+            $user = new User();
+            $user->name = $signupForm->name;
+            $user->password = $signupForm->pass;
+            $user->email = $signupForm->email;
+            $user->save();
+            return OM::obj("Responses", "Redirect")->create("?controller=login");
+        }
+        
+        return OM::obj("Responses", "Template")->create("fossil:users:signup", array());
     }
 }
 

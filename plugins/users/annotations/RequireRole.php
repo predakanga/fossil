@@ -47,12 +47,19 @@ use Fossil\Plugins\Users\Models\User,
 class RequireRole extends \Fossil\Annotations\Compilation {
     public function call($funcname, $args, $compileArgs) {
         $found = false;
-        foreach(User::me()->getRoles() as $role) {
-            if($role->name == $compileArgs['value'])
-                $found = true;
+        if(User::me()) {
+            foreach(User::me()->getRoles() as $role) {
+                if($role->name == $compileArgs['value'])
+                    $found = true;
+                break;
+            }
         }
-        if(!$found)
-            throw new Exception("Sorry, but you must be a " . $compileArgs['value'] . " to access this page.");
+        if(!$found) {
+            if(method_exists($this, "unauthorizedAction"))
+                return $this->unauthorizedAction($args[0]);
+            else
+                throw new \Exception("Sorry, but you must be a " . $compileArgs['value'] . " to see this page.");
+        }
         
         return $this->completeCall($funcname, $args);
     }

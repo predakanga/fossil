@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * Copyright (c) 2011, predakanga
  * All rights reserved.
  * 
@@ -25,31 +25,23 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * @author predakanga
- * @since 0.1
- * @category Fossil Core
- * @package Fossil
- * @subpackage Responses
- * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Responses;
+namespace Fossil\Plugins\Users\Forms;
 
 /**
- * Description of RedirectResponse
+ * Description of Signup
  *
  * @author predakanga
- * @F:Instanced("Redirect")
+ * @F:Form(name = "Signup")
  */
-class RedirectResponse extends ActionableResponse {
-    public function __construct($url) {
-        $this->url = $url;
-    }
-    
-    public function runAction() {
-        header("Location: " . $this->url);
-    }
+class Signup extends \Fossil\Forms\BaseForm {
+    /** @F:FormField() */
+    public $name;
+    /** @F:FormField(type = "password") */
+    public $pass;
+    /** @F:FormField() */
+    public $email;
 }
 
 ?>

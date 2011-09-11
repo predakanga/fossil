@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * Copyright (c) 2011, predakanga
  * All rights reserved.
  * 
@@ -25,30 +25,28 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * @author predakanga
- * @since 0.1
- * @category Fossil Core
- * @package Fossil
- * @subpackage Responses
- * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Responses;
+namespace Fossil\Plugins\Users\Controllers;
+use Fossil\Plugins\Users\Models\User;
 
 /**
- * Description of RedirectResponse
+ * Description of PrivateController
  *
  * @author predakanga
- * @F:Instanced("Redirect")
  */
-class RedirectResponse extends ActionableResponse {
-    public function __construct($url) {
-        $this->url = $url;
+abstract class PrivateController extends \Fossil\Controllers\AutoController {
+    protected function unauthorizedAction(\Fossil\Requests\BaseRequest $req) {
+        throw new \Exception("Access denied.");
     }
     
-    public function runAction() {
-        header("Location: " . $this->url);
+    public function run(\Fossil\Requests\BaseRequest $req) {
+        // Check that the user is authed
+        $user = User::me();
+        if(!$user) {
+            return $this->unauthorizedAction($req);
+        }
+        parent::run($req);
     }
 }
 

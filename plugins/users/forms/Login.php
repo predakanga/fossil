@@ -40,13 +40,15 @@ namespace Fossil\Plugins\Users\Forms;
  * Description of Signin
  *
  * @author predakanga
- * @F:Form(name = "Signin")
+ * @F:Form(name = "Login")
  */
-class Signin extends \Fossil\Forms\BaseForm {
+class Login extends \Fossil\Forms\BaseForm {
     /** @F:FormField() */
     public $user;
     /** @F:FormField(type = "password") */
     public $pass;
+    /** @F:FormField(type = "checkbox", label = "Stay signed in") */
+    public $staySignedIn;
 }
 
 ?>

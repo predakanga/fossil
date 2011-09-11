@@ -36,6 +36,8 @@
 
 namespace Fossil\Plugins\Users\Models;
 
+use \Fossil\OM;
+
 /**
  * @author predakanga
  * @Entity
@@ -53,6 +55,9 @@ class User extends \Fossil\Models\Model {
     
     /** @Column() */
     protected $password;
+    
+    /** @Column() */
+    protected $email;
     
     /**
      * @ManyToOne(targetEntity="UserClass", inversedBy="members")
@@ -74,6 +79,15 @@ class User extends \Fossil\Models\Model {
      */
     protected $revokedPermissions;
     
+    public function __construct() {
+        parent::__construct();
+        $this->userClass = $this->defaultUserclass();
+    }
+    
+    protected function defaultUserclass() {
+        return UserClass::findOneBy(array("name" => "Users"));
+    }
+    
     protected function hashPassword($value) {
         return md5($value);
     }
@@ -83,17 +97,15 @@ class User extends \Fossil\Models\Model {
         $this->password = $this->hashPassword($value);
     }
     
-    protected function verifyPassword($value) {
+    public function verifyPassword($value) {
         return $this->hashPassword($value) == $this->password;
     }
     
     public static function me() {
         // TODO: Add cookie support
-        if(isset(OM::Session("FossilAuth")->user)) {
-            // Attach the user to the EM if it's not already
-            $user = OM::Session("FossilAuth")->user;
-            if(!OM::ORM()->getEM()->contains($user))
-                OM::ORM()->getEM()->merge($user);
+        $haveCookie = false;
+        if(isset(OM::Session("FossilAuth")->userID)) {
+            $user = self::find(OM::Session("FossilAuth")->userID);
             return $user;
         } else if($haveCookie) {
             
