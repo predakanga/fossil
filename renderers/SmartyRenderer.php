@@ -71,11 +71,12 @@ class SmartyRenderer extends BaseRenderer {
             $config = $this->getDefaultConfig();
         
         parent::__construct($config);
-        require_once("libs/smarty/distribution/libs/Smarty.class.php");
+        require_once(OM::FS()->fossilRoot() . D_S . "libs/smarty/distribution/libs/Smarty.class.php");
         $this->smarty = new \Smarty();
         foreach(OM::FS()->roots() as $root) {
             $this->smarty->addTemplateDir($root . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "smarty");
         }
+        $this->smarty->compile_dir = OM::FS()->tempDir() . D_S . "templates_c";
         $this->smarty->registerPlugin('function', 'form', array($this, 'formFunction'));
         $this->smarty->registerPlugin('block', 'link', array($this, 'linkFunction'));
         $this->smarty->registerPlugin('block', 'multiform', array($this, 'multiformFunction'));

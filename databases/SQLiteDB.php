@@ -65,7 +65,7 @@ class SQLiteDB extends BaseDatabase {
         // Default driver, so it must have a default config
         $config = parent::getDefaultConfig();
         if(!$config) {
-            return array('path' => 'default.db');
+            return array('path' => OM::FS()->tempDir() . D_S . 'default.db');
         }
     }
     

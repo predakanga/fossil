@@ -94,7 +94,8 @@ class OM {
     private static $singletonClasses = array(
         'FS' => array('default' => array('fqcn' => '\\Fossil\\Filesystem', 'takesContext' => false)),
         'Annotations' => array('default' => array('fqcn' => '\\Fossil\\Annotations\\AnnotationManager', 'takesContext' => false)),
-        'Error' => array('default' => array('fqcn' => '\\Fossil\\ErrorManager', 'takesContext' => false))
+        'Error' => array('default' => array('fqcn' => '\\Fossil\\ErrorManager', 'takesContext' => false)),
+        'Settings' => array('default' => array('fqcn' => '\\Fossil\\Settings', 'takesContext' => false))
     );
     private static $instancedClasses = array();
     private static $dirty = false;
@@ -106,7 +107,7 @@ class OM {
     
     // Destructor, to update the quickstart file
     public static function shutdown() {
-        if(file_exists(".quickstart.yml") && !self::$dirty) {
+        if(file_exists(self::FS()->tempDir() . D_S . ".quickstart.yml") && !self::$dirty) {
             // If we don't have anything to update, return
             return;
         }
@@ -117,7 +118,7 @@ class OM {
 
         // And output the document
         // TODO: Output to the correct directory
-        file_put_contents(__DIR__ . '/.quickstart.yml', yaml_emit($quickstart));
+        file_put_contents(self::FS()->tempDir() . D_S . '.quickstart.yml', yaml_emit($quickstart));
     }
 
     private static function scanForSingletonObjects() {
@@ -197,16 +198,17 @@ class OM {
         self::Error()->init(E_ALL | E_STRICT);
         
         // Load the basic settings from 'quickstart.yml'
-        if(!file_exists(__DIR__ . '/.quickstart.yml'))
+        if(!file_exists(self::FS()->tempDir() . D_S . '.quickstart.yml'))
             return;
         // Ignore the quickstart if it's newer than settings.yml
-        if(file_exists(__DIR__ . '/settings.yml')) {
-            if(filemtime('.quickstart.yml') < filemtime('settings.yml')) {
-                unlink('.quickstart.yml');
+        if(file_exists(self::FS()->execDir() . D_S . 'settings.yml')) {
+            if(filemtime(self::FS()->tempDir() . D_S . '.quickstart.yml') <
+               filemtime(self::FS()->execDir() . D_S . 'settings.yml')) {
+                unlink(self::FS()->tempDir() . D_S . '.quickstart.yml');
                 return;
             }
         }
-        $basics = yaml_parse_file(__DIR__ . '/.quickstart.yml');
+        $basics = yaml_parse_file(self::FS()->tempDir() . D_S . '.quickstart.yml');
         // Return if we have no quickstart settings
         if(!$basics)
             return;
@@ -278,8 +280,8 @@ class OM {
     public static function getFossilMtime() {
         // Check the source files, and settings.yml
         $mtimes = array_map(function($file) { return filemtime($file); }, self::FS()->allSourceFiles());
-        if(file_exists('settings.yml'))
-            $mtimes[] = filemtime('settings.yml');
+        if(file_exists(self::FS()->execDir() . D_S . 'settings.yml'))
+            $mtimes[] = filemtime(self::FS()->execDir() . D_S . 'settings.yml');
         return max($mtimes);
     }
     
@@ -295,6 +297,8 @@ class OM {
         // Regular functionality:
         // Scan local namespace for objects
         self::scanForObjects(self::FS()->fossilRoot());
+        foreach(OM::FS()->roots(false) as $root)
+            self::scanForObjects($root);
         // Load settings up, set up drivers
         self::get('Cache');
         self::ORM()->ensureSchema();

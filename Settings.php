@@ -45,7 +45,9 @@ class Settings implements \ArrayAccess {
     private $store;
     private $backingFile;
     
-    public function __construct($backingFile = 'settings.yml') {
+    public function __construct($backingFile = null) {
+        if(!$backingFile)
+            $backingFile = OM::FS()->execDir() . D_S . "settings.yml";
         $this->backingFile = $backingFile;
         $this->store = array();
         if(file_exists($backingFile))

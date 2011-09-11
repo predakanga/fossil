@@ -39,25 +39,27 @@ namespace Fossil;
  * @F:Object("Compiler")
  */
 class Compiler {
-    protected $baseNamespace = "Compiled\\";
-    protected $baseDir = "compiled";
+    protected $baseNamespace = "Fossil\\Compiled\\";
+    protected $baseDir;
     protected $classMap = array();
     protected $reflClassMap = array();
     protected $broker;
 
     public function __construct() {
         $this->broker = new \TokenReflection\Broker(new \TokenReflection\Broker\Backend\Memory());
+        $this->baseDir = OM::FS()->tempDir() . D_S . "compiled";
+        Autoloader::addNamespacePath(rtrim($this->baseNamespace, "\\"), $this->baseDir);
     }
     
     protected function saveClass($fqcn, $source) {
         // Work out the file path
         $parts = explode("\\", $fqcn);
-        $real_parts = array_slice($parts, 1);
+        $real_parts = array_slice($parts, 2);
         $filename = array_pop($real_parts);
-        $dirpath = implode(DIRECTORY_SEPARATOR, array_map(function($a) { return lcfirst($a); }, $real_parts));
+        $dirpath = $this->baseDir . D_S . implode(D_S, array_map(function($a) { return lcfirst($a); }, $real_parts));
 
         if(!is_dir($dirpath))
-            mkdir($dirpath, 0777, true);
+            mkdir($dirpath, 0755, true);
 
         file_put_contents($dirpath . DIRECTORY_SEPARATOR . $filename . ".php", $source);
     }
@@ -74,13 +76,18 @@ class Compiler {
     }
 
     protected function transformNamespace($inputNamespace) {
-        $baseNamespace = "Fossil\\Compiled\\";
-        $inputArr = explode("\\", $inputNamespace);
-        if($inputArr[0] == "Fossil") {
-            // Fossil\Compiled\Plugins\*
-            return implode("\\", array_merge(array("Fossil","Compiled"), array_slice($inputArr, 1)));
+        if(strpos($inputNamespace, "Fossil\\") === 0) {
+            return $this->baseNamespace .
+                    substr($inputNamespace, strlen("Fossil\\"));
+        } elseif(strpos($inputNamespace, OM::appNamespace()) === 0) {
+            return $this->baseNamespace . "App\\" .
+                    substr($inputNamespace, strlen(OM::appNamespace()));
+        } elseif(strpos($inputNamespace, OM::overlayNamespace() === 0)) {
+            echo "It's in the overlay namespace<br />\n";
+            return $this->baseNamespace . "Overlay\\" .
+                    substr($inputNamespace, strlen(OM::overlayNamespace()));
         } else {
-            return implode("\\", array_merge(array("Fossil","Compiled","Overlay"), array_slice($inputArr, 1)));
+            throw new \Exception("Trying to compile a namespace beyond our scope: $inputNamespace");
         }
     }
 
