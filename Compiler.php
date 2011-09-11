@@ -46,9 +46,18 @@ class Compiler {
     protected $broker;
 
     public function __construct() {
-        $this->broker = new \TokenReflection\Broker(new \TokenReflection\Broker\Backend\Memory());
         $this->baseDir = OM::FS()->tempDir() . D_S . "compiled";
+    }
+    
+    public function registerAutoloadPath() {
         Autoloader::addNamespacePath(rtrim($this->baseNamespace, "\\"), $this->baseDir);
+    }
+    
+    protected function getBroker() {
+        if(!$this->broker) {
+            $this->broker = new \TokenReflection\Broker(new \TokenReflection\Broker\Backend\Memory());
+        }
+        return $this->broker;
     }
     
     protected function saveClass($fqcn, $source) {
@@ -177,7 +186,7 @@ class Compiler {
         if(isset($this->reflClassMap[$class])) {
             return $this->reflClassMap[$class];
         }
-        $fileInfo = $this->broker->processFile($filename, true);
+        $fileInfo = $this->getBroker()->processFile($filename, true);
         foreach($fileInfo->getNamespaces() as $ns) {
             foreach($ns->getClasses() as $reflClass) {
                 if($reflClass->getName() == $class) {

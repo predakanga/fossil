@@ -193,8 +193,6 @@ class OM {
 
     public static function setup() {
         self::$startupTime = microtime(true);
-        // Set up a shutdown function to handle writing out the quickstart file
-        // TODO: Probably register the shutdown func only when dirty is set
         self::Error()->init(E_ALL | E_STRICT);
         
         // Load the basic settings from 'quickstart.yml'
@@ -263,6 +261,10 @@ class OM {
         
         self::$singletonClasses = $cachedData['singleton'];
         self::$instancedClasses = $cachedData['instanced'];
+        
+        // Get the compiler, to set up the namespace path
+        self::Compiler()->registerAutoloadPath();
+        
         self::$classMap = $cachedData['classMap'];
         self::$instances['Annotations'] = new Annotations\AnnotationManager($cachedData['annotations']);
         
@@ -300,6 +302,7 @@ class OM {
         foreach(OM::FS()->roots(false) as $root)
             self::scanForObjects($root);
         // Load settings up, set up drivers
+        self::Compiler()->registerAutoloadPath();
         self::get('Cache');
         self::ORM()->ensureSchema();
         // Register plugins
