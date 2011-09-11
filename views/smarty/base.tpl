@@ -11,11 +11,6 @@
 <link href="static/css/form.css" media="all" rel="stylesheet" type="text/css" />
 <link href="static/css/grey-box.css" media="all" rel="stylesheet" type="text/css" />
 <link href="static/css/test.css" media="all" rel="stylesheet" type="text/css" />
-<script type="text/javascript" src="https://www.google.com/jsapi"></script>
-<script type="text/javascript" src="static/js/test.js"></script>
-<script type="text/javascript">
-google.load("jquery", "1.6.2");
-</script>
 </head>
 <body>
 	
@@ -48,6 +43,8 @@ google.load("jquery", "1.6.2");
         {include file='errors.tpl'}
 	</div>
 </div>
-
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+<script type="text/javascript" src="static/js/test.js"></script>
 </body>
 </html>
