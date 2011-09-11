@@ -156,8 +156,12 @@ class ORM {
 
         $this->driver = CustomAnnotationDriver::create(OM::FS()->fossilRoot() . D_S . "models");
         
-        if(OM::FS()->overlayRoot())
-            $this->driver->addPaths((array)(OM::FS()->overlayRoot() . D_S . "models"));
+        CustomAnnotationDriver::create(array());
+        
+        foreach(OM::FS()->roots(false) as $root) {
+            if(is_dir($root . D_S . "models"))
+                $this->driver->addPaths((array)($root . D_S . "models"));
+        }
         
         $config->setMetadataDriverImpl($this->driver);
 
