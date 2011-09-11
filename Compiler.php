@@ -245,6 +245,17 @@ EOT;
         
         $classInfo = $this->findClass($reflClass->getFileName(), $reflClass->getName());
         
+        $nsAliases = $compileClassInfo->getNamespaceAliases();
+        $useText = "";
+        
+        if(count($nsAliases)) {
+            $useText = "use ";
+            foreach($nsAliases as $alias => $ns) {
+                $useText .= "$ns as $alias, ";
+            }
+            $useText = rtrim($useText, ", ") . ";";
+        }
+        
         foreach($reflMethods as $reflMethod) {
             // First, make sure it's locally implemented
             if($reflMethod->class != $class)
@@ -276,6 +287,8 @@ EOT;
 <?php
 namespace %s;
 
+%s
+
 class %s extends \%s {
     private function completeCall($funcname, $args) {
         return call_user_func_array("parent::$funcname", $args);
@@ -305,7 +318,8 @@ EOT;
         }
         if($targetParent[0] == '\\')
             $targetParent = substr($targetParent, 1);
-        $compiledClassText = sprintf($classText, $targetNamespace, $newClassName, $targetParent, $compiledMethodText);
+        
+        $compiledClassText = sprintf($classText, $targetNamespace, $useText, $newClassName, $targetParent, $compiledMethodText);
 
         $this->saveClass($targetNamespace . "\\" . $newClassName, $compiledClassText);
 
