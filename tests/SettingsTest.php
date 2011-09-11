@@ -2,7 +2,8 @@
 
 namespace Fossil;
 
-require_once dirname(__FILE__) . '/../Settings.php';
+require_once dirname(__FILE__) . '/../Autoloader.php';
+Autoloader::registerAutoloader();
 
 /**
  * Test class for Settings.
