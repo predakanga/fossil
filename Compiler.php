@@ -90,11 +90,11 @@ class Compiler {
                     substr($inputNamespace, strlen("Fossil\\"));
         } elseif(strpos($inputNamespace, OM::appNamespace()) === 0) {
             return $this->baseNamespace . "App\\" .
-                    substr($inputNamespace, strlen(OM::appNamespace()));
+                    substr($inputNamespace, strlen(OM::appNamespace()) + 1);
         } elseif(strpos($inputNamespace, OM::overlayNamespace() === 0)) {
             echo "It's in the overlay namespace<br />\n";
             return $this->baseNamespace . "Overlay\\" .
-                    substr($inputNamespace, strlen(OM::overlayNamespace()));
+                    substr($inputNamespace, strlen(OM::overlayNamespace()) + 1);
         } else {
             throw new \Exception("Trying to compile a namespace beyond our scope: $inputNamespace");
         }

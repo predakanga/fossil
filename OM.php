@@ -531,6 +531,8 @@ class OM {
     
     protected static $appNS;
     public static function setApp($namespace, $path) {
+        // Strip the trailing \ if any is given
+        $namespace = rtrim($namespace, "\\");
         Autoloader::addNamespacePath($namespace, $path);
         self::FS()->setAppRoot($path);
         self::$appNS = $namespace;
@@ -541,6 +543,8 @@ class OM {
     
     protected static $overlayNS;
     public static function setOverlay($namespace, $path) {
+        // Strip the trailing \ if any is given
+        $namespace = rtrim($namespace, "\\");
         Autoloader::addNamespacePath($namespace, $path);
         self::FS()->setOverlayRoot($path);
         self::$overlayNS = $namespace;
