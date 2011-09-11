@@ -46,20 +46,36 @@ class SourceDirectoryFilter extends \RecursiveFilterIterator {
                                        'templates_c',
                                        'tests',
                                        'scratch');
-    // Use of require_once filters index.php, so this is all we need to worry about
-    public static $FILE_FILTERS = array('cli-config.php',
-                                        'index.php',
-                                        'quickstart.php');
+
+    public static $FILE_FILTERS = array('cli-config.php');
 	
+    public static $ROOT_FILE_FILTERS = array('index.php',
+                                             'quickstart.php');
+    
+    protected $roots;
+    
+    public function __construct($iter, $roots = array()) {
+        $this->roots = $roots;
+        parent::__construct($iter);
+    }
+    
 	public function accept() {
 		if($this->current()->isDir())
             return !in_array($this->current()->getFilename(),
                              self::$DIR_FILTERS,
                              true);
-        else
-            return !in_array($this->current()->getFilename(),
-                             self::$FILE_FILTERS,
-                             true);
+        else {
+            if(in_array($this->current()->getFilename(),
+                        self::$FILE_FILTERS,
+                        true))
+                return false;
+            elseif(in_array($this->current()->getFilename(),
+                            self::$ROOT_FILE_FILTERS, true)
+                    && in_array($this->current()->getPath(),
+                            $this->roots, true))
+                return false;
+        }
+        return true;
 	}
 }
 /**
@@ -153,7 +169,7 @@ class Filesystem {
     
     public function sourceFiles($root) {
         $dirIter = new \RecursiveDirectoryIterator($root);
-        $filterIter = new SourceDirectoryFilter($dirIter);
+        $filterIter = new SourceDirectoryFilter($dirIter, $this->roots());
         $iterIter = new \RecursiveIteratorIterator($filterIter);
         $regexIter = new \RegexIterator($iterIter, '/\\.php$/');
         
