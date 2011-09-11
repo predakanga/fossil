@@ -61,19 +61,19 @@ class NoCache extends BaseCache {
         parent::__construct(array());
     }
     
-    public function has($key) {
+    protected function _has($key) {
         return false;
     }
     
-    public function get($key) {
+    protected function _get($key) {
         return NULL;
     }
     
-    public function set($key, $value) {
+    protected function _set($key, $value) {
         return;
     }
     
-    public function update($key, $update_cb) {
+    protected function _update($key, $update_cb) {
         return;
     }
 }

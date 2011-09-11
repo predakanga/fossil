@@ -57,20 +57,20 @@ class APC extends BaseCache {
         return null;
     }
     
-    public function has($key) {
+    protected function _has($key) {
         $toRet = apc_fetch($key);
         return ($toRet !== false);
     }
     
-    public function get($key) {
+    protected function _get($key) {
         return apc_fetch($key);
     }
     
-    public function set($key, $value) {
+    protected function _set($key, $value) {
         apc_store($key, $value);
     }
     
-    public function update($key, $update_cb) {
+    protected function _update($key, $update_cb) {
         $cas = 0;
         $success = false;
         

@@ -46,9 +46,11 @@ use Fossil\Interfaces\IDriver,
  */
 abstract class BaseCache implements IDriver {
     protected $config;
+    protected $prefix;
     
     public function __construct($config = NULL) {
         $this->config = $config;
+        $this->prefix = OM::getFossilID();
     }
     
     public function getConfig() {
@@ -63,10 +65,23 @@ abstract class BaseCache implements IDriver {
         return NULL;
     }
     
-    abstract public function has($key);
-    abstract public function get($key);
-    abstract public function set($key, $value);
-    abstract public function update($key, $update_cb);
+    public function has($key) {
+        return $this->_has($this->prefix . $key);
+    }
+    public function get($key) {
+        return $this->_get($this->prefix . $key);
+    }
+    public function set($key, $value) {
+        $this->_set($this->prefix . $key, $value);
+    }
+    public function update($key, $update_cb) {
+        $this->_update($this->prefix . $key, $update_cb);
+    }
+    
+    abstract protected function _has($key);
+    abstract protected function _get($key);
+    abstract protected function _set($key, $value);
+    abstract protected function _update($key, $update_cb);
 }
 
 ?>

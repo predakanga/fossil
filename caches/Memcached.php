@@ -94,7 +94,7 @@ class Memcached extends BaseCache {
             $this->mc->addServers($config['servers']);
     }
     
-    public function has($key) {
+    protected function _has($key) {
         if(!$this->mc->get($key)) {
             if($this->mc->getResultCode() != Memcached::RES_NOT_FOUND)
                 return true;
@@ -103,15 +103,15 @@ class Memcached extends BaseCache {
         return true;
     }
     
-    public function get($key) {
+    protected function _get($key) {
         return $this->mc->get($key);
     }
     
-    public function set($key, $value) {
+    protected function _set($key, $value) {
         $this->mc->set($key, $value);
     }
     
-    public function update($key, $update_cb) {
+    protected function _update($key, $update_cb) {
         $cas = 0;
         $success = false;
         
