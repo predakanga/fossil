@@ -46,13 +46,13 @@ namespace Fossil\Plugins\Users\Models;
  */
 class UserClass extends \Fossil\Models\Model {
     /** @Id @GeneratedValue @Column(type="integer") */
-    public $id;
+    protected $id;
     /** @Column() */
-    public $name;
+    protected $name;
     /** @ManyToMany(targetEntity="Role", inversedBy="classes") */
-    public $roles;
+    protected $roles;
     /** @OneToMany(targetEntity="User", mappedBy="userClass") */
-    public $members;
+    protected $members;
 }
 
 ?>
