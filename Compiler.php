@@ -289,7 +289,7 @@ EOT;
         $args = func_get_args();
         static $compileArgs = null;
         if(!$compileArgs)
-            $compileArgs = deserialize('%s');
+            $compileArgs = unserialize('%s');
         
         $funcname = __FUNCTION__;
 
