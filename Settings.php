@@ -43,6 +43,7 @@ namespace Fossil;
  */
 class Settings implements \ArrayAccess {
     private $store;
+    private $fossilHash;
     private $backingFile;
     
     public function __construct($backingFile = null) {
@@ -50,14 +51,19 @@ class Settings implements \ArrayAccess {
             $backingFile = OM::FS()->execDir() . D_S . "settings.yml";
         $this->backingFile = $backingFile;
         $this->store = array();
-        if(file_exists($backingFile))
+        if(file_exists($backingFile)) {
             $this->store['Fossil'] = yaml_parse_file($backingFile);
+            $this->fossilHash = md5(serialize($this->store['Fossil']));
+        }
     }
     
     public function __destruct() {
         // Because with offsetGet-by-ref we don't know when Fossil changes...
-        if(isset($this->store['Fossil']))
-            file_put_contents($this->backingFile, yaml_emit($this->store['Fossil']));
+        if(isset($this->store['Fossil'])) {
+            $fossilHash = md5(serialize($this->store['Fossil']));
+            if($fossilHash != $this->fossilHash)
+                file_put_contents($this->backingFile, yaml_emit($this->store['Fossil']));
+        }
     }
     
     public function bootstrapped() {

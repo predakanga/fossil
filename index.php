@@ -33,6 +33,6 @@
  * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-require('quickstart.php');
+require_once('quickstart.php');
 
 ?>
