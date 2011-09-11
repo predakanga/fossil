@@ -112,6 +112,8 @@ class Fossil {
     const DEVELOPMENT = 21;
         // AssertionsAndChecks & DisplayErrors & DisplayWarnings
 
+    static protected $app = null;
+    
     /**
      * Checks whether Fossil can run in the current environment
      * 
@@ -131,6 +133,10 @@ class Fossil {
         return true;
     }
 
+    static function setApp($appNamespace, $appPath) {
+        self::$app = array($appNamespace, $appPath);
+    }
+    
     /**
      * Bootstraps Fossil and returns a FossilCore instance, ready to use
      * 
@@ -150,11 +156,20 @@ class Fossil {
             return NULL;
 
         // Next, set up the autoloaders
-        require_once("Autoloader.php");
+        require_once(__DIR__ . DIRECTORY_SEPARATOR . "Autoloader.php");
         Autoloader::registerAutoloader();
 
+        if(self::$app)
+            OM::setApp(self::$app[0], self::$app[1]);
+        if(isset($overlay_namespace)) {
+            if(!isset($overlay_path))
+                $overlay_path = dirname($_REQUEST['SCRIPT_FILENAME']);
+            OM::setOverlay($overlay_namespace, $overlay_path);
+        }
+        
         // Then, perform one-time initialization on the object manager
         OM::setup();
+        
         // Use a cached initialization if possible and not in debug mode
         if($mode & self::CacheInstances) {
             if(!OM::cachedInit())

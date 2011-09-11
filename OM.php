@@ -521,4 +521,24 @@ class OM {
         }
         throw new \BadMethodCallException("Method '$type' does not exist");
     }
+    
+    protected static $appNS;
+    public static function setApp($namespace, $path) {
+        Autoloader::addNamespacePath($namespace, $path);
+        self::FS()->setAppRoot($path);
+        self::$appNS = $namespace;
+    }
+    public static function appNamespace() {
+        return self::$appNS;
+    }
+    
+    protected static $overlayNS;
+    public static function setOverlay($namespace, $path) {
+        Autoloader::addNamespacePath($namespace, $path);
+        self::FS()->setOverlayRoot($path);
+        self::$overlayNS = $namespace;
+    }
+    public static function overlayNamespace() {
+        return self::$overlayNS;
+    }
 }

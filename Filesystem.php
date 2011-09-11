@@ -47,7 +47,9 @@ class SourceDirectoryFilter extends \RecursiveFilterIterator {
                                        'tests',
                                        'scratch');
     // Use of require_once filters index.php, so this is all we need to worry about
-    public static $FILE_FILTERS = array('cli-config.php');
+    public static $FILE_FILTERS = array('cli-config.php',
+                                        'index.php',
+                                        'quickstart.php');
 	
 	public function accept() {
 		if($this->current()->isDir())
@@ -70,8 +72,9 @@ class SourceDirectoryFilter extends \RecursiveFilterIterator {
  * @since 0.1
  */
 class Filesystem {
-    protected $overlayRoot = 0;
-    protected $appRoot = null;
+    protected $overlayRoot;
+    protected $appRoot;
+    protected $tempDir;
     
     /**
      * 
@@ -93,14 +96,22 @@ class Filesystem {
         return __DIR__;
     }
     
+    public function setAppRoot($appRoot) {
+        $this->appRoot = $appRoot;
+    }
+    
     public function appRoot() {
         return $this->appRoot;
     }
     
+    public function setOverlayRoot($overlayRoot) {
+        $this->overlayRoot = $overlayRoot;
+    }
+    
     public function overlayRoot() {
         if(!$this->overlayRoot === 0) {
-            $overlayRoot = dirname($_SERVER['SCRIPT_FILENAME']);
-            if($overlayRoot == $this->fossilRoot())
+            $overlayRoot = $this->execDir();
+            if($overlayRoot == $this->fossilRoot() || $overlayRoot == $this->appRoot())
                 $this->overlayRoot = null;
             else
                 $this->overlayRoot = $overlayRoot;
@@ -109,7 +120,25 @@ class Filesystem {
     }
     
     public function tempDir() {
-        return OM::Settings("Fossil", "temp_dir", sys_get_temp_dir());
+        if(!$this->tempDir) {
+            $tempDir = OM::Settings("Fossil", "temp_dir", sys_get_temp_dir());
+            $tempDir .= D_S . "Fossil";
+            if(OM::appNamespace())
+                $tempDir .= "_" . basename(OM::appNamespace());
+            if(OM::overlayNamespace())
+                $tempDir .= "_" . basename(OM::overlayNamespace());
+            // Ensure that it exists
+            if(!file_exists($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+            $this->tempDir = $tempDir;
+        }
+        return $this->tempDir;
+    }
+    
+    public function execDir() {
+        // TODO: Make sure this works with CLI
+        return dirname($_SERVER['SCRIPT_FILENAME']);
     }
     
     public function pluginRoots() {
