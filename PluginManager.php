@@ -137,6 +137,7 @@ class PluginManager {
     public function loadEnabledPlugins() {
         $this->enablePlugin("users");
         $this->enablePlugin("info");
+        $this->enablePlugin("forums");
 //        $this->enablePlugin("regression");
     }
 }

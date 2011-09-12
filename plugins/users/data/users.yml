@@ -1,10 +1,12 @@
 ---
 - name: admin
   password: admin
+  email: admin@fossil
   userClass:
     name: Administrators
 - name: guest
   password: guest
+  email: guest@fossil
   userClass:
     name: Users
 ...
