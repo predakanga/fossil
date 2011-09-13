@@ -50,7 +50,8 @@ class ForumTopic extends \Fossil\Models\Model {
      */
     protected $name;
     /**
-     * @ManyToOne(targetEntity="Fossil\Plugins\Users\Models\User", inversedBy="topics")
+     * @ManyToOne(targetEntity="Fossil\Plugins\Users\Models\User", inversedBy="forumTopics")
+     * @F:GenerateReverse
      * @var User
      */
     protected $author;

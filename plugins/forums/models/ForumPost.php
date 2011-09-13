@@ -47,7 +47,8 @@ class ForumPost extends \Fossil\Models\Model {
      */
     protected $topic;
     /**
-     * @ManyToOne(targetEntity="Fossil\Plugins\Users\Models\User", inversedBy="posts")
+     * @ManyToOne(targetEntity="Fossil\Plugins\Users\Models\User", inversedBy="forumPosts")
+     * @F:GenerateReverse
      * @var User
      */
     protected $author;
