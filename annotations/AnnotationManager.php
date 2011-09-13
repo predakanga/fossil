@@ -74,13 +74,13 @@ class AnnotationManager {
         });
         AnnotationReader::addGlobalIgnoredName('since');
         
-        $this->reader = new AnnotationReader();
-        $this->reader->setIgnoreNotImportedAnnotations(true);
-        $this->registerNamespaceAlias("\\Fossil\\Annotations\\", "F");
-        
         if($annotations) {
+            $this->namespaces = array('F' => "\\Fossil\\Annotations\\");
             $this->annotationCache = $annotations;
         } else {
+            $this->reader = new AnnotationReader();
+            $this->reader->setIgnoreNotImportedAnnotations(true);
+            $this->registerNamespaceAlias("\\Fossil\\Annotations\\", "F");
             $this->updateAnnotations();
         }
     }
