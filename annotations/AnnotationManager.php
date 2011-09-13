@@ -152,7 +152,6 @@ class AnnotationManager {
             return is_a($thisAnno, $annotation);
         }));
     }
-    
     public function getPropertyAnnotations(\ReflectionProperty $reflProp, $annotation = false) {
         $class = $reflProp->getDeclaringClass()->name;
         $prop = $reflProp->name;
@@ -222,6 +221,36 @@ class AnnotationManager {
         
         return $this->filterClassesByAnnotation($classes, $annotation);
     }
+    
+    public function getClassesWithPropertyAnnotation($annotation) {
+        $annotation = $this->resolveName($annotation);
+        $toRet = array();
+        foreach($this->annotationCache as $class => $key) {
+            foreach($key['properties'] as $method => $annos) {
+                foreach($annos as $anno) {
+                    if(is_a($anno, $annotation))
+                        $toRet[] = $class;
+                }
+            }
+        }
+        return array_unique($toRet);
+    }
+    
+    public function getClassesWithMethodAnnotation($annotation) {
+        $annotation = $this->resolveName($annotation);
+        
+        $toRet = array();
+        foreach($this->annotationCache as $class => $key) {
+            foreach($key['methods'] as $method => $annos) {
+                foreach($annos as $anno) {
+                    if(is_a($anno, $annotation))
+                        $toRet[] = $class;
+                }
+            }
+        }
+        return array_unique($toRet);
+    }
+    
 }
 
 ?>
