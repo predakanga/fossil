@@ -29,59 +29,59 @@
 
 namespace Fossil\Models;
 
-use Fossil\OM;
+use Fossil\OM,
+    Doctrine\ORM\Query,
+    Doctrine\Common\Collections\Collection,
+    Doctrine\Common\Util\Debug;
 
 /**
- * Description of LazyModel
+ * Description of PaginationProxy
  *
  * @author predakanga
  */
-class LazyModel {
-    protected $loaded = false;
+class PaginationProxy {
     protected $query;
-    protected $model;
+    protected $collection;
+    protected $pageSize;
     
-    public function __construct($query) {
-        $this->query = $query;
+    public function __construct($queryOrCollection, $pageSize = 10) {
+        if($queryOrCollection instanceof Collection) {
+            $this->collection = $queryOrCollection;
+        } else {
+            $this->query = $queryOrCollection;
+            $this->query->setMaxResults($this->pageSize);
+        }
+        $this->pageSize = $pageSize;
     }
     
-    protected function __load() {
-        $this->model = $this->query->getResult(\Doctrine\ORM\Query::HYDRATE_OBJECT);
-        $this->loaded = true;
+    public function getItemCount() {
+        if($this->collection) {
+            return $this->collection->count();
+        } else {
+            /* @var $countQuery Query */
+            $countQuery = clone $this->query;
+
+            // BUGFIX: Clone doesn't copy parameters
+            $countQuery->setParameters($this->query->getParameters());
+            
+            $countQuery->setHint(Query::HINT_CUSTOM_TREE_WALKERS, array('Fossil\CountSqlWalker'));
+            $countQuery->setFirstResult(null)->setMaxResults(null);
+
+            return $countQuery->getSingleScalarResult();
+        }
     }
     
-    public function __get($key) {
-        if(!$this->loaded)
-            $this->__load();
-        return $this->model->$key;
+    public function getPage($page = 0) {
+        if($this->collection) {
+            return $this->collection->slice($page * $this->pageSize, $this->pageSize);
+        } else {
+            $this->query->setFirstResult($page * $this->pageSize);
+            return $this->query->getResult();
+        }
     }
     
-    public function __set($key, $value) {
-        if(!$this->loaded)
-            $this->__load();
-        $this->model->$key = $value;
-    }
-    
-    public function __isset($key) {
-        if(!$this->loaded)
-            $this->__load();
-        return isset($this->model->$key);
-    }
-    
-    public function __unset($key) {
-        if(!$this->loaded)
-            $this->__load();
-        unset($this->model->$key);
-    }
-    
-    public function __call($funcname, $args) {
-        if(!$this->loaded)
-            $this->__load();
-        return call_user_func_array(array($this->model, $funcname), $args);
-    }
-    
-    public static function __callStatic($funcname, $args) {
-        throw new \Exception("Can't call static methods on a LazyModel.");
+    public function getPageCount() {
+        return ceil(((float)$this->getItemCount())/$this->pageSize);
     }
 }
 

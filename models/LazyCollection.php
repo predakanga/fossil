@@ -37,25 +37,17 @@ use Fossil\OM;
  * @author predakanga
  */
 class LazyCollection implements \Doctrine\Common\Collections\Collection {
-    protected $targetEntity; // User
-    protected $sourceEntity; // ForumTopic
-    protected $sourceField; // author
     protected $loaded = false;
+    protected $query;
     protected $collection;
     
-    public function  __construct($targetEntity, $sourceEntity, $sourceField) {
-        $this->targetEntity = $targetEntity;
-        $this->sourceEntity = $sourceEntity;
-        $this->sourceField = $sourceField;
+    public function  __construct($query) {
+        $this->query = $query;
     }
     
     protected function __load() {
-        // SELECT f FROM ForumTopic f JOIN f.author u WHERE u = ?
-        $q = OM::ORM()->getEM()->createQuery("SELECT src FROM {$this->sourceEntity} src
-                                              JOIN src.{$this->sourceField} dst WHERE dst = ?1");
-        $q->setParameter(1, $this->targetEntity);
-        $r = $q->getResult();
-        $this->collection = new \Doctrine\Common\Collections\ArrayCollection($r);
+        $result = $this->query->getResult();
+        $this->collection = new \Doctrine\Common\Collections\ArrayCollection($result);
         $this->loaded = true;
     }
     
@@ -240,6 +232,7 @@ class LazyCollection implements \Doctrine\Common\Collections\Collection {
     }
     
     public function count() {
+        // TODO: Use an AST walker to do this cheaply
         if(!$this->loaded)
             $this->__load();
         return $this->collection->count();

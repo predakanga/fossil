@@ -258,14 +258,51 @@ abstract class Model {
         }
     }
     
+    protected function reverseAssociationQuery($field) {
+        $mapping = static::$reverseAssociations[get_called_class()][$field];
+        
+        $q = OM::ORM()->getEM()->createQuery("SELECT src FROM {$mapping['srcEntity']} src " .
+                                             "JOIN src.{$mapping['srcField']} dst WHERE dst = ?1");
+        $q->setParameter(1, $this);
+        return $q;
+    }
+    
     protected function populateReverseAssociations() {
         foreach(static::$reverseAssociations[get_called_class()] as $field => $mapping) {
             if($mapping['type'] == 'object')
-                $this->$field = new LazyModel($this, $mapping['srcEntity'], $mapping['srcField']);
+                $this->$field = new LazyModel($this->reverseAssociationQuery($field));
             else
-                $this->$field = new LazyCollection($this, $mapping['srcEntity'], $mapping['srcField']);
+                $this->$field = new LazyCollection($this->reverseAssociationQuery($field));
         }
         $this->reverseAssociationsMapped = true;
+    }
+    
+    /**
+     *
+     * @param type $field
+     * @param type $fieldsPerPage
+     * @return PaginationProxy
+     */
+    public function paginate($field, $fieldsPerPage = 10) {
+        if(!isset(self::$reverseAssociations[get_class($this)])) {
+            self::gatherReverseAssociations();
+        }
+        if(!$this->reverseAssociationsMapped) {
+            self::populateReverseAssociations();
+        }
+        // First, make sure it's a TO_MANY association or reverse mapping
+        // Reverse mapping is cheaper, so check that first
+        if(isset(self::$reverseAssociations[get_class($this)][$field])) {
+            if(self::$reverseAssociations[get_class($this)][$field]['type'] != 'collection')
+                throw new \Exception("Attempted to paginate a single entity");
+            // Grab the query and create a PaginationProxy on it
+            return new PaginationProxy($this->reverseAssociationQuery($field), $fieldsPerPage);
+        } else {
+            if(!$this->getMetadata()->isCollectionValuedAssociation($field))
+                throw new \Exception("Attempted to paginate a single entity");
+            // Generate the query
+            return new PaginationProxy($this->$field, $fieldsPerPage);
+        }
     }
 }
 
