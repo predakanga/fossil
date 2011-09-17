@@ -46,7 +46,7 @@ use Fossil\OM,
  */
 class Error extends AutoController {
     public function runShow(BaseRequest $req) {
-        return OM::obj("Responses", "Template")->create("error", $req->args);
+        return OM::obj("Responses", "Template")->create("fossil:error", $req->args);
     }
 }
 

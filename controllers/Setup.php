@@ -66,9 +66,9 @@ class Setup extends AutoController {
             }),
             'Smarty' => array('Version' => '>= 3', 'URL' => 'http://www.smarty.net', 'Type' => 'Templating Engine', 'Test' => function() {
                 // TODO: Looser coupling for Smarty
-                if(!file_exists('libs/smarty/distribution/libs/Smarty.class.php'))
+                if(!file_exists(OM::FS()->fossilRoot() . D_S . 'libs/smarty/distribution/libs/Smarty.class.php'))
                     return false;
-                require_once('libs/smarty/distribution/libs/Smarty.class.php');
+                require_once(OM::FS()->fossilRoot() . D_S . 'libs/smarty/distribution/libs/Smarty.class.php');
                 
                 if(!defined('\Smarty::SMARTY_VERSION'))
                     return false;

@@ -139,7 +139,7 @@ class SmartyRenderer extends BaseRenderer {
             $data['fields'][] = $fieldData;
         }
         
-        $formTpl = $this->smarty->createTemplate("forms" . DIRECTORY_SEPARATOR . $form->getTemplate() . ".tpl", $data);
+        $formTpl = $this->smarty->createTemplate("fossil:forms" . DIRECTORY_SEPARATOR . $form->getTemplate(), $data);
         return $formTpl->fetch();
     }
     
@@ -242,7 +242,6 @@ class SmartyRenderer extends BaseRenderer {
             $plugin = OM::Plugins($pluginName);
             return $plugin['root'] . D_S . $suffix;
         } else {
-            $overlayRoot = OM::FS()->overlayRoot();
             foreach(array_reverse(OM::FS()->roots()) as $root) {
                 if(file_exists($root . D_S . $suffix))
                     return $root . D_S . $suffix;

@@ -1,4 +1,4 @@
-{extends file="base.tpl"}
+{extends file="fossil:base"}
 {block name=assignations}
 {assign var="title" value="Error" scope=global}{/block}
 {block name=content_layout}
