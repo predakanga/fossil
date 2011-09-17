@@ -245,7 +245,13 @@ class SmartyRenderer extends BaseRenderer {
             $plugin = OM::Plugins($pluginName);
             return $plugin['root'] . D_S . $suffix;
         } else {
-            foreach(array_reverse(OM::FS()->roots()) as $root) {
+            // Check real roots first
+            foreach(array_reverse(OM::FS()->roots(false)) as $root) {
+                if(file_exists($root . D_S . $suffix))
+                    return $root . D_S . $suffix;
+            }
+            // Then plugin roots as a fallback
+            foreach(OM::FS()->pluginRoots() as $root) {
                 if(file_exists($root . D_S . $suffix))
                     return $root . D_S . $suffix;
             }

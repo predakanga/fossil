@@ -63,7 +63,7 @@ class Login extends \Fossil\Controllers\AutoController {
             return OM::obj("Responses", "Redirect")->create("?");
         }
         
-        return OM::obj("Responses", "Template")->create("fossil:users:login", array());
+        return OM::obj("Responses", "Template")->create("fossil:login", array());
     }
     
     public function runLogout($req) {
@@ -88,7 +88,7 @@ class Login extends \Fossil\Controllers\AutoController {
             return OM::obj("Responses", "Redirect")->create("?controller=login");
         }
         
-        return OM::obj("Responses", "Template")->create("fossil:users:signup", array());
+        return OM::obj("Responses", "Template")->create("fossil:signup", array());
     }
 }
 
