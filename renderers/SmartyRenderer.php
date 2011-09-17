@@ -88,12 +88,15 @@ class SmartyRenderer extends BaseRenderer {
                                                         array($this, "smarty_resource_get_trusted")));
     }
     
+    protected function setDefaultVariables($tpl) {
+        $tpl->assign('errors', OM::Error()->getLog());
+    }
+    
     public function render($templateName, $templateData) {
         if(strpos($templateName, "fossil:") !== 0)
             $templateName = $templateName . ".tpl";
         
         $tpl = $this->smarty->createTemplate($templateName);
-        $tpl->assign('errors', OM::Error()->getLog());
         $tpl->assign('title', $templateName);
         foreach($templateData as $key => $val) {
             $tpl->assign($key, $val);
