@@ -78,6 +78,7 @@ class SmartyRenderer extends BaseRenderer {
         }
         $this->smarty->compile_dir = OM::FS()->tempDir() . D_S . "templates_c";
         $this->smarty->registerPlugin('function', 'form', array($this, 'formFunction'));
+        $this->smarty->registerPlugin('compiler', 'use', array($this, 'useFunction'));
         $this->smarty->registerPlugin('block', 'link', array($this, 'linkFunction'));
         $this->smarty->registerPlugin('block', 'multiform', array($this, 'multiformFunction'));
         if($config['useTidy'])
@@ -105,6 +106,19 @@ class SmartyRenderer extends BaseRenderer {
         $tpl->display();
     }
     
+    function useFunction($params, $smarty) {
+        if(!isset($params['fqcn']))
+            throw new \Exception("{use} requires a model");
+        if(!isset($params['as']))
+            throw new \Exception("{use} requires an 'as'");
+        
+        $params['fqcn'] = trim($params['fqcn'], "'\"");
+        $params['as'] = trim($params['as'], "'\"");
+        
+        return "<?php
+            use {$params['fqcn']} as {$params['as']};
+        ?>";
+    }
     
     function formFunction($params, $smarty) {
         // First of all, set up an array with the appropriate data
