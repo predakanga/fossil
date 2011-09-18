@@ -98,6 +98,7 @@ class SmartyRenderer extends BaseRenderer {
         
         $tpl = $this->smarty->createTemplate($templateName);
         $tpl->assign('title', $templateName);
+        $this->setDefaultVariables($tpl);
         foreach($templateData as $key => $val) {
             $tpl->assign($key, $val);
         }
