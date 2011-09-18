@@ -35,9 +35,6 @@
 
 namespace Fossil;
 
-if(!defined('D_S'))
-    define('D_S', DIRECTORY_SEPARATOR);
-
 class SourceDirectoryFilter extends \RecursiveFilterIterator {
 	public static $DIR_FILTERS = array('.git',
                                        'libs',
