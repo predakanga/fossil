@@ -46,9 +46,6 @@ use Fossil\OM,
  * @author predakanga
  */
 abstract class Model {
-    protected static $reverseAssociations = array();
-    protected $reverseAssociationsMapped = false;
-    
     private function getMetadata() {
         return OM::ORM()->getEM()->getClassMetadata(get_class($this));
     }
@@ -80,12 +77,6 @@ abstract class Model {
     }
     
     public function get($key) {
-        if(!isset(self::$reverseAssociations[get_class($this)])) {
-            self::gatherReverseAssociations();
-        }
-        if(!$this->reverseAssociationsMapped) {
-            self::populateReverseAssociations();
-        }
         $methodName = "get" . ucfirst($key);
         if(method_exists($this, $methodName))
             return $this->$methodName();
@@ -94,13 +85,7 @@ abstract class Model {
     }
     
     public function set($key, $value) {
-        if(!isset(self::$reverseAssociations[get_class($this)])) {
-            self::gatherReverseAssociations();
-        }
-        if(!$this->reverseAssociationsMapped) {
-            self::populateReverseAssociations();
-        }
-        // First, validate the code
+        // First, validate the value
         if(!$this->validate($key, $value))
                 throw new ValidationFailedException($this, $key, $value);
         
@@ -112,12 +97,6 @@ abstract class Model {
     }
     
     public function has($key) {
-        if(!isset(self::$reverseAssociations[get_class($this)])) {
-            self::gatherReverseAssociations();
-        }
-        if(!$this->reverseAssociationsMapped) {
-            self::populateReverseAssociations();
-        }
         return property_exists($this, $key);
     }
     
@@ -205,78 +184,6 @@ abstract class Model {
         return $model;
     }
     
-    public function __wakeup() {
-        if($this->id) {
-            if(!isset(self::$reverseAssociations[get_class($this)])) {
-                self::gatherReverseAssociations();
-            }
-            if(!$this->reverseAssociationsMapped) {
-                self::populateReverseAssociations();
-            }
-        }
-    }
-    
-    public function __clone() {
-        if($this->id) {
-            if(!isset(self::$reverseAssociations[get_class($this)])) {
-                self::gatherReverseAssociations();
-            }
-            if(!$this->reverseAssociationsMapped) {
-                self::populateReverseAssociations();
-            }
-        }
-    }
-    
-    protected static function gatherReverseAssociations() {
-        static::$reverseAssociations[get_called_class()] = array();
-        // Gather all classes with @GenerateReverse
-        $classes = OM::Annotations()->getClassesWithPropertyAnnotation("F:GenerateReverse");
-        // Then check whether the annotated mapping points back to us
-        foreach($classes as $class) {
-            $reflClass = new \ReflectionClass($class);
-            $metadata = OM::ORM()->getEM()->getClassMetadata($class);
-            foreach($reflClass->getProperties() as $property) {
-                if($metadata->hasAssociation($property->name) &&
-                   $metadata->getAssociationTargetClass($property->name) == get_called_class()) {
-                    $annos = OM::Annotations()->getPropertyAnnotations($property, "F:GenerateReverse");
-                    if(count($annos)) {
-                        $reverseAssoc = array('srcEntity' => $class, 'srcField' => $property->name);
-                        $mapping = $metadata->getAssociationMapping($property->name);
-                        if($mapping['type'] & 5) // ONE_TO
-                            $reverseAssoc['type'] = 'object';
-                        elseif($mapping['type'] & 10) // MANY_TO
-                            $reverseAssoc['type'] = 'collection';
-                        if(isset($mapping['inversedBy'])) {
-                            $dstField = $mapping['inversedBy'];
-                            static::$reverseAssociations[get_called_class()][$dstField] = $reverseAssoc;
-                        } else {
-                            throw new \Exception("Attempted to reverse a non-owning association: {$class}::{$property->name}");
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    protected function reverseAssociationQuery($field) {
-        $mapping = static::$reverseAssociations[get_called_class()][$field];
-        
-        $q = OM::ORM()->getEM()->createQuery("SELECT src FROM {$mapping['srcEntity']} src " .
-                                             "JOIN src.{$mapping['srcField']} dst WHERE dst = ?1");
-        $q->setParameter(1, $this);
-        return $q;
-    }
-    
-    protected function populateReverseAssociations() {
-        foreach(static::$reverseAssociations[get_called_class()] as $field => $mapping) {
-            if($mapping['type'] == 'object')
-                $this->$field = new LazyModel($this->reverseAssociationQuery($field));
-            else
-                $this->$field = new LazyCollection($this->reverseAssociationQuery($field));
-        }
-        $this->reverseAssociationsMapped = true;
-    }
-    
     /**
      *
      * @param type $field
@@ -284,25 +191,9 @@ abstract class Model {
      * @return PaginationProxy
      */
     public function paginate($field, $fieldsPerPage = 10) {
-        if(!isset(self::$reverseAssociations[get_class($this)])) {
-            self::gatherReverseAssociations();
-        }
-        if(!$this->reverseAssociationsMapped) {
-            self::populateReverseAssociations();
-        }
-        // First, make sure it's a TO_MANY association or reverse mapping
-        // Reverse mapping is cheaper, so check that first
-        if(isset(self::$reverseAssociations[get_class($this)][$field])) {
-            if(self::$reverseAssociations[get_class($this)][$field]['type'] != 'collection')
-                throw new \Exception("Attempted to paginate a single entity");
-            // Grab the query and create a PaginationProxy on it
-            return new PaginationProxy($this->reverseAssociationQuery($field), $fieldsPerPage);
-        } else {
-            if(!$this->getMetadata()->isCollectionValuedAssociation($field))
-                throw new \Exception("Attempted to paginate a single entity");
-            // Generate the query
-            return new PaginationProxy($this->$field, $fieldsPerPage);
-        }
+        if(!$this->getMetadata()->isCollectionValuedAssociation($field))
+            throw new \Exception("Attempted to paginate a single entity");
+        return new PaginationProxy($this->get($field), $fieldsPerPage);
     }
 }
 

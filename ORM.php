@@ -93,10 +93,12 @@ class ORM {
         }
         $config->setMetadataCacheImpl($cache);
         $config->setQueryCacheImpl($cache);
+        $config->setClassMetadataFactoryName("\\Fossil\\DoctrineExtensions\\ActiveClassMetadataFactory");
 
         $this->config = $config;
         
         $this->evm = new \Doctrine\Common\EventManager();
+        $this->evm->addEventListener(\Doctrine\ORM\Events::loadClassMetadata, new ReverseMappingGenerator());
         if(!OM::Database()->getConnectionConfig())
             $conn = array('pdo' => OM::Database()->getPDO(), 'dbname' => null);
         else
