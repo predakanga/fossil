@@ -78,13 +78,18 @@ class AnnotationManager {
             $this->namespaces = array('F' => "\\Fossil\\Annotations\\");
             $this->annotationCache = $annotations;
         } else {
-            $this->reader = new AnnotationReader();
-            $this->reader->setIgnoreNotImportedAnnotations(true);
-            $this->registerNamespaceAlias("\\Fossil\\Annotations\\", "F");
             $this->updateAnnotations();
         }
     }
     
+    private function getReader() {
+        if(!$this->reader) {
+            $this->reader = new AnnotationReader();
+            $this->reader->setIgnoreNotImportedAnnotations(true);
+            $this->registerNamespaceAlias("\\Fossil\\Annotations\\", "F");
+        }
+        return $this->reader;
+    }
     public function updateAnnotations() {
         $this->annotationCache = $this->gatherAnnotations();
     }
@@ -99,16 +104,16 @@ class AnnotationManager {
             $reflClass = new \ReflectionClass($class);
             if($reflClass->getParentClass())
                 $classData['parent'] = $reflClass->getParentClass()->name;
-            $classData['annos'] = $this->reader->getClassAnnotations($reflClass);
+            $classData['annos'] = $this->getReader()->getClassAnnotations($reflClass);
             
             foreach($reflClass->getMethods() as $method) {
-                $methodAnnos = $this->reader->getMethodAnnotations($method);
+                $methodAnnos = $this->getReader()->getMethodAnnotations($method);
                 
                 if(count($methodAnnos))
                     $classData['methods'][$method->name] = $methodAnnos;
             }
             foreach($reflClass->getProperties() as $prop) {
-                $propAnnos = $this->reader->getPropertyAnnotations($prop);
+                $propAnnos = $this->getReader()->getPropertyAnnotations($prop);
                 
                 if(count($propAnnos))
                     $classData['properties'][$prop->name] = $propAnnos;
