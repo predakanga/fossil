@@ -52,25 +52,32 @@ class Dispatcher {
     public function runRequest(BaseRequest $req, $react = true) {
         array_push($this->reqStack, $req);
         
+        ob_start();
         try {
-            // To allow HMVC style requests, return the response early if we're not to react
-            $response = $req->run();
-
-            if(!$react)
-                return $response;
-
-            if($response instanceof RenderableResponse) {
-                $response->render();
-            } else if($response instanceof ActionableResponse) {
-                $response->runAction();
-            }
+            $response = $this->_run($req, $react);
         } catch(\Exception $e) {
             $errorReq = OM::obj("Requests", "InternalRequest")->create("error", "show", array('e' => $e));
-            $this->runRequest($errorReq);
+            ob_clean();
+            $this->_run($errorReq);
         }
+        ob_end_flush();
         
         array_pop($this->reqStack);
         return $response;
+    }
+    
+    protected function _run(BaseRequest $req, $react = true) {
+        // To allow HMVC style requests, return the response early if we're not to react
+        $response = $req->run();
+
+        if(!$react)
+            return $response;
+
+        if($response instanceof RenderableResponse) {
+            $response->render();
+        } else if($response instanceof ActionableResponse) {
+            $response->runAction();
+        }
     }
     
     public function getTopRequest() {
