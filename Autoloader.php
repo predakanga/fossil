@@ -34,6 +34,9 @@
 
 namespace Fossil;
 
+if(!defined('D_S'))
+    define('D_S', DIRECTORY_SEPARATOR);
+
 /**
  * The Fossil autoloader class
  * 
