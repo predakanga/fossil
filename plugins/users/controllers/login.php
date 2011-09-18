@@ -56,7 +56,7 @@ class Login extends \Fossil\Controllers\AutoController {
         if($loginForm->isSubmitted()) {
             $user = User::findOneBy(array('name' => $loginForm->user));
             if(!$user || !$user->verifyPassword($loginForm->pass)) {
-                return OM::obj("Responses", "Template")->create("fossil:users:login", array('error' => 'Invalid user/pass'));
+                return OM::obj("Responses", "Template")->create("fossil:login", array('error' => 'Invalid user/pass'));
             }
             OM::Session("FossilAuth")->userID = $user->id;
             // TODO: Set cookie if staySignedIn
@@ -79,7 +79,7 @@ class Login extends \Fossil\Controllers\AutoController {
         if($signupForm->isSubmitted() && $signupForm->isValidSubmission()) {
             $user = User::findOneBy(array('name' => $signupForm->name));
             if($user)
-                return OM::obj("Responses", "Template")->create("fossil:users:signup", array('error' => 'Username already in use'));
+                return OM::obj("Responses", "Template")->create("fossil:signup", array('error' => 'Username already in use'));
             $user = new User();
             $user->name = $signupForm->name;
             $user->password = $signupForm->pass;
