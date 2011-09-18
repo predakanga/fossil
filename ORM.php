@@ -35,132 +35,13 @@
 
 namespace Fossil;
 
-use Doctrine\DBAL\Schema\Comparator,
-    Doctrine\DBAL\Schema\Schema,
+use Fossil\DoctrineExtensions\CustomSchemaTool,
+    Fossil\DoctrineExtensions\CustomAnnotationDriver,
+    Fossil\DoctrineExtensions\ReverseMappingGenerator,
+    DoctrineExtensions\ActiveEntity\ActiveEntityManager,
     Doctrine\ORM\Tools\SchemaTool,
     Doctrine\ORM\EntityManager,
-    Doctrine\ORM\Mapping\Driver\AnnotationDriver,
-    Doctrine\Common\Annotations\AnnotationReader,
-    Doctrine\Common\Annotations\AnnotationRegistry,
-    Doctrine\ORM\Query\TreeWalkerAdapter,
-    Doctrine\ORM\Query\AST\PathExpression,
-    Doctrine\ORM\Query\AST\SelectExpression,
-    Doctrine\ORM\Query\AST\AggregateExpression,
-    Doctrine\ORM\Query\AST\SelectStatement;
-
-class CountSqlWalker extends TreeWalkerAdapter
-{
-    /**
-     * Walks down a SelectStatement AST node, thereby generating the appropriate SQL.
-     *
-     * @return string The SQL.
-     */
-    public function walkSelectStatement(SelectStatement $AST)
-    {
-        $parent = null;
-        $parentName = null;
-        foreach ($this->_getQueryComponents() AS $dqlAlias => $qComp) {
-            if ($qComp['parent'] === null && $qComp['nestingLevel'] == 0) {
-                $parent = $qComp;
-                $parentName = $dqlAlias;
-                break;
-            }
-        }
-
-        $pathExpression = new PathExpression(
-            PathExpression::TYPE_STATE_FIELD | PathExpression::TYPE_SINGLE_VALUED_ASSOCIATION, $parentName,
-            $parent['metadata']->getSingleIdentifierFieldName()
-        );
-        $pathExpression->type = PathExpression::TYPE_STATE_FIELD;
-
-        $AST->selectClause->selectExpressions = array(
-            new SelectExpression(
-                new AggregateExpression('count', $pathExpression, true), null
-            )
-        );
-    }
-}
-
-class CustomComparator extends Comparator {
-    public $newModels = array();
-    
-    public function compare(Schema $fromSchema, Schema $toSchema) {
-        $diff = parent::compare($fromSchema, $toSchema);
-        
-        $diff->removedTables = array();
-        $diff->orphanedForeignKeys = array();
-        
-        $classes = OM::ORM()->getEM()->getMetadataFactory()->getAllMetadata();
-        foreach($diff->newTables as $newTable) {
-            $tableName = $newTable->getName();
-            foreach($classes as $class) {
-                if($class->getTableName() == $tableName)
-                    $this->newModels[] = $class->getReflectionClass()->name;
-            }
-        }
-        $this->newModels = array_unique($this->newModels);
-        
-        return $diff;
-    }
-
-}
-
-class CustomSchemaTool extends SchemaTool {
-    protected $__em;
-    protected $__platform;
-    public $newModels;
-    
-    public function __construct(EntityManager $em) {
-        $this->__em = $em;
-        $this->__platform = $em->getConnection()->getDatabasePlatform();
-        
-        parent::__construct($em);
-    }
-    
-    public function getUpdateSchemaSql(array $classes, $saveMode=false)
-    {
-        $sm = $this->__em->getConnection()->getSchemaManager();
-
-        $fromSchema = $sm->createSchema();
-        $toSchema = $this->getSchemaFromMetadata($classes);
-
-        $comparator = new CustomComparator();
-        $schemaDiff = $comparator->compare($fromSchema, $toSchema);
-        $this->newModels = $comparator->newModels;
-
-        if ($saveMode) {
-            return $schemaDiff->toSaveSql($this->__platform);
-        } else {
-            return $schemaDiff->toSql($this->__platform);
-        }
-    }
-}
-
-class CustomAnnotationDriver extends AnnotationDriver {
-    public function addPaths(array $paths)
-    {
-        $this->_paths = array_unique(array_merge($this->_paths, $paths));
-        $this->_classNames = null;
-    }
-    
-    /**
-     * Factory method for the Annotation Driver
-     *
-     * @param array|string $paths
-     * @param AnnotationReader $reader
-     * @return AnnotationDriver
-     * 
-     * @note Have to include this method to, due to no late-static-binding
-     */
-    static public function create($paths = array(), AnnotationReader $reader = null)
-    {
-        if ($reader == null) {
-            $reader = new AnnotationReader();
-            $reader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
-        }
-        return new self($reader, $paths);
-    }
-}
+    Doctrine\Common\Annotations\AnnotationRegistry;
 
 /**
  * Description of ORM
