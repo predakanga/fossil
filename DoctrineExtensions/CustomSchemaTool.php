@@ -36,13 +36,19 @@ use Doctrine\DBAL\Schema\Comparator,
     Fossil\OM;
 
 class CustomComparator extends Comparator {
+    protected $retainDeleted;
     public $newModels = array();
     
+    public function __construct($retainDeleted = true) {
+        $this->retainDeleted = $retainDeleted;
+    }
     public function compare(Schema $fromSchema, Schema $toSchema) {
         $diff = parent::compare($fromSchema, $toSchema);
         
-        $diff->removedTables = array();
-        $diff->orphanedForeignKeys = array();
+        if($this->retainDeleted) {
+            $diff->removedTables = array();
+            $diff->orphanedForeignKeys = array();
+        }
         
         $classes = OM::ORM()->getEM()->getMetadataFactory()->getAllMetadata();
         foreach($diff->newTables as $newTable) {
@@ -67,13 +73,27 @@ class CustomComparator extends Comparator {
 class CustomSchemaTool extends SchemaTool {
     protected $__em;
     protected $__platform;
+    protected $__retainDeleted;
     public $newModels;
     
-    public function __construct(EntityManager $em) {
+    public function __construct(EntityManager $em, $retainDeleted = true) {
         $this->__em = $em;
         $this->__platform = $em->getConnection()->getDatabasePlatform();
+        $this->__retainDeleted = $retainDeleted;
         
         parent::__construct($em);
+    }
+    
+    public function getCreateSchemaSql(array $classes)
+    {
+        $schema = $this->getSchemaFromMetadata($classes);
+        
+        $newModels = array();
+        foreach($classes as $class)
+            $newModels[] = $class->getReflectionClass()->name;
+        $this->newModels = $newModels;
+        
+        return $schema->toSql($this->_platform);
     }
     
     public function getUpdateSchemaSql(array $classes, $saveMode=false)
@@ -83,7 +103,7 @@ class CustomSchemaTool extends SchemaTool {
         $fromSchema = $sm->createSchema();
         $toSchema = $this->getSchemaFromMetadata($classes);
 
-        $comparator = new CustomComparator();
+        $comparator = new CustomComparator($this->__retainDeleted);
         $schemaDiff = $comparator->compare($fromSchema, $toSchema);
         $this->newModels = $comparator->newModels;
 

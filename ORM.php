@@ -135,10 +135,7 @@ class ORM {
     }
     
     public function ensureSchema($retainDeleted = true) {
-        if($retainDeleted) {
-            $schemaTool = new CustomSchemaTool($this->getEM());
-        } else
-            $schemaTool = new SchemaTool($this->getEM());
+        $schemaTool = new CustomSchemaTool($this->getEM(), $retainDeleted);
         
         try
         {
@@ -146,8 +143,10 @@ class ORM {
             $this->ensureInitialDatasets($schemaTool->newModels);
         }
         // TODO: Need to make this more specific, to ignore only on SQLite
-        catch(\Exception $e) {
-            throw $e; 
+        catch(\Doctrine\DBAL\DBALException $e) {
+            // If it's SQLite, try just creating it instead
+            $schemaTool->createSchema($this->getEM()->getMetadataFactory()->getAllMetadata());
+            $this->ensureInitialDatasets($schemaTool->newModels);
         }
     }
     
