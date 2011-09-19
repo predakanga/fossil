@@ -69,7 +69,7 @@ abstract class Model {
     }
     
     public function __toString() {
-        return "<Entity (" . get_class($this) . ") " . var_export($this->id(), true) . ">";
+        return htmlentities("<Entity (" . get_class($this) . ") " . var_export($this->id(), true) . ">");
     }
     
     public function id() {

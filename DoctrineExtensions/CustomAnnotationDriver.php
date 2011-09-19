@@ -57,6 +57,7 @@ class CustomAnnotationDriver extends AnnotationDriver {
     {
         if ($reader == null) {
             $reader = new AnnotationReader();
+            $reader->setIgnoreNotImportedAnnotations(true);
             $reader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
         }
         return new self($reader, $paths);
