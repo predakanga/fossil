@@ -304,7 +304,7 @@ class OM {
         // Load settings up, set up drivers
         self::Compiler()->registerAutoloadPath();
         self::get('Cache');
-        self::ORM()->ensureSchema();
+        self::ORM()->ensureSchema(true);
         // Register plugins
         // TODO: Move to auto-plugin loader
         OM::Plugins()->loadEnabledPlugins();

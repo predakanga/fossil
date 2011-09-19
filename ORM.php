@@ -134,18 +134,28 @@ class ORM {
             $this->em->flush();
     }
     
-    public function ensureSchema($retainDeleted = true) {
+    public function ensureSchema($coreOnly = false, $retainDeleted = true) {
         $schemaTool = new CustomSchemaTool($this->getEM(), $retainDeleted);
+        
+        if(!$coreOnly) {
+            $allMD = $this->getEM()->getMetadataFactory()->getAllMetadata();
+        } else {
+            $allMD = array();
+            foreach($this->getEM()->getMetadataFactory()->getAllMetadata() as $md) {
+                if($md->getReflectionClass()->getNamespaceName() == "Fossil\\Models")
+                    $allMD[] = $md;
+            }
+        }
         
         try
         {
-            $schemaTool->updateSchema($this->getEM()->getMetadataFactory()->getAllMetadata());
+            $schemaTool->updateSchema($allMD);
             $this->ensureInitialDatasets($schemaTool->newModels);
         }
         // TODO: Need to make this more specific, to ignore only on SQLite
         catch(\Doctrine\DBAL\DBALException $e) {
             // If it's SQLite, try just creating it instead
-            $schemaTool->createSchema($this->getEM()->getMetadataFactory()->getAllMetadata());
+            $schemaTool->createSchema($allMD);
             $this->ensureInitialDatasets($schemaTool->newModels);
         }
     }
