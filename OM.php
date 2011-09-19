@@ -164,6 +164,8 @@ class OM {
                 } else {
                     $name = substr($class, strrpos($class, "\\")+1);
                 }
+                // Normalize the name before storing it
+                $name = ucfirst(strtolower($name));
 
                 if(!isset(self::$instancedClasses[$type]))
                     self::$instancedClasses[$type] = array();
@@ -408,6 +410,8 @@ class OM {
 
     private static function resolveInstanceClass($typeOrFqcn, $subtype = null) {
         if($subtype) {
+            // Normalize the subtype before retrieval, as before storage
+            $subtype = ucfirst(strtolower($subtype));
             if(!isset(self::$instancedClasses[$typeOrFqcn]) || !isset(self::$instancedClasses[$typeOrFqcn][$subtype]))
                 throw new NoSuchClassException($typeOrFqcn, $subtype);
 
