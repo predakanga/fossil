@@ -62,9 +62,14 @@ class ORM {
         $config = new \Doctrine\ORM\Configuration(); // (2)
 
         // Proxy Configuration (3)
-        $config->setProxyDir(OM::FS()->tempDir() . D_S .'proxies');
+        $tempDir = OM::FS()->tempDir() . D_S . "proxies";
+        // TODO: Only run this when the cache isn't primed
+        if(!file_exists($tempDir))
+            mkdir($tempDir);
+        
+        $config->setProxyDir($tempDir);
         $config->setProxyNamespace('Fossil\\Proxies');
-        Autoloader::addNamespacePath("Fossil\\Proxies", OM::FS()->tempDir() . D_S .'proxies');
+        Autoloader::addNamespacePath("Fossil\\Proxies", $tempDir);
         $config->setAutoGenerateProxyClasses(($appEnv == "development"));
 
         // Mapping Configuration (4)
@@ -74,9 +79,7 @@ class ORM {
         // Register the Doctrine annotations ourselves, as it's usually done by $config->newDefaultAnnotationDriver()
         AnnotationRegistry::registerFile('Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php');
 
-        $this->driver = CustomAnnotationDriver::create(OM::FS()->fossilRoot() . D_S . "models");
-        
-        CustomAnnotationDriver::create(array());
+        $this->driver = CustomAnnotationDriver::create();
         
         foreach(OM::FS()->roots(false) as $root) {
             if(is_dir($root . D_S . "models"))
