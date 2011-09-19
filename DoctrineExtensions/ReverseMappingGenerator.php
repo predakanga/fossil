@@ -80,8 +80,8 @@ class ReverseMappingGenerator {
                        $md->getAssociationTargetClass($property->name) == $classMetadata->getName()) {
                         // Generate the reverse and add it in
                         $mapping = $md->getAssociationMapping($property->name);
-                        if(!$mapping['isOwningSide'])
-                            throw new \Exception("@F:GeneratedEntity may only be used on the owning side of associations");
+                        if((!$mapping['isOwningSide']) && ($mapping['type'] != ClassMetadataInfo::ONE_TO_MANY))
+                            throw new \Exception("@F:GenerateReverse may only be used on the owning side of associations");
                         $reverseMapping = $this->invertMapping($mapping);
                         
                         switch($reverseMapping['type']) {
@@ -90,6 +90,9 @@ class ReverseMappingGenerator {
                                 break;
                             case ClassMetadataInfo::ONE_TO_MANY:
                                 $classMetadata->mapOneToMany($reverseMapping);
+                                break;
+                            case ClassMetaDataInfo::MANY_TO_ONE:
+                                $classMetadata->mapManyToOne($reverseMapping);
                                 break;
                             case ClassMetadataInfo::ONE_TO_ONE:
                                 $classMetadata->mapOneToOne($reverseMapping);
@@ -103,6 +106,8 @@ class ReverseMappingGenerator {
     
     protected function invertMapping($mapping) {
         $newMapping = array('declared' => $mapping['targetEntity']);
+        $newMapping['targetEntity'] = $mapping['sourceEntity'];
+        
         switch($mapping['type']) {
             case ClassMetadataInfo::MANY_TO_MANY:
                 $newMapping['type'] = ClassMetadataInfo::MANY_TO_MANY;
@@ -113,14 +118,22 @@ class ReverseMappingGenerator {
             case ClassMetadataInfo::ONE_TO_ONE:
                 $newMapping['type'] = ClassMetadataInfo::ONE_TO_ONE;
                 break;
+            case ClassMetadataInfo::ONE_TO_MANY:
+                $newMapping['type'] = ClassMetaDataInfo::MANY_TO_ONE;
         }
         // Required: targetEntity, fieldName
         // Use mappedBy
-        $newMapping['targetEntity'] = $mapping['sourceEntity'];
-        if(!isset($mapping['inversedBy']))
-            throw new \Exception("@F:GenerateReverse must be used with an association with inversedBy specified");
-        $newMapping['fieldName'] = $mapping['inversedBy'];
-        $newMapping['mappedBy'] = $mapping['fieldName'];
+        if($newMapping['type'] == ClassMetadataInfo::MANY_TO_ONE) {
+            if(!isset($mapping['mappedBy']))
+                throw new \Exception("@F:GenerateReverse on an N-1 association must be used with an association with mappedBy specified");
+            $newMapping['fieldName'] = $mapping['mappedBy'];
+            $newMapping['inversedBy'] = $mapping['fieldName'];
+        } else {
+            if(!isset($mapping['inversedBy']))
+                throw new \Exception("@F:GenerateReverse must be used with an association with inversedBy specified");
+            $newMapping['fieldName'] = $mapping['inversedBy'];
+            $newMapping['mappedBy'] = $mapping['fieldName'];
+        }
         
         return $newMapping;
     }
