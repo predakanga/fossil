@@ -151,6 +151,8 @@ class Fossil {
      * @return Fossil\Core A Fossil instance ready to serve requests, or NULL
      */
     static function bootstrap($mode=PRODUCTION) {
+        global $overlay_namespace, $overlay_path;
+        
         // First thing's first, check that the environment is okay for Fossil
         if(($mode & self::AssertionsAndChecks) && !self::checkEnvironment())
             return NULL;
