@@ -55,8 +55,8 @@ class Memcached extends BaseCache {
         $config = parent::getDefaultConfig();
         if(!$config) {
             $config = array('id' => 'fossil',
-                            'servers' => array('host' => 'localhost',
-                                               'port' => 11211));
+                            'servers' => array(array('host' => 'localhost',
+                                                     'port' => 11211)));
         }
         
         return $config;
