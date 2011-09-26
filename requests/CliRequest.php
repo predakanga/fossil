@@ -36,14 +36,46 @@
 
 namespace Fossil\Requests;
 
+use Symfony\Component\Console\Application,
+    Fossil\OM;
+
 /**
  * Description of CliRequest
  *
  * @author predakanga
  */
 class CliRequest extends BaseRequest {
+    /**
+     * @var Symfony\Component\Console\Application
+     */
+    protected $app;
+    
     public function __construct() {
+        // Figure out the app name
+        $this->app = new Application($this->decideName(), "1.0");
         
+        // And add any commands
+        $this->registerCommands();
+    }
+    
+    protected function decideName() {
+        $appName = "Fossil";
+        if(OM::overlayNamespace()) {
+            $appName = basename(OM::overlayNamespace());
+        } elseif(OM::appNamespace()) {
+            $appName = basename(OM::appNamespace());
+        }
+        return $appName . " CLI";
+    }
+    
+    protected function registerCommands() {
+        foreach(array_keys(OM::getAllInstanced("Commands")) as $commandName) {
+            $this->app->add(OM::obj("Commands", $commandName)->create());
+        }
+    }
+    
+    public function run() {
+        $this->app->run();
     }
 }
 

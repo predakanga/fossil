@@ -66,9 +66,8 @@ class Autoloader {
 		self::addNamespacePath("Fossil", __DIR__);
         self::addNamespacePath("TokenReflection", stream_resolve_include_path("TokenReflection"));
         // Also add in the default Doctrine classloader, to pass off responsibility
-        require_once 'Doctrine/Common/ClassLoader.php';
-        self::$doctrineClassLoader = new \Doctrine\Common\ClassLoader('Doctrine');
-        self::$doctrineClassLoader->register();
+        require_once 'Doctrine/ORM/Tools/Setup.php';
+        \Doctrine\ORM\Tools\Setup::registerAutoloadPEAR();
 	}
 	
 	/**

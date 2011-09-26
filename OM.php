@@ -146,11 +146,14 @@ class OM {
                 continue;
             self::$scannedClasses[$class] = true;
 
+            $reflClass = new \ReflectionClass($class);
+            // Skip the class if it's abstract
+            if($reflClass->isAbstract())
+                continue;
             $annotations = self::Annotations()->getClassAnnotations($class, "F:Instanced");
             foreach($annotations as $objAnno) {
                 if(!isset($objAnno->type)) {
                     // Check the class's namespace
-                    $reflClass = new \ReflectionClass($class);
                     $namespace = $reflClass->getNamespaceName();
                     $type = substr($namespace, strrpos($namespace, '\\')+1);
                 } else {
@@ -430,6 +433,12 @@ class OM {
             self::$instanceWrappers[$actualClass] = new InstanceWrapper($actualClass);
 
         return self::$instanceWrappers[$actualClass];
+    }
+    
+    public static function getAllInstanced($type) {
+        if(isset(self::$instancedClasses[$type]))
+            return self::$instancedClasses[$type];
+        return array();
     }
 
     /**
