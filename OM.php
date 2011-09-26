@@ -60,21 +60,10 @@ class OM {
     private static $objectRepo;
 
     private static $startupTime = 0;
-
-    private static $dirty = false;
-    
-    protected static function makeDirty() {
-        self::$dirty = true;
-        register_shutdown_function(array(__CLASS__, "shutdown"));
-    }
     
     // Destructor, to update the quickstart file
     public static function shutdown() {
-        if(file_exists(self::FS()->tempDir() . D_S . ".quickstart.yml") && !self::$dirty) {
-            // If we don't have anything to update, return
-            return;
-        }
-        // Otherwise, build up a document with everything we need, and emit it
+        // Build up a document with everything we need, and emit it
         $quickstart = array();
         $quickstart['cache'] = array('fqcn' => get_class(self::Cache()),
                                      'config' => self::Cache()->getConfig());
@@ -88,7 +77,9 @@ class OM {
         self::$startupTime = microtime(true);
         // Start with a basic object repo
         self::$objectRepo = new ObjectRepository();
-        
+        self::FS()->setAppRoot(self::$appPath);
+        self::FS()->setOverlayRoot(self::$overlayPath);
+
 //        self::Error()->init(E_ALL | E_STRICT);
         
         // Load the basic settings from 'quickstart.yml'
@@ -158,6 +149,8 @@ class OM {
                 return false;
         
         self::$objectRepo = $cachedData['objects'];
+        self::FS()->setAppRoot(self::$appPath);
+        self::FS()->setOverlayRoot(self::$overlayPath);
         
         // Get the compiler, to set up the namespace path
         self::Compiler()->registerAutoloadPath();
@@ -318,24 +311,26 @@ class OM {
     }
     
     protected static $appNS;
+    protected static $appPath;
     public static function setApp($namespace, $path) {
         // Strip the trailing \ if any is given
         $namespace = rtrim($namespace, "\\");
         Autoloader::addNamespacePath($namespace, $path);
-        self::FS()->setAppRoot($path);
         self::$appNS = $namespace;
+        self::$appPath = $path;
     }
     public static function appNamespace() {
         return self::$appNS;
     }
     
     protected static $overlayNS;
+    protected static $overlayPath;
     public static function setOverlay($namespace, $path) {
         // Strip the trailing \ if any is given
         $namespace = rtrim($namespace, "\\");
         Autoloader::addNamespacePath($namespace, $path);
-        self::FS()->setOverlayRoot($path);
         self::$overlayNS = $namespace;
+        self::$overlayPath = $path;
     }
     public static function overlayNamespace() {
         return self::$overlayNS;

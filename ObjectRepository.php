@@ -230,7 +230,7 @@ class ObjectRepository {
     protected function _setSingleton($type, $instance) {
         // We only care about cache when setting the dirty status
         if($type == "Cache") {
-//            $this->makeDirty();
+            $this->makeDirty();
         }
 
         $this->staticInstances[$type] = $instance;
@@ -331,6 +331,15 @@ class ObjectRepository {
         if(isset($this->instancedClasses[$type]))
             return $this->instancedClasses[$type];
         return array();
+    }
+    
+    private $dirty = false;
+    
+    protected function makeDirty() {
+        if(!$this->dirty) {
+            register_shutdown_function(array("Fossil\\OM", "shutdown"));
+            $this->dirty = true;
+        }
     }
 }
 
