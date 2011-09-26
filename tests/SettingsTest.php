@@ -20,6 +20,7 @@ class SettingsTest extends \PHPUnit_Framework_TestCase {
      * This method is called before a test is executed.
      */
     protected function setUp() {
+        OM::setup();
         $this->object = new Settings;
     }
 
