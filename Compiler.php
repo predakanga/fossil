@@ -328,7 +328,7 @@ EOT;
 
     public function compileAll() {
         // Get a list of all objects for compilation
-        foreach (OM::getBaseObjects() as $class) {
+        foreach (OM::getObjectsToCompile() as $class) {
             $this->launchCompile($class);
         }
         return $this->classMap;
@@ -338,7 +338,7 @@ EOT;
         // The bootstrapping simply compiles itself, so that an enhanced compiler can be used as provided
         $newTopClass = $this->launchCompile("\\" . __CLASS__);
         if($newTopClass != get_class($this)) {
-            OM::select("Compiler", null, $newTopClass);
+            OM::setSingleton("Compiler", new $newTopClass);
         }
         return $this->classMap;
     }

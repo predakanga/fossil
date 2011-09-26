@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * Copyright (c) 2011, predakanga
  * All rights reserved.
  * 
@@ -25,25 +25,22 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * @author predakanga
- * @since 0.1
- * @category Fossil Core
- * @package Fossil
- * @subpackage Annotations
- * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Annotations;
+namespace Fossil\DoctrineExtensions;
+
+use TokenReflection\ReflectionClass;
 
 /**
- * Object annotation
+ * Description of TokenizedPhpParser
  *
  * @author predakanga
  */
-class Object extends Annotation {
-    public $type;
-	public $name = "default";
+class TokenizedPhpParser {
+    public function parseClass(ReflectionClass $class) {
+        // The real code uses lower case for aliases, so do likewise
+        return array_change_key_case($class->getNamespaceAliases(), CASE_LOWER);
+    }
 }
 
 ?>

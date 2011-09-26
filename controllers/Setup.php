@@ -173,9 +173,9 @@ class Setup extends AutoController {
         if(!$cacheSet || !$rendererSet || !$dbSet)
             return new RedirectResponse("?controller=setup&action=selectDrivers");
         
-        $cacheDriver = OM::getSpecific("Cache", $cacheSet['driver']);
-        $rendererDriver = OM::getSpecific("Renderer", $rendererSet['driver']);
-        $dbDriver = OM::getSpecific("Database", $dbSet['driver']);
+        $cacheDriver = OM::getSpecificSingleton("Cache", $cacheSet['driver']);
+        $rendererDriver = OM::getSpecificSingleton("Renderer", $rendererSet['driver']);
+        $dbDriver = OM::getSpecificSingleton("Database", $dbSet['driver']);
         
         $dbForm = $dbDriver['fqcn']::getForm();
         $cacheForm = $cacheDriver['fqcn']::getForm();
