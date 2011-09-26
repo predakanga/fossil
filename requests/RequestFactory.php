@@ -54,7 +54,7 @@ class RequestFactory {
         } else {
             $class = OM::obj("Requests", "WebRequest")->create();
         }
-        return new $class;
+        return $class;
     }
 }
 
