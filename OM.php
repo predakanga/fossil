@@ -61,6 +61,8 @@ class OM {
 
     private static $startupTime = 0;
     
+    private static $versionGUID;
+    
     // Destructor, to update the quickstart file
     public static function shutdown() {
         // Build up a document with everything we need, and emit it
@@ -148,6 +150,9 @@ class OM {
             if(self::getFossilMtime() > $cachedData['mtime'])
                 return false;
         
+        // Restore our current code version
+        self::$versionGUID = $cachedData['version_guid'];
+
         self::$objectRepo = $cachedData['objects'];
         self::FS()->setAppRoot(self::$appPath);
         self::FS()->setOverlayRoot(self::$overlayPath);
@@ -187,6 +192,8 @@ class OM {
      */
     public static function primeCache() {
         // Regular functionality:
+        // Generate a new version GUID
+        self::$versionGUID = uniqid("", true);
         // Scan local namespace for objects
         self::$objectRepo->scanForObjects(false);
         // Load settings up, set up drivers
@@ -209,6 +216,7 @@ class OM {
         $cachedData['objects'] = self::$objectRepo;
         $cachedData['annotations'] = self::Annotations()->dumpForCache();
         $cachedData['mtime'] = self::getFossilMtime();
+        $cachedData['version_guid'] = self::$versionGUID;
         
         OM::Cache()->set("fossil_state", $cachedData);
     }
@@ -355,5 +363,9 @@ class OM {
             return basename(self::$appNS);
         else
             return $name;
+    }
+    
+    public static function getVersionGUID() {
+        return self::$versionGUID;
     }
 }

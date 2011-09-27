@@ -65,16 +65,28 @@ abstract class BaseCache implements IDriver {
         return NULL;
     }
     
-    public function has($key) {
+    protected function versionKey($key) {
+        return $key . "_" . OM::getVersionGUID();
+    }
+    
+    public function has($key, $versioned_key = false) {
+        if($versioned_key)
+            $key = $this->versionKey($key);
         return $this->_has($this->prefix . $key);
     }
-    public function get($key) {
+    public function get($key, $versioned_key = false) {
+        if($versioned_key)
+            $key = $this->versionKey($key);
         return $this->_get($this->prefix . $key);
     }
-    public function set($key, $value) {
+    public function set($key, $value, $versioned_key = false) {
+        if($versioned_key)
+            $key = $this->versionKey($key);
         $this->_set($this->prefix . $key, $value);
     }
-    public function update($key, $update_cb) {
+    public function update($key, $update_cb, $versioned_key = false) {
+        if($versioned_key)
+            $key = $this->versionKey($key);
         $this->_update($this->prefix . $key, $update_cb);
     }
     
