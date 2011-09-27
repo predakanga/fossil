@@ -1,0 +1,7 @@
+---
+name: schedule
+version: 0.0.1
+description: Provides a generic scheduler, with commands to run it and annotations to make any task scheduled
+dependencies:
+    - name: fossil
+...

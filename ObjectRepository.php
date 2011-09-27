@@ -306,7 +306,6 @@ class ObjectRepository {
             // If not, create one and store it under both the normalised and un-normalised names
             // First, though, we must check that the class exists
             if(!isset($this->instancedClasses[$properType]) || !isset($this->instancedClasses[$properType][$properName])) {
-                var_dump($this->instancedClasses);
                 throw new NoSuchClassException($type, $name, "instance");
             }
             $fqcn = $this->instancedClasses[$properType][$properName];
