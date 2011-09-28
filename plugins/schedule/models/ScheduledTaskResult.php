@@ -39,10 +39,6 @@ use Fossil\OM,
  * @Entity
  */
 class ScheduledTaskResult extends Model {
-    const RESULT_SUCCEEDED = 0;
-    const RESULT_FAILED = 1;
-    const RESULT_DIDNT_RUN = 2;
-    
     /** @Id @GeneratedValue @Column(type="integer") */
     protected $id;
     /** @Column(type="datetime") */

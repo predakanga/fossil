@@ -49,7 +49,7 @@ class ScheduledTask extends Model {
     protected $task;
     /** @Column */
     protected $description;
-    /** @OneToMany(targetEntity="ScheduledTaskResult", mappedBy="scheduleItem") */
+    /** @OneToMany(targetEntity="ScheduledTaskResult", mappedBy="scheduledItem") */
     protected $results;
 }
 

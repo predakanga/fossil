@@ -34,8 +34,10 @@ use Symfony\Component\Console\Input\InputInterface,
     Symfony\Component\Console\Input\InputDefinition,
     Symfony\Component\Console\Input\InputArgument,
     Fossil\OM,
+    Fossil\DoctrineExtensions\MemoryWriter,
     Fossil\Commands\BaseCommand,
-    Fossil\Plugins\Schedule\Models\ScheduledTask;
+    Fossil\Plugins\Schedule\Models\ScheduledTask,
+    Fossil\Plugins\Schedule\Models\ScheduledTaskResult;
 
 /**
  * Description of RunSchedule
@@ -53,7 +55,6 @@ class RunSchedule extends BaseCommand {
     protected function findTasks() {
         $cachedTasks = OM::Cache("knownTasks", true);
         if(!$cachedTasks) {
-            echo "Looking for new tasks\n";
             $cachedTasks = array();
             // Check for all classes with @Fossil\Plugins\Schedule\Annotations\Schedule
             $tasks = OM::Annotations()->getClassesWithAnnotation("Fossil\\Plugins\\Schedule\\Annotations\\Schedule");
@@ -90,7 +91,6 @@ class RunSchedule extends BaseCommand {
                         $taskModel->description = $scheduleAnno[0]->desc;
                     }
                 }
-                echo "Found task $taskName\n";
                 $cachedTasks[] = $taskName;
             }
             OM::Cache()->set("knownTasks", $cachedTasks, true);
@@ -107,10 +107,31 @@ class RunSchedule extends BaseCommand {
         
         $tasksToRun = ScheduledTask::getDueTasks($taskNames);
         
-        foreach($tasksToRun as $task) {
-            echo "Would run task " . $task->task . "\n";
+        $writer = new MemoryWriter();
+        
+        foreach($tasksToRun as $taskModel) {
+            echo "Running {$taskModel->task}\n";
+            $writer->clear();
+            
+            // Run the task
+            $task = OM::Obj("tasks", $taskModel->task)->create();
+            $task->run($writer);
+            
+            // Save the result
+            $runAt = new \DateTime();
+            $result = new ScheduledTaskResult();
+            $result->result = $task->getResult();
+            $result->output = $writer->getOutput();
+            $result->runAt = $runAt;
+            $result->scheduledItem = $taskModel;
+            $result->save();
+            
+            $taskModel->results->add($result);
+            // And update the next run time
+            $taskModel->nextRun = clone $runAt;
+            $taskModel->nextRun->add(new \DateInterval($taskModel->period));
+            $taskModel->save();
         }
-        /* Do stuff here */
         
         $end_time = microtime(true);
         
