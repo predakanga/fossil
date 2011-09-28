@@ -1,6 +1,8 @@
 ---
-- name: title
+- section: Fossil
+  name: title
   value: Your Fossil Site
-- name: plugins
+- section: Fossil
+  name: plugins
   value: ""
 ...

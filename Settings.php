@@ -35,13 +35,15 @@
 
 namespace Fossil;
 
+use Fossil\Models\Setting;
+
 /**
  * Description of Settings
  *
  * @author predakanga
  * @F:Object("Settings")
  */
-class Settings implements \ArrayAccess {
+class Settings {
     private $store;
     private $fossilHash;
     private $backingFile;
@@ -58,7 +60,6 @@ class Settings implements \ArrayAccess {
     }
     
     public function __destruct() {
-        // Because with offsetGet-by-ref we don't know when Fossil changes...
         if(isset($this->store['Fossil'])) {
             $fossilHash = md5(serialize($this->store['Fossil']));
             if($fossilHash != $this->fossilHash)
@@ -72,38 +73,40 @@ class Settings implements \ArrayAccess {
         return true;
     }
     
-    public function offsetExists($key) {
-        return isset($this->store[$key]);
+    public function loadCoreSettings() {
+        $this->loadSectionSettings("Fossil");
     }
     
-    public function &offsetGet($key) {
-        return $this->store[$key];
-    }
-    
-    public function offsetSet($key, $value) {
-        $this->store[$key] = $value;
-        if($key == "Fossil")
-            file_put_contents($this->backingFile, yaml_emit($this->store['Fossil']));
-    }
-    
-    public function offsetUnset($key) {
-        unset($this->store[$key]);
+    protected function loadSectionSettings($section) {
+        $settings = Setting::findBySection($section);
+        if(!isset($this->store[$section]))
+            $this->store[$section] = array();
+        foreach($settings as $setting) {
+            $this->store[$section][$setting->name] = $setting->value;
+        }
     }
     
     public function get($section, $setting, $default = null) {
-        if(isset($this->store[$section]))
-            if(isset($this->store[$section][$setting]))
-                return $this->store[$section][$setting];
+        if(!isset($this->store[$section]))
+            $this->loadSectionSettings($section);
+        if(isset($this->store[$section][$setting]))
+            return $this->store[$section][$setting];
         return $default;
     }
     
     public function set($section, $setting, $value) {
         if(!isset($this->store[$section]))
-            $this->store[$section] = array();
+            $this->loadSectionSettings($section);
         $this->store[$section][$setting] = $value;
-        // If it's a Fossil setting, store it
-        if($section == "Fossil")
-            file_put_contents($this->backingFile, yaml_emit($this->store['Fossil']));
+        // Persist to the DB as well
+        $settingModel = Setting::findOneBy(array('section' => $section, 'name' => $setting));
+        if(!$settingModel) {
+            $settingModel = new Setting();
+            $settingModel->section = $section;
+            $settingModel->name = $setting;
+            $settingModel->save();
+        }
+        $settingModel->value = $value;
     }
 }
 

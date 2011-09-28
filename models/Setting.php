@@ -51,6 +51,9 @@ class Setting extends Model {
     protected $id;
     
     /** @Column(type="string") */
+    protected $section;
+    
+    /** @Column(type="string") */
     protected $name;
     
     /** @Column(type="string") */

@@ -200,6 +200,8 @@ class OM {
         self::Compiler()->registerAutoloadPath();
         self::$objectRepo->getSingleton('Cache');
         self::ORM()->ensureSchema(true);
+        // Load the core settings
+        OM::Settings()->loadCoreSettings();
         // Register plugins
         // TODO: Move to auto-plugin loader
         OM::Plugins()->loadEnabledPlugins();
