@@ -41,6 +41,7 @@ use \Fossil\OM;
 /**
  * @author predakanga
  * @Entity
+ * @Table(name="FossilUser")
  * @F:InitialDataset("plugins/users/data/users.yml")
  */
 class User extends \Fossil\Models\Model {

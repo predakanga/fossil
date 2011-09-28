@@ -42,6 +42,7 @@ namespace Fossil\Plugins\Users\Models;
  * @author predakanga
  * 
  * @Entity
+ * @Table(name="FossilUserClass")
  * @F:InitialDataset("plugins/users/data/userclasses.yml")
  */
 class UserClass extends \Fossil\Models\Model {

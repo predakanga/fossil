@@ -38,6 +38,7 @@ namespace Fossil\Plugins\Users\Models;
 
 /**
  * @Entity
+ * @Table(name="FossilRole")
  * @F:InitialDataset("plugins/users/data/roles.yml")
  */
 class Role extends \Fossil\Models\Model {
