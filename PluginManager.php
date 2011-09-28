@@ -135,6 +135,13 @@ class PluginManager {
     }
     
     public function loadEnabledPlugins() {
+        $plugins = OM::Settings("Fossil", "plugins", "");
+        if($plugins != "") {
+            foreach(explode(",", $plugins) as $plugin)
+                $this->enablePlugin($plugin);
+        }
+        
+        return;
         $this->enablePlugin("users");
         $this->enablePlugin("info");
         $this->enablePlugin("forums");
