@@ -148,6 +148,8 @@ class Filesystem {
     
     public function execDir() {
         // TODO: Make sure this works with CLI
+        if(isset($_ENV['phpunit']) && $_ENV['phpunit'] == "true")
+            return __DIR__;
         return dirname($_SERVER['SCRIPT_FILENAME']);
     }
     
