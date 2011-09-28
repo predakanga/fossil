@@ -37,6 +37,9 @@
 namespace Fossil\Requests;
 
 use Symfony\Component\Console\Application,
+    Symfony\Component\Console\Helper\HelperSet,
+    Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper,
+    Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper,
     Fossil\OM;
 
 /**
@@ -53,7 +56,10 @@ class CliRequest extends BaseRequest {
     public function __construct() {
         // Figure out the app name
         $this->app = new Application($this->decideName(), "1.0");
-        
+        $helperSet = new HelperSet(array('db' => new ConnectionHelper(OM::ORM()->getEM()->getConnection()),
+                                         'em' => new EntityManagerHelper(OM::ORM()->getEM())));
+        $this->app->setHelperSet($helperSet);
+        $this->app->setAutoExit(false);
         // And add any commands
         $this->registerCommands();
     }
@@ -69,6 +75,8 @@ class CliRequest extends BaseRequest {
     }
     
     protected function registerCommands() {
+        // Add run DQL, for our own purposes
+        $this->app->add(new \Doctrine\ORM\Tools\Console\Command\RunDqlCommand());
         foreach(array_keys(OM::getAllInstanced("Commands")) as $commandName) {
             $this->app->add(OM::obj("Commands", $commandName)->create());
         }
