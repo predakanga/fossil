@@ -27,29 +27,35 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Fossil\Tasks;
+namespace Fossil\DoctrineExtensions;
 
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\Output;
 
 /**
- * Description of BaseTask
+ * Description of MemoryWriter
  *
  * @author predakanga
- * @F:Instanced
  */
-abstract class BaseTask {
-    const RESULT_SUCCEEDED = 0;
-    const RESULT_NOT_RUN = 1;
-    const RESULT_FAILED = 2;
+class MemoryWriter extends Output {
+    protected $backingStore = "";
     
-    protected $result = self::RESULT_NOT_RUN;
-    
-    public function getResult() {
-        return $this->result;
+    public function __construct($verbosity = self::VERBOSITY_NORMAL) {
+        parent::__construct($verbosity);
+    }
+
+    public function doWrite($message, $newline) {
+        $this->backingStore .= $message;
+        if($newline)
+            $this->backingStore .= "\n";
     }
     
-    abstract public function run(OutputInterface $out);
-    //put your code here
+    public function getOutput() {
+        return $this->backingStore;
+    }
+    
+    public function clear() {
+        $this->backingStore = "";
+    }
 }
 
 ?>

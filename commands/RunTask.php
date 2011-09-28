@@ -27,29 +27,40 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Fossil\Tasks;
+namespace Fossil\Commands;
 
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputInterface,
+    Symfony\Component\Console\Output\OutputInterface,
+    Symfony\Component\Console\Input\InputDefinition,
+    Symfony\Component\Console\Input\InputArgument,
+    Fossil\OM;
 
 /**
- * Description of BaseTask
+ * Description of RunTask
  *
  * @author predakanga
- * @F:Instanced
  */
-abstract class BaseTask {
-    const RESULT_SUCCEEDED = 0;
-    const RESULT_NOT_RUN = 1;
-    const RESULT_FAILED = 2;
-    
-    protected $result = self::RESULT_NOT_RUN;
-    
-    public function getResult() {
-        return $this->result;
+class RunTask extends BaseCommand {
+    protected function configure() {
+        $this->setName("runTask");
+        $this->setDescription("Runs a given task");
+        $definition = new InputDefinition(array(new InputArgument("task", InputArgument::REQUIRED)));
+        $this->setDefinition($definition);
     }
     
-    abstract public function run(OutputInterface $out);
-    //put your code here
+    protected function execute(InputInterface $input, OutputInterface $output) {
+        $start_time = microtime(true);
+        
+        $taskName = $input->getArgument("task");
+        $task = OM::obj("tasks", $taskName)->create();
+        $task->run($output);
+        
+        $end_time = microtime(true);
+        
+        $time_passed = ($end_time - $start_time);
+        
+        $output->writeln("Ran the task. Took " . $time_passed . " seconds");
+    }
 }
 
 ?>

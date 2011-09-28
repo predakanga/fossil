@@ -32,24 +32,19 @@ namespace Fossil\Tasks;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Description of BaseTask
+ * Description of StreamingTask
  *
  * @author predakanga
- * @F:Instanced
  */
-abstract class BaseTask {
-    const RESULT_SUCCEEDED = 0;
-    const RESULT_NOT_RUN = 1;
-    const RESULT_FAILED = 2;
+abstract class StreamingTask extends BaseTask {
+    abstract public function runOneIteration(OutputInterface $out);
     
-    protected $result = self::RESULT_NOT_RUN;
-    
-    public function getResult() {
-        return $this->result;
+    public function run(OutputInterface $out) {
+        // Run the task until runOneIteration returns false
+        // Extensions can provide pre/post logic in here
+        while($this->runOneIteration($out))
+            ;
     }
-    
-    abstract public function run(OutputInterface $out);
-    //put your code here
 }
 
 ?>
