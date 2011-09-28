@@ -4,5 +4,5 @@
   value: Your Fossil Site
 - section: Fossil
   name: plugins
-  value: ""
+  value: "users,forums,schedule"
 ...
