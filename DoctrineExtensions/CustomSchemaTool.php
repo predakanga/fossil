@@ -39,16 +39,8 @@ class CustomComparator extends Comparator {
     protected $retainDeleted;
     public $newModels = array();
     
-    public function __construct($retainDeleted = true) {
-        $this->retainDeleted = $retainDeleted;
-    }
     public function compare(Schema $fromSchema, Schema $toSchema) {
         $diff = parent::compare($fromSchema, $toSchema);
-        
-        if($this->retainDeleted) {
-            $diff->removedTables = array();
-            $diff->orphanedForeignKeys = array();
-        }
         
         $classes = OM::ORM()->getEM()->getMetadataFactory()->getAllMetadata();
         foreach($diff->newTables as $newTable) {

@@ -152,7 +152,7 @@ class ORM {
         
         try
         {
-            $schemaTool->updateSchema($allMD);
+            $schemaTool->updateSchema($allMD, true);
             $this->ensureInitialDatasets($schemaTool->newModels);
         }
         // TODO: Need to make this more specific, to ignore only on SQLite
