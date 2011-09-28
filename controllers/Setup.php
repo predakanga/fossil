@@ -192,13 +192,19 @@ class Setup extends AutoController {
         if($submitted) {
             // Save settings
             if($dbForm) {
-                $sideSet['Fossil']['database']['config'] = $dbForm->toConfig();
+                $settings = $sideSet->get('Fossil', 'database', array());
+                $settings['config'] = $dbForm->toConfig();
+                $sideSet->set('Fossil', 'database', $settings);
             }
             if($cacheForm) {
-                $sideSet['Fossil']['cache']['config'] = $cacheForm->toConfig();
+                $settings = $sideSet->get('Fossil', 'cache', array());
+                $settings['config'] = $cacheForm->toConfig();
+                $sideSet->set('Fossil', 'cache', $settings);
             }
             if($rendererForm) {
-                $sideSet['Fossil']['renderer']['config'] = $rendererForm->toConfig();
+                $settings = $sideSet->get('Fossil', 'renderer', array());
+                $settings['config'] = $rendererForm->toConfig();
+                $sideSet->set('Fossil', 'renderer', $settings);
             }
             // And push on to the next step
             return new RedirectResponse("?controller=setup&action=finished");
