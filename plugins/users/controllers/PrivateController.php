@@ -48,7 +48,7 @@ abstract class PrivateController extends \Fossil\Controllers\AutoController {
         if(!$user) {
             return $this->unauthorizedAction($req);
         }
-        parent::run($req);
+        return parent::run($req);
     }
 }
 
