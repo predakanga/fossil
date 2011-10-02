@@ -43,8 +43,8 @@ abstract class BaseInit {
         $this->registerObjectFactories();
     }
     
-    abstract protected function registerEventSubscribers(EventManager $evm);
-    abstract protected function registerObjectFactories();
+    protected function registerEventSubscribers(EventManager $evm) {}
+    protected function registerObjectFactories() {}
 }
 
 ?>
