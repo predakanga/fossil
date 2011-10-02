@@ -126,6 +126,13 @@ class PluginManager {
         }
         // Finally, store it
         $this->enabledPlugins[] = $pluginName;
+        
+        // And call it's initializer, if one exists
+        $initClass = "Fossil\\Plugins\\" . ucfirst($pluginName) . "\\Init";
+        if(class_exists($initClass)) {
+            $initInst = new $initClass;
+            $initInst->initialize();
+        }
     }
     
     public function disablePlugin($pluginName) {
@@ -140,13 +147,6 @@ class PluginManager {
             foreach(explode(",", $plugins) as $plugin)
                 $this->enablePlugin($plugin);
         }
-        
-        return;
-        $this->enablePlugin("users");
-        $this->enablePlugin("info");
-        $this->enablePlugin("forums");
-        $this->enablePlugin("schedule");
-//        $this->enablePlugin("regression");
     }
 }
 

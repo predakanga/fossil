@@ -162,6 +162,9 @@ class OM {
         
         self::Annotations()->loadFromCache($cachedData['annotations']);
         
+        // Initialize the overlays
+        self::initializeOverlays();
+        
         // Then after loading the plugin manager etc, check mtimes again, just in case
         self::Plugins()->loadEnabledPlugins();
         if($considerMtimes)
@@ -202,8 +205,9 @@ class OM {
         self::ORM()->ensureSchema(true);
         // Load the core settings
         OM::Settings()->loadCoreSettings();
+        // Initialize the overlays
+        self::initializeOverlays();
         // Register plugins
-        // TODO: Move to auto-plugin loader
         OM::Plugins()->loadEnabledPlugins();
         // Scan plugin namespaces for objects
         self::$objectRepo->scanForObjects(true);
@@ -344,6 +348,23 @@ class OM {
     }
     public static function overlayNamespace() {
         return self::$overlayNS;
+    }
+    
+    protected static function initializeOverlays() {
+        if(self::appNamespace()) {
+            $initClass = self::appNamespace() . "\\Init";
+            if(class_exists($initClass)) {
+                $initInst = new $initClass;
+                $initInst->initialize();
+            }
+        }
+        if(self::overlayNamespace()) {
+            $initClass = self::overlayNamespace() . "\\Init";
+            if(class_exists($initClass)) {
+                $initInst = new $initClass;
+                $initInst->initialize();
+            }
+        }
     }
     
     public static function getFossilID() {
