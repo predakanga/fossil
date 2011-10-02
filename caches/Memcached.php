@@ -48,7 +48,7 @@ class Memcached extends BaseCache {
     /**
      * @var Memcached
      */
-    private $mc;
+    protected $mc;
     
     protected function getDefaultConfig() {
         // Grab options from the settings
@@ -77,21 +77,17 @@ class Memcached extends BaseCache {
     }
     
     public function __construct($config = NULL) {
-        // If args == NULL, we're doing a default construction, load default options
-        if($config === NULL)
-            $config = $this->getDefaultConfig();
-        
         parent::__construct($config);
         
         // Conditionally use a persistent connection
-        if(isset($config['id'])) {
-            $this->mc = new \Memcached($config['id']);
+        if(isset($this->config['id'])) {
+            $this->mc = new \Memcached($this->config['id']);
         } else {
             $this->mc = new \Memcached();
         }
         // And if we don't have any servers (i.e. not persistent), add them
         if(!count($this->mc->getServerList()))
-            $this->mc->addServers($config['servers']);
+            $this->mc->addServers($this->config['servers']);
     }
     
     protected function _has($key) {

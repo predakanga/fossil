@@ -36,7 +36,7 @@
 
 namespace Fossil\Caches;
 
-use Fossil\Interfaces\IDriver,
+use Fossil\BaseDriver,
     Fossil\OM;
 
 /**
@@ -44,17 +44,12 @@ use Fossil\Interfaces\IDriver,
  *
  * @author predakanga
  */
-abstract class BaseCache implements IDriver {
-    protected $config;
+abstract class BaseCache extends BaseDriver {
     protected $prefix;
     
     public function __construct($config = NULL) {
-        $this->config = $config;
+        parent::__construct($config);
         $this->prefix = OM::getFossilID();
-    }
-    
-    public function getConfig() {
-        return $this->config;
     }
     
     protected function getDefaultConfig() {

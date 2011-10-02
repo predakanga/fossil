@@ -67,9 +67,6 @@ class SmartyRenderer extends BaseRenderer {
     }
     
     public function __construct($config = null) {
-        if(!$config)
-            $config = $this->getDefaultConfig();
-        
         parent::__construct($config);
         require_once(OM::FS()->fossilRoot() . D_S . "libs/smarty/distribution/libs/Smarty.class.php");
         $this->smarty = new \Smarty();

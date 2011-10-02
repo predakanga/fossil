@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * Copyright (c) 2011, predakanga
  * All rights reserved.
  * 
@@ -25,39 +25,30 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * @author predakanga
- * @since 0.1
- * @category Fossil Core
- * @package Fossil
- * @subpackage Databases
- * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Databases;
-
-use Fossil\BaseDriver,
-    Fossil\OM;
+namespace Fossil;
 
 /**
- * Description of BaseDatabase
+ * Description of BaseDriver
  *
  * @author predakanga
  */
-abstract class BaseDatabase extends BaseDriver {
-    protected function getDefaultConfig() {
-        $dbOpts = OM::Settings("Fossil", "database", NULL);
-        
-        if($dbOpts && isset($dbOpts['config'])) {
-            return $dbOpts['config'];
-        }
-        return NULL;
+abstract class BaseDriver implements Interfaces\IDriver {
+    protected $config;
+    
+    public function __construct($config = null) {
+        if(!$config)
+            $this->config = $this->getDefaultConfig();
+        else
+            $this->config = $config;
     }
     
-    abstract public function getPDO();
-    public function getConnectionConfig() {
-        return $this->getConfig();
+    public function getConfig() {
+        return $this->config;
     }
+    
+    abstract protected function getDefaultConfig();
 }
 
 ?>

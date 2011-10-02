@@ -56,9 +56,9 @@ class NoCache extends BaseCache {
         return null;
     }
     
-    public function __construct($args = NULL) {
+    public function __construct($config = NULL) {
         // Empty options for the bit bucket
-        parent::__construct(array());
+        parent::__construct($config);
     }
     
     protected function _has($key) {
