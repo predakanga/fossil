@@ -37,7 +37,8 @@ namespace Fossil;
 
 use Fossil\Requests\BaseRequest,
     Fossil\Responses\RenderableResponse,
-    Fossil\Responses\ActionableResponse;
+    Fossil\Responses\ActionableResponse,
+    Fossil\Exceptions\NoSuchTargetException;
 
 /**
  * Description of Dispatcher
@@ -56,14 +57,26 @@ class Dispatcher {
         try {
             $response = $this->_run($req, $react);
         } catch(\Exception $e) {
-            $errorReq = OM::obj("Requests", "InternalRequest")->create("error", "show", array('e' => $e));
-            ob_clean();
-            $this->_run($errorReq);
+            $this->handleRequestException($e, $req, $react);
         }
         ob_end_flush();
         
         array_pop($this->reqStack);
         return $response;
+    }
+    
+    protected function handleRequestException(\Exception $e, BaseRequest $req, $react) {
+        // Handle 404 errors
+        if($e instanceof NoSuchTargetException) {
+            $fourohfourReq = OM::obj("Requests", "InternalRequest")->create("error", "404");
+            ob_clean();
+            $this->_run($fourohfourReq);
+        } else {
+            // Base request handling - provides nothing useful
+            $errorReq = OM::obj("Requests", "InternalRequest")->create("error", "show", array('e' => $e));
+            ob_clean();
+            $this->_run($errorReq);
+        }
     }
     
     protected function _run(BaseRequest $req, $react = true) {

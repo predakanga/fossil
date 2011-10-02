@@ -41,7 +41,7 @@ namespace Fossil\Exceptions;
  *
  * @author predakanga
  */
-class NoSuchControllerException extends \Exception {
+class NoSuchControllerException extends NoSuchTargetException {
     public function __construct($name) {
         parent::__construct("The controller {$name} does not exist.");
     }
