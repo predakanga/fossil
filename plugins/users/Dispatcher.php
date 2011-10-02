@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * Copyright (c) 2011, predakanga
  * All rights reserved.
  * 
@@ -25,44 +25,29 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * @author predakanga
- * @since 0.1
- * @category Fossil Plugins
- * @package Users
- * @subpackage Annotations
- * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Plugins\Users\Annotations;
+namespace Fossil\Plugins\Users;
 
-use Fossil\Plugins\Users\Models\User,
-    Fossil\Plugins\Users\Models\Role,
+use Fossil\OM,
+    Fossil\Requests\BaseRequest,
     Fossil\Plugins\Users\Exceptions\AccessDeniedException;
 
 /**
- * Description of RequireRole
+ * Description of Dispatcher
  *
  * @author predakanga
  */
-class RequireRole extends \Fossil\Annotations\Compilation {
-    public function call($funcname, $args, $compileArgs) {
-        $found = false;
-        if(User::me()) {
-            foreach(User::me()->getRoles() as $role) {
-                if($role->name == $compileArgs['value'])
-                    $found = true;
-                break;
-            }
+class Dispatcher extends \Fossil\Dispatcher {
+    protected function handleRequestException(\Exception $e, BaseRequest $req, $react) {
+        // If it's one of our own exceptions, display a 403 error
+        if($e instanceof AccessDeniedException) {
+            $accessDeniedReq = OM::obj("Requests", "InternalRequest")->create("error", "403");
+            ob_clean();
+            $this->_run($accessDeniedReq);
+        } else {
+            parent::handleRequestException($e, $req, $react);
         }
-        if(!$found) {
-            if(method_exists($this, "unauthorizedAction"))
-                return $this->unauthorizedAction($args[0]);
-            else
-                throw new AccessDeniedException();
-        }
-        
-        return $this->completeCall($funcname, $args);
     }
 }
 

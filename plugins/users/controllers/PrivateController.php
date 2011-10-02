@@ -28,7 +28,9 @@
  */
 
 namespace Fossil\Plugins\Users\Controllers;
-use Fossil\Plugins\Users\Models\User;
+
+use Fossil\Plugins\Users\Models\User,
+    Fossil\Plugins\Users\Exceptions\AccessDeniedException;
 
 /**
  * Description of PrivateController
@@ -37,7 +39,7 @@ use Fossil\Plugins\Users\Models\User;
  */
 abstract class PrivateController extends \Fossil\Controllers\AutoController {
     protected function unauthorizedAction(\Fossil\Requests\BaseRequest $req) {
-        throw new \Exception("Access denied.");
+        throw new AccessDeniedException();
     }
     
     public function run(\Fossil\Requests\BaseRequest $req) {

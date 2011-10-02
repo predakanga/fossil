@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * Copyright (c) 2011, predakanga
  * All rights reserved.
  * 
@@ -25,44 +25,20 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * @author predakanga
- * @since 0.1
- * @category Fossil Plugins
- * @package Users
- * @subpackage Annotations
- * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Plugins\Users\Annotations;
+namespace Fossil\Plugins\Users\Controllers;
 
-use Fossil\Plugins\Users\Models\User,
-    Fossil\Plugins\Users\Models\Role,
-    Fossil\Plugins\Users\Exceptions\AccessDeniedException;
-
+use Fossil\OM,
+    Fossil\Requests\BaseRequest;
 /**
- * Description of RequireRole
+ * Description of Error
  *
  * @author predakanga
  */
-class RequireRole extends \Fossil\Annotations\Compilation {
-    public function call($funcname, $args, $compileArgs) {
-        $found = false;
-        if(User::me()) {
-            foreach(User::me()->getRoles() as $role) {
-                if($role->name == $compileArgs['value'])
-                    $found = true;
-                break;
-            }
-        }
-        if(!$found) {
-            if(method_exists($this, "unauthorizedAction"))
-                return $this->unauthorizedAction($args[0]);
-            else
-                throw new AccessDeniedException();
-        }
-        
-        return $this->completeCall($funcname, $args);
+class Error extends \Fossil\Controllers\Error {
+    public function run403(BaseRequest $req) {
+        return OM::obj("Responses", "Template")->create("fossil:error/403", array(), 403);
     }
 }
 
