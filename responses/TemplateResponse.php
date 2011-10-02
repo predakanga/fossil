@@ -48,9 +48,10 @@ class TemplateResponse extends RenderableResponse {
     private $templateName;
     private $templateData;
     
-    public function __construct($template, $args = array()) {
+    public function __construct($template, $args = array(), $code = 200) {
         $this->templateName = $template;
         $this->templateData = $args;
+        $this->responseCode = $code;
     }
     
     public function render() {
