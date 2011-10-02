@@ -49,7 +49,7 @@ class WebRequest extends BaseRequest {
             $this->action = $_REQUEST['action'];
         $this->args = array();
         foreach($_REQUEST as $key => $value) {
-            if($key == 'module' || $key == 'action')
+            if($key == 'controller' || $key == 'action')
                 continue;
             $this->args[$key] = $value;
         }
