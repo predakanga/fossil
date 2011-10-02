@@ -92,10 +92,15 @@ abstract class BaseForm {
         $request = OM::Dispatcher()->getTopRequest();
         // For each property that we have, check for FormField annotations
         foreach($this->form_fields as $propName => $data) {
-            if(isset($request->args[$data['fieldName']]))
-                $this->$propName = $request->args[$data['fieldName']];
-            else
-                $this->$propName = $data['default'];
+            if($data['type'] == "file") {
+                if(isset($_FILES[$data['fieldName']]))
+                    $this->$propName = $_FILES[$data['fieldName']];
+            } else {
+                if(isset($request->args[$data['fieldName']]))
+                    $this->$propName = $request->args[$data['fieldName']];
+                else
+                    $this->$propName = $data['default'];
+            }
         }
     }
     

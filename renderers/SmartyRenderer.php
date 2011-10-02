@@ -142,9 +142,13 @@ class SmartyRenderer extends BaseRenderer {
         $data['form_id'] = $form->getIdentifier();
         
         $data['fields'] = array();
+        $data['has_file'] = false;
         foreach($form->getFields() as $name => $settings) {
             $fieldData = array();
             $fieldData['type'] = $settings['type'];
+            if($fieldData['type'] == "file") {
+                $data['has_file'] = true;
+            }
             $fieldData['name'] = $settings['fieldName'];
             $fieldData['label'] = $settings['label'];
             if(isset($form->$name))
@@ -174,7 +178,15 @@ class SmartyRenderer extends BaseRenderer {
             $action = htmlentities($params['action']);
         }
         
-        $preamble = "<form method=\"$method\" action=\"$action\">";
+        $has_file = false;
+        if(strstr($content, "type=\"file\""))
+            $has_file = true;
+        
+        if(!$has_file)
+            $preamble = "<form method=\"$method\" action=\"$action\">";
+        else
+            $preamble = "<form method=\"$method\" action=\"$action\" enctype=\"multipart/form-data\">";
+        
         $postamble = "<input type=\"submit\" value=\"Submit\" />\n</form>";
         return $preamble . "\n" .
                $content . "\n" .
