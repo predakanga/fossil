@@ -82,7 +82,10 @@ class Dispatcher {
     protected function _run(BaseRequest $req, $react = true) {
         // To allow HMVC style requests, return the response early if we're not to react
         $response = $req->run();
-
+        // Flush immediately after running each request, so that we can grab any errors
+        if(OM::ORM()->getEM()->isOpen())
+            OM::ORM()->flush();
+        
         if(!$react)
             return $response;
 
