@@ -256,10 +256,9 @@ class OM {
                 }
             }
         }
-        $instancedClasses = self::$objectRepo->getAllInstanceClasses();
-        foreach($instancedClasses as $typeArr) {
-            foreach($typeArr as $type)
-                $classList[] = $type;
+        $instancedClasses = self::$objectRepo->getAllInstanceClassesForCompile();
+        foreach($instancedClasses as $class) {
+            $classList[] = $class;
         }
 
         return $classList;

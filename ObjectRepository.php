@@ -58,6 +58,7 @@ class ObjectRepository {
     protected $staticClasses = array();
     protected $staticInstances = array();
     
+    protected $allInstancedClasses = array();
     protected $instancedClasses = array();
     protected $instancedWrappers = array();
     
@@ -161,9 +162,18 @@ class ObjectRepository {
                 $type = ucfirst(strtolower($type));
                 $name = ucfirst(strtolower($name));
 
+                $this->allInstancedClasses[] = $class;
                 if(!isset($this->instancedClasses[$type]))
                     $this->instancedClasses[$type] = array();
-                $this->instancedClasses[$type][$name] = $class;
+                
+                if(isset($this->instancedClasses[$type][$name])) {
+                    // Only store the top-most class
+                    if(is_subclass_of($class, $this->instancedClasses[$type][$name])) {
+                        $this->instancedClasses[$type][$name] = $class;
+                    }
+                } else {
+                    $this->instancedClasses[$type][$name] = $class;
+                }
             }
         }
     }
@@ -321,6 +331,10 @@ class ObjectRepository {
         }
         
         return $this->instancedWrappers[$type][$name];
+    }
+    
+    public function getAllInstanceClassesForCompile() {
+        return $this->allInstancedClasses;
     }
     
     public function getAllInstanceClasses($type = null) {
