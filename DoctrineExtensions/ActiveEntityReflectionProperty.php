@@ -39,6 +39,8 @@ class ActiveEntityReflectionProperty
 
     public function getValue($entity = null)
     {
+        if(!$entity->has($this->name))
+            return null;
         return $entity->get($this->name);
     }
 }
