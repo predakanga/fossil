@@ -80,15 +80,19 @@ class Login extends \Fossil\Controllers\AutoController {
             $user = User::findOneBy(array('name' => $signupForm->name));
             if($user)
                 return OM::obj("Responses", "Template")->create("fossil:signup", array('error' => 'Username already in use'));
-            $user = new User();
+            $user = $this->createUser();
             $user->name = $signupForm->name;
             $user->password = $signupForm->pass;
             $user->email = $signupForm->email;
             $user->save();
             return OM::obj("Responses", "Redirect")->create("?controller=login");
+        } else {
+            return OM::obj("Responses", "Template")->create("fossil:signup", array());
         }
-        
-        return OM::obj("Responses", "Template")->create("fossil:signup", array());
+    }
+    
+    protected function createUser() {
+        return new User();
     }
 }
 
