@@ -39,6 +39,7 @@ use Fossil\DoctrineExtensions\CustomSchemaTool,
     Fossil\DoctrineExtensions\CustomAnnotationDriver,
     Fossil\DoctrineExtensions\ReverseMappingGenerator,
     DoctrineExtensions\ActiveEntity\ActiveEntityManager,
+    Doctrine\DBAL\Types\Type,
     Doctrine\ORM\Tools\SchemaTool,
     Doctrine\ORM\EntityManager,
     Doctrine\Common\Annotations\AnnotationRegistry;
@@ -58,6 +59,12 @@ class ORM {
     public function __construct() {
         $appEnv = "development";
         
+        // Load up custom types
+        $types = array();
+        foreach(glob(OM::FS()->fossilRoot() . D_S . "DoctrineExtensions" . D_S . "types" . D_S . "*.php") as $type) {
+            $types += require_once($type);
+        }
+        
         // Use basic default EM for now
         $config = new \Doctrine\ORM\Configuration(); // (2)
 
@@ -72,10 +79,6 @@ class ORM {
         Autoloader::addNamespacePath("Fossil\\Proxies", $tempDir);
         $config->setAutoGenerateProxyClasses(($appEnv == "development"));
 
-        // Mapping Configuration (4)
-        //$driverImpl = new Doctrine\ORM\Mapping\Driver\XmlDriver(__DIR__."/config/mappings/xml");
-        //$driverImpl = new Doctrine\ORM\Mapping\Driver\XmlDriver(__DIR__."/config/mappings/yml");
-        
         // Register the Doctrine annotations ourselves, as it's usually done by $config->newDefaultAnnotationDriver()
         AnnotationRegistry::registerFile('Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php');
 
@@ -97,7 +100,8 @@ class ORM {
         $config->setMetadataCacheImpl($cache);
         $config->setQueryCacheImpl($cache);
         $config->setClassMetadataFactoryName("\\Fossil\\DoctrineExtensions\\ActiveClassMetadataFactory");
-
+//        $config->setSQLLogger(new \Doctrine\DBAL\Logging\EchoSQLLogger());
+        
         $this->config = $config;
         
         $this->evm = new \Doctrine\Common\EventManager();
@@ -107,6 +111,14 @@ class ORM {
         else
             $conn = OM::Database()->getConnectionConfig();
         $this->em = EntityManager::create($conn, $this->config, $this->evm);
+        
+        $realConn = $this->em->getConnection();
+        $platform = $realConn->getDatabasePlatform();
+        foreach($types as $typeName => $typeClass) {
+            Type::addType($typeName, $typeClass);
+            // Convention - our Doctrine type names must map directly to DB type names
+            $platform->registerDoctrineTypeMapping($typeName, $typeName);
+        }
     }
     
     public function registerPaths() {
@@ -150,17 +162,18 @@ class ORM {
             }
         }
         
-        try
-        {
+//        try
+//        {
             $schemaTool->updateSchema($allMD, true);
             $this->ensureInitialDatasets($schemaTool->newModels);
-        }
-        // TODO: Need to make this more specific, to ignore only on SQLite
-        catch(\Doctrine\DBAL\DBALException $e) {
-            // If it's SQLite, try just creating it instead
-            $schemaTool->createSchema($allMD);
-            $this->ensureInitialDatasets($schemaTool->newModels);
-        }
+//        }
+//        // TODO: Need to make this more specific, to ignore only on SQLite
+//        catch(\Doctrine\DBAL\DBALException $e) {
+//            echo "Got creation exception: " . $e->getMessage() . "\n";
+//            // If it's SQLite, try just creating it instead
+//            $schemaTool->createSchema($allMD);
+//            $this->ensureInitialDatasets($schemaTool->newModels);
+//        }
     }
     
     protected function ensureDataset($model, $dataset) {

@@ -85,7 +85,7 @@ class CustomSchemaTool extends SchemaTool {
             $newModels[] = $class->getReflectionClass()->name;
         $this->newModels = $newModels;
         
-        return $schema->toSql($this->_platform);
+        return $schema->toSql($this->__platform);
     }
     
     public function getUpdateSchemaSql(array $classes, $saveMode=false)
