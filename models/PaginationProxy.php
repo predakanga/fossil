@@ -49,7 +49,6 @@ class PaginationProxy {
             $this->collection = $queryOrCollection;
         } else {
             $this->query = $queryOrCollection;
-            $this->query->setMaxResults($this->pageSize);
         }
         $this->pageSize = $pageSize;
     }
@@ -71,11 +70,13 @@ class PaginationProxy {
         }
     }
     
-    public function getPage($page = 0) {
+    public function getPage($page = 1) {
+        $page = $page-1;
         if($this->collection) {
             return $this->collection->slice($page * $this->pageSize, $this->pageSize);
         } else {
             $this->query->setFirstResult($page * $this->pageSize);
+            $this->query->setMaxResults($this->pageSize);
             return $this->query->getResult();
         }
     }

@@ -37,7 +37,10 @@
 namespace Fossil\Renderers;
 
 use Fossil\Responses\BaseResponse,
-    Fossil\OM;
+    Fossil\OM,
+    Fossil\Interfaces\ITemplated,
+    Fossil\Models\Model,
+    Fossil\Models\PaginationProxy;
 
 /**
  * Description of SmartyRenderer
@@ -75,6 +78,7 @@ class SmartyRenderer extends BaseRenderer {
         }
         $this->smarty->compile_dir = OM::FS()->tempDir() . D_S . "templates_c";
         $this->smarty->registerPlugin('function', 'form', array($this, 'formFunction'));
+        $this->smarty->registerPlugin('function', 'paginate', array($this, 'paginateFunction'));
         $this->smarty->registerPlugin('compiler', 'use', array($this, 'useFunction'));
         $this->smarty->registerPlugin('block', 'link', array($this, 'linkFunction'));
         $this->smarty->registerPlugin('block', 'multiform', array($this, 'multiformFunction'));
@@ -220,6 +224,63 @@ class SmartyRenderer extends BaseRenderer {
         }
         
         return "<a href=\"$url\"$classStr>" . $content . "</a>";
+    }
+    
+    function paginateFunction($params, $smarty) {
+        $pageSize = 10;
+        if(isset($params['pageSize']))
+            $pageSize = $params['pageSize'];
+        $page = 1;
+        if(isset($params['page']))
+            $page = $params['page'];
+        $showPageList = true;
+        if(isset($params['pageList']))
+            $showPageList = $params['pageList'];
+        $template = null;
+        if(isset($params['template']))
+            $template = $params['template'];
+        
+        
+        if($entity instanceof Model) {
+            $entity = $params['source'];
+            $field = $params['field'];
+            $paginatedProxy = $entity->paginate($field, $pageSize);
+        } else {
+            $paginatedProxy = new PaginationProxy($params['source']);
+        }
+
+        $items = $paginatedProxy->getPage($page);
+        
+        $content = "";
+        
+        if(isset($params['header'])) {
+            $tpl = $smarty->createTemplate($params['header'], array());
+            $content .= $tpl->fetch();
+        }
+        
+        $index = $pageSize * ($page - 1);
+        foreach($items as $item) {
+            $index++;
+            $tplName = $params['template'];
+            if($item instanceof ITemplated)
+                $tplName = $item->getTemplateName();
+            if(!$tplName) {
+                throw new \Exception("Pagination called with no template on a field without ITemplated");
+            }
+            $tpl = $smarty->createTemplate($tplName, array('item' => $item, 'index' => $index));
+            $content .= $tpl->fetch();
+        }
+        
+        if(isset($params['footer'])) {
+            $tpl = $smarty->createTemplate($params['footer'], array());
+            $content .= $tpl->fetch();
+        }
+        
+        if($showPageList) {
+            // Print the page list
+        }
+        
+        return $content;
     }
     
     function smarty_outputfilter_tidyrepairhtml ($source, $smarty)
