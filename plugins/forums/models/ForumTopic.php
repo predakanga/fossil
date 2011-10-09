@@ -35,8 +35,8 @@ namespace Fossil\Plugins\Forums\Models;
  * @author predakanga
  * @Entity
  * @InheritanceType("SINGLE_TABLE")
- * @DiscriminatorColumn(name="hasPoll", type="integer")
- * @DiscriminatorMap({0 = "ForumTopic", 1 = "ForumTopicWithPoll"})
+ * @DiscriminatorColumn(name="inheritedType", type="string")
+ * @DiscriminatorMap({"ForumTopic" = "ForumTopic", "ForumTopicWithPoll" = "ForumTopicWithPoll"})
  */
 class ForumTopic extends \Fossil\Models\Model {
     /**

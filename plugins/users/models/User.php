@@ -42,6 +42,9 @@ use \Fossil\OM;
  * @author predakanga
  * @Entity
  * @Table(name="FossilUser")
+ * @InheritanceType("JOINED")
+ * @DiscriminatorColumn(name="inheritedType", type="string")
+ * @DiscriminatorMap({"User" = "User"})
  * @F:InitialDataset("plugins/users/data/users.yml")
  */
 class User extends \Fossil\Models\Model {
