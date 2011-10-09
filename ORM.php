@@ -38,6 +38,7 @@ namespace Fossil;
 use Fossil\DoctrineExtensions\CustomSchemaTool,
     Fossil\DoctrineExtensions\CustomAnnotationDriver,
     Fossil\DoctrineExtensions\ReverseMappingGenerator,
+    Fossil\DoctrineExtensions\DiscriminatorMapGenerator,
     DoctrineExtensions\ActiveEntity\ActiveEntityManager,
     Doctrine\DBAL\Types\Type,
     Doctrine\ORM\Tools\SchemaTool,
@@ -106,6 +107,7 @@ class ORM {
         
         $this->evm = new \Doctrine\Common\EventManager();
         $this->evm->addEventListener(\Doctrine\ORM\Events::loadClassMetadata, new ReverseMappingGenerator());
+        $this->evm->addEventListener(\Doctrine\ORM\Events::loadClassMetadata, new DiscriminatorMapGenerator());
         if(!OM::Database()->getConnectionConfig())
             $conn = array('pdo' => OM::Database()->getPDO(), 'dbname' => null);
         else
