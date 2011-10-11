@@ -39,7 +39,8 @@ use Fossil\DoctrineExtensions\CustomSchemaTool,
     Fossil\DoctrineExtensions\CustomAnnotationDriver,
     Fossil\DoctrineExtensions\ReverseMappingGenerator,
     Fossil\DoctrineExtensions\DiscriminatorMapGenerator,
-    DoctrineExtensions\ActiveEntity\ActiveEntityManager,
+    Fossil\DoctrineExtensions\ActiveEntity\ActiveEntityManager,
+    Fossil\DoctrineExtensions\QueryLogger,
     Doctrine\DBAL\Types\Type,
     Doctrine\ORM\Tools\SchemaTool,
     Doctrine\ORM\EntityManager,
@@ -56,6 +57,7 @@ class ORM {
     protected $evm;
     protected $config;
     protected $driver;
+    protected $logger;
     
     public function __construct() {
         $appEnv = "development";
@@ -101,7 +103,8 @@ class ORM {
         $config->setMetadataCacheImpl($cache);
         $config->setQueryCacheImpl($cache);
         $config->setClassMetadataFactoryName("\\Fossil\\DoctrineExtensions\\ActiveClassMetadataFactory");
-//        $config->setSQLLogger(new \Doctrine\DBAL\Logging\EchoSQLLogger());
+        $this->logger = new QueryLogger();
+        $config->setSQLLogger($this->logger);
         
         $this->config = $config;
         
@@ -144,6 +147,13 @@ class ORM {
      */
     public function getEVM() {
         return $this->evm;
+    }
+    
+    /**
+     * @return \Fossil\DoctrineExtensions\QueryLogger
+     */
+    public function getLogger() {
+        return $this->logger;
     }
     
     public function flush() {

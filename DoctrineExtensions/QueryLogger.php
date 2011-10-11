@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * Copyright (c) 2011, predakanga
  * All rights reserved.
  * 
@@ -25,36 +25,32 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * @author predakanga
- * @since 0.1
- * @category Fossil Core
- * @package Fossil
- * @subpackage Controllers
- * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Controllers;
+namespace Fossil\DoctrineExtensions;
 
-use Fossil\OM,
-    Fossil\Requests\BaseRequest;
+use Doctrine\DBAL\Logging\SQLLogger;
 
 /**
- * Description of Error
+ * Description of QueryLogger
  *
  * @author predakanga
  */
-class Error extends AutoController {
-    public function runShow(BaseRequest $req) {
-        return OM::obj("Responses", "Template")->create("fossil:error/generic", $req->args);
+class QueryLogger implements SQLLogger {
+    protected $currentQuery;
+    
+    public function getQuery() {
+        return $this->currentQuery;
     }
     
-    public function run404(BaseRequest $req) {
-        return OM::obj("Responses", "Template")->create("fossil:error/404", array(), 404);
+    /** {@inheritDoc} */
+    public function startQuery($sql, array $params = null, array $types = null) {
+        $this->currentQuery = array('sql' => $sql, 'params' => $params, 'types' => $types);
     }
     
-    public function runDb(BaseRequest $req) {
-        return OM::obj("Responses", "Template")->create("fossil:error/db", $req->args + array('query' => OM::ORM()->getLogger()->getQuery()), 503);
+    /** {@inheritDoc} */
+    public function stopQuery() {
+        
     }
 }
 

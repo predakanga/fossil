@@ -146,6 +146,14 @@ class User extends \Fossil\Models\Model {
     public function hasPermission(Permission $permission) {
         return in_array($permission, $this->getPermissions());
     }
+    
+    public function isDev() {
+        return true;
+    }
+    
+    public function isAdmin() {
+        return true;
+    }
 }
 
 ?>

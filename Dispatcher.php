@@ -71,6 +71,10 @@ class Dispatcher {
             $fourohfourReq = OM::obj("Requests", "InternalRequest")->create("error", "404");
             ob_clean();
             $this->_run($fourohfourReq);
+        } elseif($e instanceof \PDOException) {
+            $errorReq = OM::obj("Requests", "InternalRequest")->create("error", "db", array('e' => $e));
+            ob_clean();
+            $this->_run($errorReq);
         } else {
             // Base request handling - provides nothing useful
             $errorReq = OM::obj("Requests", "InternalRequest")->create("error", "show", array('e' => $e));
