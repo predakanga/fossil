@@ -42,6 +42,11 @@ class BlobType extends Type {
     
     public function getSqlDeclaration(array $fieldDeclaration, AbstractPlatform $platform)
     {
+        // Special case for PgSQL
+        if($platform instanceof \Doctrine\DBAL\Platforms\PostgreSqlPlatform) {
+            return "BYTEA";
+        }
+        
         if ( ! empty($field['length']) && is_numeric($field['length'])) {
             $length = $field['length'];
             if ($length <= 255) {
@@ -71,5 +76,6 @@ class BlobType extends Type {
     }
 }
 
-return array('blob' => "Fossil\\DoctrineExtensions\\Types\\BlobType");
+return array('blob' => "Fossil\\DoctrineExtensions\\Types\\BlobType",
+             'bytea' => "Fossil\\DoctrineExtensions\\Types\\BlobType");
 ?>
