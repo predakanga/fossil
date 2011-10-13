@@ -81,6 +81,7 @@ class SmartyRenderer extends BaseRenderer {
         $this->smarty->registerPlugin('function', 'paginate', array($this, 'paginateFunction'));
         $this->smarty->registerPlugin('compiler', 'use', array($this, 'useFunction'));
         $this->smarty->registerPlugin('block', 'link', array($this, 'linkFunction'));
+        $this->smarty->registerPlugin('block', 'link_page', array($this, 'linkPageFunction'));
         $this->smarty->registerPlugin('block', 'multiform', array($this, 'multiformFunction'));
         if($config['useTidy'])
             $this->smarty->registerFilter('output', array($this, "smarty_outputfilter_tidyrepairhtml"));
@@ -226,16 +227,40 @@ class SmartyRenderer extends BaseRenderer {
         return "<a href=\"$url\"$classStr>" . $content . "</a>";
     }
     
+    function linkPageFunction($params, $content, $smarty, &$repeat) {
+        // Generate our current arguments
+        $req = OM::Dispatcher()->getCurrentRequest();
+        $toAdd['controller'] = $req->controller;
+        $toAdd['action'] = $req->action;
+        $toAdd += $req->args;
+        
+        // Add the page parameter
+        if(isset($params['page']))
+            $toAdd['page'] = $params['page'];
+        else
+            $toAdd['page'] = 1;
+        
+        // And call the normal link function
+        return $this->linkFunction($toAdd, $content, $smarty, $repeat);
+    }
+    
     function paginateFunction($params, $smarty) {
         $pageSize = 10;
         if(isset($params['pageSize']))
             $pageSize = $params['pageSize'];
         $page = 1;
+        // Get the page from the request by default
+        $req = OM::Dispatcher()->getCurrentRequest();
+        if(isset($req->args['page']))
+            $page = $req->args['page'];
         if(isset($params['page']))
             $page = $params['page'];
         $showPageList = true;
         if(isset($params['pageList']))
             $showPageList = $params['pageList'];
+        $pageListTpl = "fossil:pagination/pageList";
+        if(isset($params['pageListTpl']))
+            $pageListTpl = $params['pageListTpl'];
         $template = null;
         if(isset($params['template']))
             $template = $params['template'];
@@ -261,9 +286,11 @@ class SmartyRenderer extends BaseRenderer {
         $index = $pageSize * ($page - 1);
         foreach($items as $item) {
             $index++;
-            $tplName = $params['template'];
+            $tplName = null;
             if($item instanceof ITemplated)
                 $tplName = $item->getTemplateName();
+            if(!$tplName)
+                $tplName = $params['template'];
             if(!$tplName) {
                 throw new \Exception("Pagination called with no template on a field without ITemplated");
             }
@@ -278,6 +305,11 @@ class SmartyRenderer extends BaseRenderer {
         
         if($showPageList) {
             // Print the page list
+            $args = array('itemCount' => $paginatedProxy->getItemCount(),
+                          'pageCount' => $paginatedProxy->getPageCount(),
+                          'curPage' => $page);
+            $tpl = $smarty->createTemplate($pageListTpl, $args);
+            $content .= $tpl->fetch();
         }
         
         return $content;

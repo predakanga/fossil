@@ -65,6 +65,8 @@ class PaginationProxy {
             
             $countQuery->setHint(Query::HINT_CUSTOM_TREE_WALKERS, array('Fossil\DoctrineExtensions\CountSqlWalker'));
             $countQuery->setFirstResult(null)->setMaxResults(null);
+            // Reset the RSM so that it's automatically generated
+            $countQuery->setResultSetMapping(null);
 
             return $countQuery->getSingleScalarResult();
         }
