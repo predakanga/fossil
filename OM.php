@@ -82,7 +82,7 @@ class OM {
         self::FS()->setAppRoot(self::$appPath);
         self::FS()->setOverlayRoot(self::$overlayPath);
 
-//        self::Error()->init(E_ALL | E_STRICT);
+        self::Error()->init(E_ALL | E_STRICT);
         
         // Load the basic settings from 'quickstart.yml'
         if(!file_exists(self::FS()->tempDir() . D_S . '.quickstart.yml'))
