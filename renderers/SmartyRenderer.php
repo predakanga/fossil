@@ -94,6 +94,7 @@ class SmartyRenderer extends BaseRenderer {
     
     protected function setDefaultVariables($tpl) {
         $tpl->assign('errors', OM::Error()->getLog());
+        $tpl->assign('now', new \DateTime());
     }
     
     public function render($templateName, $templateData) {
