@@ -40,7 +40,8 @@ use Fossil\Responses\BaseResponse,
     Fossil\OM,
     Fossil\Interfaces\ITemplated,
     Fossil\Models\Model,
-    Fossil\Models\PaginationProxy;
+    Fossil\Models\PaginationProxy,
+    Doctrine\Common\Collections\Collection;
 
 /**
  * Description of SmartyRenderer
@@ -264,14 +265,14 @@ class SmartyRenderer extends BaseRenderer {
         $template = null;
         if(isset($params['template']))
             $template = $params['template'];
+        $src = $params['source'];
         
-        
-        if($entity instanceof Model) {
+        if($src instanceof Model) {
             $entity = $params['source'];
             $field = $params['field'];
             $paginatedProxy = $entity->paginate($field, $pageSize);
         } else {
-            $paginatedProxy = new PaginationProxy($params['source']);
+            $paginatedProxy = new PaginationProxy($src);
         }
 
         $items = $paginatedProxy->getPage($page);
