@@ -80,6 +80,7 @@ class SmartyRenderer extends BaseRenderer {
         $this->smarty->compile_dir = OM::FS()->tempDir() . D_S . "templates_c";
         $this->smarty->registerPlugin('function', 'form', array($this, 'formFunction'));
         $this->smarty->registerPlugin('function', 'paginate', array($this, 'paginateFunction'));
+        $this->smarty->registerPlugin('modifier', 'bbdecode', array($this, 'bbdecodeModifier'));
         $this->smarty->registerPlugin('compiler', 'use', array($this, 'useFunction'));
         $this->smarty->registerPlugin('block', 'link', array($this, 'linkFunction'));
         $this->smarty->registerPlugin('block', 'link_page', array($this, 'linkPageFunction'));
@@ -167,6 +168,10 @@ class SmartyRenderer extends BaseRenderer {
         
         $formTpl = $this->smarty->createTemplate("fossil:forms" . DIRECTORY_SEPARATOR . $form->getTemplate(), $data);
         return $formTpl->fetch();
+    }
+    
+    function bbdecodeModifier($input) {
+        return OM::BBCode()->decode($input);
     }
     
     function multiformFunction($params, $content, $smarty, &$repeat) {
