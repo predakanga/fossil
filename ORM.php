@@ -200,7 +200,7 @@ class ORM {
     protected function ensureInitialDatasets($newModels) {
         $modelData = array();
         foreach($newModels as $model) {
-            $annos = OM::Annotations()->getClassAnnotations($model, "F:InitialDataset");
+            $annos = OM::Annotations()->getClassAnnotations($model, "F:InitialDataset", false);
             if($annos) {
                 $modelData[$model] = array();
                 foreach($annos as $anno) {
