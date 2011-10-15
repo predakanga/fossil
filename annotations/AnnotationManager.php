@@ -169,7 +169,7 @@ class AnnotationManager {
      * @param string $annotation
      * @return \AddendumPP\Annotation[]
      */
-    public function getClassAnnotations($class, $annotation = false) {
+    public function getClassAnnotations($class, $annotation = false, $recursive = true) {
         $startAnnos = array();
         
         if($class[0] == '\\')
@@ -179,8 +179,8 @@ class AnnotationManager {
             return array();
         
         $classData = $this->annotationCache[$class];
-        if(isset($classData['parent'])) {
-            $startAnnos = $this->getClassAnnotations($classData['parent'], $annotation);
+        if(isset($classData['parent']) && $recursive) {
+            $startAnnos = $this->getClassAnnotations($classData['parent'], $annotation, $recursive);
         }
         
         if(!$annotation)
