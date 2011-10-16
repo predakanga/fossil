@@ -485,7 +485,7 @@ XML;
                         $nameStr = "*_" . $type[0] . "_";
                         if($indexed) { $nameStr .= "i"; $iStr = "true"; } else { $iStr = "false"; }
                         if($stored) { $nameStr .= "s"; $sStr = "true"; } else { $sStr = "false"; }
-                        $dynFields .= "    <dynField name=\"$nameStr\" type=\"$type\" indexed=\"$iStr\" stored=\"$sStr\" />\n";
+                        $dynFields .= "    <dynamicField name=\"$nameStr\" type=\"$type\" indexed=\"$iStr\" stored=\"$sStr\" />\n";
                     }
                 }
             }
