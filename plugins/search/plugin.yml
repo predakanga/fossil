@@ -1,0 +1,9 @@
+---
+name: search
+version: 0.0.1
+description: >-
+    This plugin provides interfaces for implementing earch of models.
+    Also provides a basic search backend, based on Zend_Search_Lucene.
+dependencies:
+    - name: fossil
+...
