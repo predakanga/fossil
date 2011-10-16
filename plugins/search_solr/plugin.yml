@@ -1,0 +1,9 @@
+---
+name: search_solr
+version: 0.0.1
+description: >-
+    This plugin provides a Solr backend for the search plugin
+dependencies:
+    - name: fossil
+    - name: search
+...
