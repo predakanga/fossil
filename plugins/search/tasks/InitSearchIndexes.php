@@ -41,8 +41,8 @@ use Fossil\OM,
 class InitSearchIndexes extends StreamingTask {
     protected $curOffset;
     protected $curQuery;
-    protected $batchSize = 200;
-    protected $cullPoint = 2000;
+    protected $batchSize = 1000;
+    protected $cullPoint = 4000;
     
     public function runOneIteration(OutputInterface $out) {
         // Query for the objects
@@ -92,10 +92,10 @@ class InitSearchIndexes extends StreamingTask {
             
             while($this->curOffset < $entCount) {
                 $this->runOneIteration($out);
-                $out->writeln("\t\tIndexed {$this->curOffset} items");
                 $this->curOffset += $this->batchSize;
                 // Cull the entities if we have too many
                 if(OM::ORM()->getEM()->getUnitOfWork()->size() > $this->cullPoint) {
+                    $out->writeln("\t\tIndexed {$this->curOffset} items");
                     OM::Search()->flush();
                     OM::ORM()->getEM()->clear();
                     gc_collect_cycles();
