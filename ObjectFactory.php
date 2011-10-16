@@ -51,8 +51,6 @@ class ObjectFactory {
     }
     
     public static function registerType($type, $default = null, $loadCB = array(__CLASS__, "defaultFromSettings")) {
-        if(isset(self::$knownTypes[$type]))
-            return;
         self::$knownTypes[$type] = array('default' => $default, 'cb' => $loadCB);
     }
     
