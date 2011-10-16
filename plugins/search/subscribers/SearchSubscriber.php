@@ -31,7 +31,9 @@ namespace Fossil\Plugins\Search\Subscribers;
 
 use Fossil\OM,
     Doctrine\Common\EventSubscriber,
-    Doctrine\ORM\Event\OnFlushEventArgs;
+    Doctrine\ORM\Events,
+    Doctrine\ORM\Event\OnFlushEventArgs,
+    Doctrine\ORM\Event\LifecycleEventArgs;
 
 /**
  * Description of UpdateListener
@@ -41,20 +43,14 @@ use Fossil\OM,
 class SearchSubscriber implements EventSubscriber {
     public function getSubscribedEvents()
     {
-        return array(\Doctrine\ORM\Events::onFlush);
+        return array(Events::onFlush,
+                     Events::postPersist);
     }
     
     public function onFlush(OnFlushEventArgs $eventArgs) {
         $em = $eventArgs->getEntityManager();
         $uow = $em->getUnitOfWork();
         $needsFlush = false;
-
-        foreach ($uow->getScheduledEntityInsertions() AS $entity) {
-            if($entity instanceof ISearchable) {
-                OM::Search()->indexEntity($entity);
-                $needsFlush = true;
-            }
-        }
 
         foreach ($uow->getScheduledEntityUpdates() AS $entity) {
             if($entity instanceof ISearchable) {
@@ -71,6 +67,13 @@ class SearchSubscriber implements EventSubscriber {
         }
         if($needsFlush)
             OM::Search()->commit();
+    }
+    
+    public function postPersist(LifecycleEventArgs $eventArgs) {
+        $entity = $eventArgs->getEntity();
+        if($entity instanceof \Fossil\Plugins\Search\ISearchable) {
+            OM::Search()->indexEntity($entity);
+        }
     }
 }
 
