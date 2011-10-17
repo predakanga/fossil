@@ -29,49 +29,42 @@
 
 namespace Fossil\Plugins\Forums\Models;
 
+use Fossil\OM,
+    Fossil\Models\Model;
+
 /**
- * Description of Topic
+ * Description of ForumCategory
  *
  * @author predakanga
  * @Entity
- * @InheritanceType("SINGLE_TABLE")
- * @DiscriminatorColumn(name="inheritedType", type="string")
- * @DiscriminatorMap({"ForumTopic" = "ForumTopic", "ForumTopicWithPoll" = "ForumTopicWithPoll"})
  */
-class ForumTopic extends \Fossil\Models\Model {
-    /**
-     * @Id @GeneratedValue @Column(type="integer")
-     * @var int
-     */
+class ForumCategory extends Model {
+    /** @Id @GeneratedValue @Column(type="integer") */
     protected $id;
+    
     /**
-     * @Column(type="string")
-     * @var string
+     * @OneToMany(targetEntity="Forum", mappedBy="category")
+     * @var Forum[]
      */
-    protected $name;
-    /** @Column(type="boolean") */
-    protected $sticky = false;
+    protected $forums;
     /**
-     * @ManyToOne(targetEntity="ForumCategory", inversedBy="announcements")
+     * @ManyToOne(targetEntity="ForumCategory", inversedBy="children")
      * @var ForumCategory
      */
-    protected $announcementFor;
+    protected $parent;
     /**
-     * @ManyToOne(targetEntity="Fossil\Plugins\Users\Models\User", inversedBy="forumTopics")
-     * @F:GenerateReverse
-     * @var User
+     * @OneToMany(targetEntity="ForumCategory", mappedBy="parent")
+     * @var ForumCategory[]
      */
-    protected $author;
+    protected $children;
+    
+    /** @Column(type="string") */
+    protected $name;
     /**
-     * @ManyToOne(targetEntity="Forum", inversedBy="topics")
-     * @var Forum
+     * @OneToMany(targetEntity="ForumCategory", mappedBy="announcementFor")
+     * @var ForumTopic
      */
-    protected $forum;
-    /**
-     * @OneToMany(targetEntity="ForumPost", mappedBy="topic")
-     * @var ForumPost[]
-     */
-    protected $posts;
+    protected $announcements;
 }
 
 ?>

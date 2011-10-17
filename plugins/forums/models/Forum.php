@@ -46,6 +46,11 @@ class Forum extends \Fossil\Models\Model {
      */
     protected $name;
     /**
+     * @ManyToOne(targetEntity="ForumCategory", inversedBy="forums")
+     * @var ForumCategory
+     */
+    protected $category;
+    /**
      * @OneToMany(targetEntity="ForumTopic", mappedBy="forum")
      * @var ForumTopic[]
      */
