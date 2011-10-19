@@ -79,6 +79,7 @@ class SmartyRenderer extends BaseRenderer {
         }
         $this->smarty->compile_dir = OM::FS()->tempDir() . D_S . "templates_c";
         $this->smarty->registerPlugin('function', 'form', array($this, 'formFunction'));
+        $this->smarty->registerPlugin('function', 'display', array($this, 'displayFunction'));
         $this->smarty->registerPlugin('function', 'paginate', array($this, 'paginateFunction'));
         $this->smarty->registerPlugin('modifier', 'bbdecode', array($this, 'bbdecodeModifier'));
         $this->smarty->registerPlugin('compiler', 'use', array($this, 'useFunction'));
@@ -251,6 +252,58 @@ class SmartyRenderer extends BaseRenderer {
         return $this->linkFunction($toAdd, $content, $smarty, $repeat);
     }
     
+    function displayFunction($params, $smarty) {
+        assert(isset($params['source']));
+        $content = "";
+        $mode = "default";
+        if(isset($params['mode']))
+            $mode = $params['mode'];
+        $index = 0;
+        if(isset($params['indexFrom']))
+            $index = $params['indexFrom'];
+        
+        if(isset($params['header'])) {
+            $tpl = $smarty->createTemplate($params['header'], array());
+            $content .= $tpl->fetch();
+        }
+        
+        $source = null;
+        if($params['source'] instanceof Model) {
+            $source = array($params['source']);
+        }
+        elseif(is_array($params['source'])) {
+            $source = $params['source'];
+        }
+        
+        $curTpl = null;
+        $curTplName = null;
+        
+        foreach($source as $item) {
+            $index++;
+            $tplName = null;
+            if($item instanceof ITemplated)
+                $tplName = $item->getTemplateName(null);
+            if(!$tplName)
+                $tplName = $params['template'];
+            if(!$tplName) {
+                throw new \Exception("Display called with no template on a field without ITemplated");
+            }
+            if($tplName != $curTplName) {
+                $curTpl = $smarty->createTemplate($tplName);
+                $curTplName = $tplName;
+            }
+            $curTpl->assign(array('item' => $item, 'index' => $index));
+            $content .= $curTpl->fetch();
+        }
+        
+        if(isset($params['footer'])) {
+            $tpl = $smarty->createTemplate($params['footer'], array());
+            $content .= $tpl->fetch();
+        }
+        
+        return $content;
+    }
+    
     function paginateFunction($params, $smarty) {
         $pageSize = 10;
         if(isset($params['pageSize']))
@@ -283,32 +336,11 @@ class SmartyRenderer extends BaseRenderer {
 
         $items = $paginatedProxy->getPage($page);
         
-        $content = "";
-        
-        if(isset($params['header'])) {
-            $tpl = $smarty->createTemplate($params['header'], array());
-            $content .= $tpl->fetch();
-        }
-        
+        $params['source'] = $items;
         $index = $pageSize * ($page - 1);
-        foreach($items as $item) {
-            $index++;
-            $tplName = null;
-            if($item instanceof ITemplated)
-                $tplName = $item->getTemplateName();
-            if(!$tplName)
-                $tplName = $params['template'];
-            if(!$tplName) {
-                throw new \Exception("Pagination called with no template on a field without ITemplated");
-            }
-            $tpl = $smarty->createTemplate($tplName, array('item' => $item, 'index' => $index));
-            $content .= $tpl->fetch();
-        }
+        $params['indexFrom'] = $index;
         
-        if(isset($params['footer'])) {
-            $tpl = $smarty->createTemplate($params['footer'], array());
-            $content .= $tpl->fetch();
-        }
+        $content = $this->displayFunction($params, $smarty);
         
         if($showPageList) {
             // Print the page list

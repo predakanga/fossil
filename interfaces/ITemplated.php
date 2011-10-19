@@ -34,7 +34,7 @@ namespace Fossil\Interfaces;
  * @author predakanga
  */
 interface ITemplated {
-    function getTemplateName();
+    function getTemplateName($mode);
 }
 
 ?>
