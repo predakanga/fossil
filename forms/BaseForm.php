@@ -122,7 +122,7 @@ abstract class BaseForm {
         return false;
     }
     
-    public function isValidSubmission() {
+    public function isValid() {
         // TODO: Parse annotations for validation requirements
         return true;
     }

@@ -76,7 +76,7 @@ class Login extends \Fossil\Controllers\AutoController {
     public function runSignup($req) {
         $signupForm = OM::Form("Signup");
         
-        if($signupForm->isSubmitted() && $signupForm->isValidSubmission()) {
+        if($signupForm->isSubmitted() && $signupForm->isValid()) {
             $user = User::findOneBy(array('name' => $signupForm->name));
             if($user)
                 return OM::obj("Responses", "Template")->create("fossil:signup", array('error' => 'Username already in use'));
