@@ -31,6 +31,8 @@
 {/if}
 {/foreach}
         </select><br />
+{elseif $field.type == "textarea"}
+        <textarea id="{$form_id}_{$field.name}" name="{$field.name}">{$field.value}</textarea>
 {else}
 {if $field.value}
         <input id="{$form_id}_{$field.name}" type="{$field.type}" name="{$field.name}" value="{$field.value}" />
