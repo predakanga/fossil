@@ -86,7 +86,7 @@ class SmartyRenderer extends BaseRenderer {
         $this->smarty->registerPlugin('block', 'link', array($this, 'linkFunction'));
         $this->smarty->registerPlugin('block', 'link_page', array($this, 'linkPageFunction'));
         $this->smarty->registerPlugin('block', 'multiform', array($this, 'multiformFunction'));
-        if($config['useTidy'])
+        if($this->config['useTidy'])
             $this->smarty->registerFilter('output', array($this, "smarty_outputfilter_tidyrepairhtml"));
         $this->smarty->registerResource("fossil", array(array($this, "smarty_resource_get_template"),
                                                         array($this, "smarty_resource_get_timestamp"),
