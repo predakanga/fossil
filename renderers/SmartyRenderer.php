@@ -238,8 +238,10 @@ class SmartyRenderer extends BaseRenderer {
     function linkPageFunction($params, $content, $smarty, &$repeat) {
         // Generate our current arguments
         $req = OM::Dispatcher()->getCurrentRequest();
-        $toAdd['controller'] = $req->controller;
-        $toAdd['action'] = $req->action;
+        if($req->controller)
+            $toAdd['controller'] = $req->controller;
+        if($req->action)
+            $toAdd['action'] = $req->action;
         $toAdd += $req->args;
         
         // Add the page parameter
@@ -286,7 +288,7 @@ class SmartyRenderer extends BaseRenderer {
             if(!$tplName)
                 $tplName = $params['template'];
             if(!$tplName) {
-                throw new \Exception("Display called with no template on a field without ITemplated");
+                throw new \Exception("Display called with no template on an object of type " . get_class($item) . ", which doesn't implement ITemplated");
             }
             if($tplName != $curTplName) {
                 $curTpl = $smarty->createTemplate($tplName);
