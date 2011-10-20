@@ -223,6 +223,11 @@ class SmartyRenderer extends BaseRenderer {
             $classStr = " class=\"" . $params['cssClass'] . "\"";
             unset($params['cssClass']);
         }
+        $fragment = "";
+        if(isset($params['fragment'])) {
+            $fragment = "#" . $params['fragment'];
+            unset($params['fragment']);
+        }
         
         // TODO: Use a router-supplied mapping for this
         $url = $_SERVER['PHP_SELF'] . "?";
@@ -231,6 +236,7 @@ class SmartyRenderer extends BaseRenderer {
         foreach($params as $key => $value) {
             $url .= "&amp;" . urlencode($key) . "=" . urlencode($value);
         }
+        $url .= $fragment;
         
         return "<a href=\"$url\"$classStr>" . $content . "</a>";
     }
