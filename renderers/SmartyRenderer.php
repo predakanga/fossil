@@ -142,8 +142,25 @@ class SmartyRenderer extends BaseRenderer {
             $data['method'] = $params['method'];
         
         $data['action'] = htmlentities($_SERVER['REQUEST_URI']);
-        if(isset($params['action']))
+        if(isset($params['action'])) {
             $data['action'] = htmlentities($params['action']);
+        } else {
+            $curRequest = OM::Dispatcher()->getCurrentRequest();
+            $controller = $curRequest->controller;
+            $f_action = $curRequest->action;
+            if(isset($params['fossil_controller'])) {
+                $controller = $params['fossil_controller'];
+                $f_action = NULL;
+            }
+            if(isset($params['fossil_action']))
+                $f_action = $params['fossil_action'];
+            
+            // Build the query string
+            $action = "?controller=" . $controller;
+            if($f_action)
+                $action .= "&amp;action=" . $f_action;
+            $data['action'] = $action;
+        }
         
         $data['form_id'] = $form->getIdentifier();
         
@@ -186,6 +203,21 @@ class SmartyRenderer extends BaseRenderer {
         $action = htmlentities($_SERVER['REQUEST_URI']);
         if(isset($params['action'])) {
             $action = htmlentities($params['action']);
+        } else {
+            $curRequest = OM::Dispatcher()->getCurrentRequest();
+            $controller = $curRequest->controller;
+            $f_action = $curRequest->action;
+            if(isset($params['fossil_controller'])) {
+                $controller = $params['fossil_controller'];
+                $f_action = NULL;
+            }
+            if(isset($params['fossil_action']))
+                $f_action = $params['fossil_action'];
+            
+            // Build the query string
+            $action = "?controller=" . $controller;
+            if($f_action)
+                $action .= "&amp;action=" . $f_action;
         }
         
         $has_file = false;
