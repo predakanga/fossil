@@ -29,6 +29,9 @@
 
 namespace Fossil\Plugins\Forums\Models;
 
+use Fossil\Models\Model,
+    Fossil\Interfaces\ITemplated;
+
 /**
  * Description of Topic
  *
@@ -38,7 +41,7 @@ namespace Fossil\Plugins\Forums\Models;
  * @DiscriminatorColumn(name="inheritedType", type="string")
  * @DiscriminatorMap({"ForumTopic" = "ForumTopic", "ForumTopicWithPoll" = "ForumTopicWithPoll"})
  */
-class ForumTopic extends \Fossil\Models\Model {
+class ForumTopic extends Model implements ITemplated {
     /**
      * @Id @GeneratedValue @Column(type="integer")
      * @var int
@@ -72,6 +75,12 @@ class ForumTopic extends \Fossil\Models\Model {
      * @var ForumPost[]
      */
     protected $posts;
+    /** @OneToOne(targetEntity="ForumPost") */
+    protected $latestPost;
+    
+    public function getTemplateName($mode) {
+        return "fossil:forums/row_topic";
+    }
 }
 
 ?>

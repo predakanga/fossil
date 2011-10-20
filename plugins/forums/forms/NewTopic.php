@@ -27,50 +27,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Fossil\Plugins\Forums\Models;
+namespace Fossil\Plugins\Forums\Forms;
 
-use Fossil\Models\Model,
-    Fossil\Interfaces\ITemplated;
+use Fossil\Forms\BaseForm;
 
 /**
- * Description of Post
+ * Description of NewTopic
  *
  * @author predakanga
- * @Entity
+ * @F:Form(name="NewTopic")
  */
-class ForumPost extends Model implements ITemplated {
-    /**
-     * @Id @GeneratedValue @Column(type="integer")
-     * @var int
-     */
-    protected $id;
-    /**
-     * @ManyToOne(targetEntity="ForumTopic", inversedBy="posts")
-     * @var ForumTopic
-     */
-    protected $topic;
-    /**
-     * @ManyToOne(targetEntity="Fossil\Plugins\Users\Models\User", inversedBy="forumPosts")
-     * @F:GenerateReverse
-     * @var User
-     */
-    protected $author;
-    /** @Column(type="datetime") */
-    protected $postedAt;
-    /** @Column(type="datetime", nullable=true) */
-    protected $updatedAt;
-    /** @Column(type="text") */
-    protected $content;
-    
-    public function getTemplateName($mode) {
-        return "fossil:forums/row_post";
-    }
-    
-    public function save() {
-        parent::save();
-        $this->topic->latestPost = $this;
-        $this->topic->forum->latestPost = $this;
-    }
+class NewTopic extends BaseForm {
+    /** @F:FormField() */
+    public $title;
+    /** @F:FormField(type="textarea") */
+    public $content;
 }
 
 ?>

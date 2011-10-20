@@ -29,13 +29,16 @@
 
 namespace Fossil\Plugins\Forums\Models;
 
+use Fossil\Plugins\Users\Models\User,
+    Fossil\Interfaces\ITemplated;
+
 /**
  * Description of Forum
  *
  * @author predakanga
  * @Entity()
  */
-class Forum extends \Fossil\Models\Model {
+class Forum extends \Fossil\Models\Model implements ITemplated {
     /**
      * @Id @GeneratedValue @Column(type="integer")
      * @var int
@@ -55,6 +58,16 @@ class Forum extends \Fossil\Models\Model {
      * @var ForumTopic[]
      */
     protected $topics;
+    /** @OneToOne(targetEntity="ForumPost") */
+    protected $latestPost;
+    
+    public function canBeViewedBy(User $user) {
+        return true;
+    }
+    
+    public function getTemplateName($mode) {
+        return "fossil:forums/row_forum";
+    }
 }
 
 ?>
