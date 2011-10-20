@@ -272,6 +272,7 @@ class SmartyRenderer extends BaseRenderer {
         
         if(isset($params['header'])) {
             $tpl = $smarty->createTemplate($params['header'], array());
+            $tpl->assign($smarty->getTemplateVars());
             $content .= $tpl->fetch();
         }
         
@@ -298,6 +299,8 @@ class SmartyRenderer extends BaseRenderer {
             }
             if($tplName != $curTplName) {
                 $curTpl = $smarty->createTemplate($tplName);
+                // Copy in vars from the current template
+                $curTpl->assign($smarty->getTemplateVars());
                 $curTplName = $tplName;
             }
             $curTpl->assign(array('item' => $item, 'index' => $index));
@@ -306,6 +309,7 @@ class SmartyRenderer extends BaseRenderer {
         
         if(isset($params['footer'])) {
             $tpl = $smarty->createTemplate($params['footer'], array());
+            $tpl->assign($smarty->getTemplateVars());
             $content .= $tpl->fetch();
         }
         
