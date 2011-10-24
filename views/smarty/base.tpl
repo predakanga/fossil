@@ -3,6 +3,7 @@
 <head>{block name=assignations}{/block}
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <title>Fossil - {$title}</title>
+{block name="css"}
 <link href="static/css/reset.css" media="all" rel="stylesheet" type="text/css" />
 <link href="static/css/grid-16.css" media="all" rel="stylesheet" type="text/css" />
 <link href="static/css/text.css" media="all" rel="stylesheet" type="text/css" />
@@ -11,6 +12,7 @@
 <link href="static/css/form.css" media="all" rel="stylesheet" type="text/css" />
 <link href="static/css/grey-box.css" media="all" rel="stylesheet" type="text/css" />
 <link href="static/css/test.css" media="all" rel="stylesheet" type="text/css" />
+{/block}
 </head>
 <body>
 	
