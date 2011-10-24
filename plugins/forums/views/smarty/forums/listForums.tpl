@@ -1,4 +1,4 @@
-{extends file="fossil:loggedIn"}
+{extends file="fossil:forums/base"}
 {block name=content}
 <div class="forums_view">
 {foreach $categories|array_keys as $category}

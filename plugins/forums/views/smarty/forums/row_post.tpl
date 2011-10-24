@@ -3,7 +3,7 @@
         <span class="forum_post_header_left">Posted {$now->diff($item->postedAt)->format("%a days, %h hours, %i minutes")} ago</span>
         {link action="viewTopic" id=$item->topic->id fragment="forum_post_"|cat:$item->id}#{$index}{/link}
     </div>
-    <div class="forum_post_main cf">
+    <div class="forum_post_main clearfix">
         <div class="forum_post_user">
             <span class="forum_post_username"><a href="#">{$item->author->name}</a></span>
             <img src="http://www.gravatar.com/avatar/{$item->author->email|strtolower|trim|md5}?s=50&amp;d=retro&amp;pg=r" alt="{$item->author->name}" />

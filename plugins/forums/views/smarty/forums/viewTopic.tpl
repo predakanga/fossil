@@ -1,4 +1,4 @@
-{extends file="fossil:loggedIn"}
+{extends file="fossil:forums/base"}
 {block name=content}
 <div class="topic_view" id="topic_view_{$topic->id}">
     {paginate source=$topic field="posts"}
