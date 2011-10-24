@@ -157,6 +157,10 @@ class User extends \Fossil\Models\Model {
     public function isAdmin() {
         return true;
     }
+    
+    public function getUnreadConversationCount() {
+        return PrivateMessageConversation::getUnreadCount($this);
+    }
 }
 
 ?>

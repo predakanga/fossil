@@ -27,27 +27,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Fossil\Plugins\Users\Models;
+namespace Fossil\Plugins\Users\Models\Repositories;
 
-use Fossil\Models\Model;
+use Doctrine\ORM\EntityRepository;
 
 /**
- * Description of PrivateMessageConversation
+ * Description of PrivateMessageConversationRepository
  *
  * @author predakanga
- * @Entity(repositoryClass="Fossil\Plugins\Users\Models\Repositories\PrivateMessageConversationRepository")
  */
-class PrivateMessageConversation extends Model {
-    /** @Id @GeneratedValue @Column(type="integer") */
-    protected $id;
-    /** @Column */
-    protected $subject;
-    /** @Column(type="datetime") */
-    protected $updateDate;
-    /** @OneToMany(targetEntity="PrivateMessage", mappedBy="conversation") */
-    protected $messages;
-    /** @OneToMany(targetEntity="PrivateMessageConversationParticipant", mappedBy="conversation") */
-    protected $participants;
+class PrivateMessageConversationRepository extends EntityRepository {
+    public function getUnreadCount(Fossil\Plugins\Users\Models\User $user) {
+        $q = $this->_em->createQuery("SELECT COUNT(p)
+                                      FROM Fossil\Plugins\Users\Models\PrivateMessageConversationParticipant p
+                                      WHERE p.user = ?1 AND p.isUnread = true")
+                       ->setParameter(1, $user->id);
+        return $q->getSingleScalarResult();
+    }
 }
 
 ?>
