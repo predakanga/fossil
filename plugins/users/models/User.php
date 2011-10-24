@@ -83,6 +83,9 @@ class User extends \Fossil\Models\Model {
      */
     protected $revokedPermissions;
     
+    /** @OneToMany(targetEntity="PrivateMessageConversationParticipant", mappedBy="user") */
+    protected $conversations;
+    
     public function __construct() {
         parent::__construct();
         $this->userClass = $this->defaultUserclass();
