@@ -41,9 +41,17 @@ use Doctrine\ORM\Event\LoadClassMetadataEventArgs,
  * @author predakanga
  */
 class DiscriminatorMapGenerator {
+    protected $loadedClasses = array();
+    
     public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs) {
         $classMetadata = $eventArgs->getClassMetadata();
         $ourClass = $classMetadata->getReflectionClass()->getName();
+        $secondRun = false;
+        if(isset($this->loadedClasses[$ourClass]))
+            $secondRun = true;
+        else
+            $this->loadedClasses[$ourClass] = true;
+        
         $em = $eventArgs->getEntityManager();
 
         // Ensure that it uses a string discriminator column
@@ -60,10 +68,17 @@ class DiscriminatorMapGenerator {
             // Grab the list of extension entities that are subclasses
             $allEntities = OM::Annotations()->getClassesWithAnnotation('F:ExtendsDiscriminatorMap');
             foreach($allEntities as $ent) {
-                if(is_subclass_of($ent, $ourClass) && !in_array($discriminatorMap, $ent)) {
+                if(is_subclass_of($ent, $ourClass)) {
                     $discriminatorMap[$ent] = $ent;
                 }
             }
+        }
+        
+        if($secondRun) {
+            // If it's the second run, we need to clear all entries which exist
+            // in the original discriminator map, otherwise they create duplicate
+            // subclasses entries, breaking SQL queries
+            $discriminatorMap = array_diff($discriminatorMap, $classMetadata->discriminatorMap);
         }
         $classMetadata->setDiscriminatorMap($discriminatorMap);
     }
