@@ -58,6 +58,7 @@ class ORM {
     protected $config;
     protected $driver;
     protected $logger;
+    protected $mappingModifiers = array();
     
     public function __construct() {
         $appEnv = "development";
@@ -109,8 +110,11 @@ class ORM {
         $this->config = $config;
         
         $this->evm = new \Doctrine\Common\EventManager();
-        $this->evm->addEventListener(\Doctrine\ORM\Events::loadClassMetadata, new ReverseMappingGenerator());
-        $this->evm->addEventListener(\Doctrine\ORM\Events::loadClassMetadata, new DiscriminatorMapGenerator());
+        $this->mappingModifiers[] = new ReverseMappingGenerator();
+        $this->mappingModifiers[] = new DiscriminatorMapGenerator();
+        foreach($this->mappingModifiers as $gen)
+            $this->evm->addEventListener(\Doctrine\ORM\Events::loadClassMetadata, $gen);
+        
         if(!OM::Database()->getConnectionConfig())
             $conn = array('pdo' => OM::Database()->getPDO(), 'dbname' => null);
         else
@@ -165,6 +169,12 @@ class ORM {
         $schemaTool = new CustomSchemaTool($this->getEM(), $retainDeleted);
         
         if(!$coreOnly) {
+            // For all already loaded metadata, run them through the reverse mapping generator again
+            foreach($this->getEM()->getMetadataFactory()->getLoadedMetadata() as $md) {
+                $args = new \Doctrine\ORM\Event\LoadClassMetadataEventArgs($md, $this->em);
+                foreach($this->mappingModifiers as $gen)
+                    $gen->loadClassMetadata($args);
+            }
             $allMD = $this->getEM()->getMetadataFactory()->getAllMetadata();
         } else {
             $allMD = array();

@@ -83,7 +83,9 @@ class ReverseMappingGenerator {
                         if((!$mapping['isOwningSide']) && ($mapping['type'] != ClassMetadataInfo::ONE_TO_MANY))
                             throw new \Exception("@F:GenerateReverse may only be used on the owning side of associations");
                         $reverseMapping = $this->invertMapping($mapping);
-                        
+                        // Skip out early if we've already mapped this association
+                        if($classMetadata->hasAssociation($reverseMapping['fieldName']))
+                            continue;
                         switch($reverseMapping['type']) {
                             case ClassMetadataInfo::MANY_TO_MANY:
                                 $classMetadata->mapManyToMany($reverseMapping);

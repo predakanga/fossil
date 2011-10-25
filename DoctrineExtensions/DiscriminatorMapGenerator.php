@@ -60,7 +60,7 @@ class DiscriminatorMapGenerator {
             // Grab the list of extension entities that are subclasses
             $allEntities = OM::Annotations()->getClassesWithAnnotation('F:ExtendsDiscriminatorMap');
             foreach($allEntities as $ent) {
-                if(is_subclass_of($ent, $ourClass)) {
+                if(is_subclass_of($ent, $ourClass) && !in_array($discriminatorMap, $ent)) {
                     $discriminatorMap[$ent] = $ent;
                 }
             }
