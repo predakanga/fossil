@@ -323,7 +323,7 @@ class SmartyRenderer extends BaseRenderer {
             $index++;
             $tplName = null;
             if($item instanceof ITemplated)
-                $tplName = $item->getTemplateName(null);
+                $tplName = $item->getTemplateName($mode);
             if(!$tplName)
                 $tplName = $params['template'];
             if(!$tplName) {
