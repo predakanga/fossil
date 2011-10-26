@@ -48,20 +48,39 @@ use \Fossil\OM;
  * @F:InitialDataset("plugins/users/data/users.yml")
  */
 class User extends \Fossil\Models\Model {
+    const GENDER_UNKNOWN = 0;
+    const GENDER_M = 1;
+    const GENDER_F = 2;
+    
     /**
      * @Id @GeneratedValue @Column(type="integer")
      * @var int
      */
     protected $id;
     
-    /** @Column() */
+    /** @Column */
     protected $name;
     
-    /** @Column() */
+    /** @Column */
     protected $password;
     
-    /** @Column() */
+    /** @Column */
     protected $email;
+    
+    /** @Column(type="datetime") */
+    protected $joinDate;
+    
+    /** @Column */
+    protected $avatar;
+    
+    /** @Column(type="integer") */
+    protected $gender;
+    
+    /** @Column(type="date") */
+    protected $birthday;
+    
+    /** @Column */
+    protected $timezone;
     
     /**
      * @ManyToOne(targetEntity="UserClass", inversedBy="members")
@@ -160,6 +179,17 @@ class User extends \Fossil\Models\Model {
     
     public function getUnreadConversationCount() {
         return PrivateMessageConversation::getUnreadCount($this);
+    }
+    
+    public function getAvatarURL($size) {
+        if(empty($this->avatar))
+            return $this->getGravatarURL($size);
+        else
+            return $this->avatar;
+    }
+    
+    public function getGravatarURL($size) {
+        return "http://www.gravatar.com/avatar/" . md5(trim(strtolower($this->email))) . "?s=$size&amp;d=retro&amp;pg=r";
     }
 }
 
