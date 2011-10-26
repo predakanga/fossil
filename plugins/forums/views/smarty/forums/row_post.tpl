@@ -1,6 +1,6 @@
 <div class="forum_post" id="forum_post_{$item->id}">
     <div class="forum_post_header lightGreyGrad">
-        <span class="forum_post_header_left">Posted {$now->diff($item->postedAt)->format("%a days, %h hours, %i minutes")} ago</span>
+        <span class="forum_post_header_left">Posted {$now->diff($item->postedAt)|date_interval_format}</span>
         {link action="viewTopic" id=$item->topic->id fragment="forum_post_"|cat:$item->id}#{$index}{/link}
     </div>
     <div class="forum_post_main clearfix">

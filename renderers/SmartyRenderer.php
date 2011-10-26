@@ -82,6 +82,7 @@ class SmartyRenderer extends BaseRenderer {
         $this->smarty->registerPlugin('function', 'display', array($this, 'displayFunction'));
         $this->smarty->registerPlugin('function', 'paginate', array($this, 'paginateFunction'));
         $this->smarty->registerPlugin('modifier', 'bbdecode', array($this, 'bbdecodeModifier'));
+        $this->smarty->registerPlugin('modifier', 'date_interval_format', array($this, 'dateIntervalFmtModifier'));
         $this->smarty->registerPlugin('compiler', 'use', array($this, 'useFunction'));
         $this->smarty->registerPlugin('block', 'link', array($this, 'linkFunction'));
         $this->smarty->registerPlugin('block', 'link_page', array($this, 'linkPageFunction'));
@@ -190,6 +191,58 @@ class SmartyRenderer extends BaseRenderer {
     
     function bbdecodeModifier($input) {
         return OM::BBCode()->decode($input);
+    }
+    
+    function dateIntervalFmtModifier(\DateInterval $interval) {
+        $doPlural = function($nb,$str){return $nb>1?$str.'s':$str;}; // adds plurals
+   
+        $format = array();
+        if($interval->y !== 0) {
+            $format[] = "%y ".$doPlural($interval->y, "year");
+        }
+        if($interval->m !== 0) {
+            $format[] = "%m ".$doPlural($interval->m, "month");
+        }
+        if($interval->d !== 0) {
+            $weeks = (int)($interval->d / 7);
+            $days = $interval % 7;
+            
+            if($weeks) {
+                $format[] = "$weeks " . $doPlural($weeks, "week");
+                if($days) {
+                    $format[] = "$days " . $doPlural($days, "day");
+                }
+            } else {
+                $format[] = "%d ".$doPlural($interval->d, "day");
+            }
+        }
+        if($interval->h !== 0) {
+            $format[] = "%h ".$doPlural($interval->h, "hour");
+        }
+        if($interval->i !== 0) {
+            $format[] = "%i ".$doPlural($interval->i, "minute");
+        }
+        if($interval->s !== 0) {
+            if(!count($format)) {
+                return "less than a minute ago";
+            } else {
+                $format[] = "%s ".$doPlural($interval->s, "second");
+            }
+        }
+
+        // We use the two biggest parts
+        if(count($format) > 1) {
+            $format = array_shift($format)." and ".array_shift($format);
+        } else {
+            $format = array_pop($format);
+        }
+
+        $retStr = $interval->format($format); 
+        if($interval->invert) {
+            return $retStr . " ago";
+        } else {
+            return "In " . $retStr;
+        }
     }
     
     function multiformFunction($params, $content, $smarty, &$repeat) {
