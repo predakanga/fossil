@@ -67,6 +67,7 @@ class Forum extends LoginRequiredController {
         $topic = ForumTopic::find($req->args['id']);
         if(!$topic)
             throw new NoSuchInstanceException("Topic not found");
+        $topic->viewCount++;
         OM::Form("NewPost")->tid = $topic->id;
         return OM::obj("Responses", "Template")->create("fossil:forums/viewTopic", array('topic' => $topic));
     }

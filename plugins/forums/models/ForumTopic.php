@@ -54,6 +54,8 @@ class ForumTopic extends Model implements ITemplated {
     protected $name;
     /** @Column(type="boolean") */
     protected $sticky = false;
+    /** @Column(type="integer") */
+    protected $viewCount = 0;
     /**
      * @ManyToOne(targetEntity="ForumCategory", inversedBy="announcements")
      * @var ForumCategory
