@@ -38,6 +38,8 @@ use Fossil\Forms\BaseForm;
  * @F:Form(name="NewTopic")
  */
 class NewTopic extends BaseForm {
+    /** @F:FormField(type="hidden") */
+    public $fid;
     /** @F:FormField() */
     public $title;
     /** @F:FormField(type="textarea") */

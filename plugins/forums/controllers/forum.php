@@ -73,14 +73,11 @@ class Forum extends LoginRequiredController {
     }
     
     public function runNewTopic(BaseRequest $req) {
-        if(!isset($req->args['fid']))
-            throw new NoSuchInstanceException("Subforum not found");
-        $forum = ForumModel::find($req->args['fid']);
-        if(!$forum)
-            throw new NoSuchInstanceException("Subforum not found");
-        
         $form = OM::Form("NewTopic");
         if($form->isSubmitted() && $form->isValid()) {
+            $forum = ForumModel::find($form->fid);
+            if(!$forum)
+                throw new NoSuchInstanceException("Subforum not found");
             // Create the new topic
             $topic = new ForumTopic();
             $topic->author = User::me();
@@ -96,9 +93,12 @@ class Forum extends LoginRequiredController {
             
             // And bounce back to the list page
             return OM::obj("Responses", "Redirect")->create("?controller=forum&action=viewForum&id={$forum->id}");
+        } else {
+            if(!isset($req->args['fid']))
+                throw new NoSuchInstanceException("Subforum not found");
+            $form->fid = $req->args['fid'];
+            return OM::obj("Responses", "Template")->create("fossil:forums/newTopic");
         }
-        
-        return OM::obj("Responses", "Template")->create("fossil:forums/newTopic", array('forum' => $forum));
     }
     
     public function runNewPost(BaseRequest $req) {
