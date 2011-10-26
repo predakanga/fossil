@@ -1,10 +1,7 @@
-<div class="forum_topic" id="forum_topic_{$item->id}">
-    Index: {$index}<br />
-    Title: {$item->name}<br />
-    Author: {$item->author->name}<br />
-    Post count: {$item->posts|count}<br />
-    Latest post ID: {$item->latestPost->id}<br />
-    {link action="viewTopic" id=$item->id}View topic{/link}
-{*    Post count: {$item->getPostCount()}<br />
-    Last post: {display source=$item->latestPost}*}
-</div>
+<tr class="forum_topic" id="forum_topic_{$item->id}">
+    <td class="topic_info">{link action="viewTopic" id=$item->id}{$item->name}{/link}</td>
+    <td class="post_count">{$item->posts|count}</td>
+    <td class="view_count">{$item->viewCount}</td>
+    <td class="author">{link controller="user" action="view" id={$item->author->id}}{$item->author->name}{/link}</td>
+    <td class="latest_post">{if $item->latestPost}{display source=$item->latestPost mode="forumSummary"}{else}--None--{/if}</td>
+</tr>

@@ -7,7 +7,14 @@
         <h3>{$category.info.name}</h3>
     </div>
     <div class="box_body">
-        {display source=$category.forums}
+        <table>
+            <thead>
+                <tr class="lightGreyGrad"><th>Forum</th><th>Topics</th><th>Posts</th><th>Latest Post</th></tr>
+            </thead>
+            <tbody>
+                {display source=$category.forums}
+            </tbody>
+        </table>
     </div>
 </div>
 {/foreach}

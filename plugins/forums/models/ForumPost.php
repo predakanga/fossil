@@ -36,7 +36,7 @@ use Fossil\Models\Model,
  * Description of Post
  *
  * @author predakanga
- * @Entity
+ * @Entity(repositoryClass="Fossil\Plugins\Forums\Models\Repositories\ForumPostRepository")
  */
 class ForumPost extends Model implements ITemplated {
     /**
@@ -63,6 +63,9 @@ class ForumPost extends Model implements ITemplated {
     protected $content;
     
     public function getTemplateName($mode) {
+        if($mode == "forumSummary") {
+            return "fossil:forums/post_summary";
+        }
         return "fossil:forums/row_post";
     }
     
