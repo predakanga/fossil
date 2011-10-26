@@ -130,16 +130,26 @@ class Forum extends LoginRequiredController {
         $forums = OM::ORM()->getEM()->createQuery("SELECT forum, category
                                                    FROM Fossil\Plugins\Forums\Models\Forum forum
                                                    LEFT JOIN forum.category category");
+        $catKeyMap = array();
         foreach($forums->getResult() as $forum) {
             // Check whether user can view forum
             if($forum->canBeViewedBy(User::me())) {
                 $category = $forum->category;
-                $catName = "Uncategorized";
-                if($category)
-                    $catName = $category->name;
-                if(!isset($cats[$catName]))
-                    $cats[$catName] = array();
-                $cats[$catName][] = $forum;
+                
+                $catInfo = array('name' => "Uncategorized", 'id' => "none");
+                if($category) {
+                    $catInfo['name'] = $category->name;
+                    $catInfo['id'] = $category->id;
+                }
+                $key = count($cats);
+                if(isset($catKeyMap[$catInfo['id']]))
+                    $key = $catKeyMap[$catInfo['id']];
+                else
+                    $catKeyMap[$catInfo['id']] = $key;
+                
+                if(!isset($cats[$key]))
+                    $cats[$key] = array('info' => $catInfo, 'forums' => array());
+                $cats[$key]['forums'][] = $forum;
             }
         }
         
