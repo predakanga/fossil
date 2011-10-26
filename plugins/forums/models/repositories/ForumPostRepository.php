@@ -27,50 +27,25 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace Fossil\Plugins\Forums\Models;
+namespace Fossil\Plugins\Forums\Models\Repositories;
 
-use Fossil\Plugins\Users\Models\User,
-    Fossil\Interfaces\ITemplated;
+use Doctrine\ORM\EntityRepository,
+    Fossil\Plugins\Forums\Models\Forum;
 
 /**
- * Description of Forum
+ * Description of ForumPostRepository
  *
  * @author predakanga
- * @Entity()
  */
-class Forum extends \Fossil\Models\Model implements ITemplated {
-    /**
-     * @Id @GeneratedValue @Column(type="integer")
-     * @var int
-     */
-    protected $id;
-    /** @Column */
-    protected $name;
-    /** @Column */
-    protected $description;
-    /**
-     * @ManyToOne(targetEntity="ForumCategory", inversedBy="forums")
-     * @var ForumCategory
-     */
-    protected $category;
-    /**
-     * @OneToMany(targetEntity="ForumTopic", mappedBy="forum")
-     * @var ForumTopic[]
-     */
-    protected $topics;
-    /** @OneToOne(targetEntity="ForumPost") */
-    protected $latestPost;
-    
-    public function getPostCount() {
-        return ForumPost::getCountInForum($this);
-    }
-    
-    public function canBeViewedBy(User $user) {
-        return true;
-    }
-    
-    public function getTemplateName($mode) {
-        return "fossil:forums/row_forum";
+class ForumPostRepository extends EntityRepository {
+    public function getCountInForum(Forum $forum) {
+        $q = $this->_em->createQuery('SELECT COUNT(posts)
+                                      FROM Fossil\Plugins\Forums\Models\Forum forum
+                                      JOIN forum.topics topics
+                                      JOIN topics.posts posts
+                                      WHERE forum = ?1')
+                       ->setParameter(1, $forum);
+        return $q->getSingleScalarResult();
     }
 }
 
