@@ -534,7 +534,7 @@ XML;
         $query = new SolrQuery();
         $query->setStart(0);
         $query->addFilterQuery("type:$idxName");
-        $query->setQuery(\SolrUtils::escapeQueryChars($queryStr));
+        $query->setQuery($queryStr);
         $query->addField("id")->addField("type");
         foreach($types as $field => $type) {
             $fieldName = $this->getFieldName($idxName, $field, $type['options']);
@@ -564,6 +564,8 @@ XML;
         if($returnRaw)
             return $response->docs;
         $toRet = array();
+        if(!$response->docs)
+            return $toRet;
         foreach($response->docs as $doc) {
             $data = array();
             $idParts = explode("_", $doc->id);
