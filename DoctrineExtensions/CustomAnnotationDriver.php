@@ -30,7 +30,9 @@
 namespace Fossil\DoctrineExtensions;
 
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver,
-    Doctrine\Common\Annotations\AnnotationReader;
+    Doctrine\Common\Annotations\AnnotationReader,
+    Doctrine\Common\Annotations\CachedReader,
+    Doctrine\Common\Cache\ArrayCache;
 
 /**
  * Description of CustomAnnotationDriver
@@ -56,9 +58,11 @@ class CustomAnnotationDriver extends AnnotationDriver {
     static public function create($paths = array(), AnnotationReader $reader = null)
     {
         if ($reader == null) {
-            $reader = new AnnotationReader();
-            $reader->setIgnoreNotImportedAnnotations(true);
-            $reader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
+            $annoCache = new ArrayCache();
+            $subReader = new AnnotationReader();
+            $subReader->setIgnoreNotImportedAnnotations(true);
+            $subReader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
+            $reader = new CachedReader($subReader, $annoCache);
         }
         return new self($reader, $paths);
     }
