@@ -195,6 +195,15 @@ abstract class Model {
             throw new \Exception("Attempted to paginate a single entity");
         return new PaginationProxy($this->get($field), $fieldsPerPage);
     }
+    
+    public function toArray() {
+        // TODO: Decide how to handle associations
+        $toRet = array();
+        foreach($this->getMetadata()->getFieldNames() as $field) {
+            $toRet[$field] = $this->get($field);
+        }
+        return $toRet;
+    }
 }
 
 ?>
