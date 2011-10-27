@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * Copyright (c) 2011, predakanga
  * All rights reserved.
  * 
@@ -25,39 +25,18 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * @author predakanga
- * @since 0.1
- * @category Fossil Core
- * @package Fossil
- * @subpackage Controllers
- * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Controllers;
-
-use Fossil\OM,
-    Fossil\Responses\TemplateResponse,
-    Fossil\Responses\RedirectResponse;
+namespace Fossil\Interfaces;
 
 /**
- * Description of Default
+ * Description of IApiFormatter
  *
  * @author predakanga
  */
-class Index extends AutoController {
-    public function runIndex($req) {
-        // Redirect to the setup controller if we have no settings
-        if(!OM::Settings()->bootstrapped())
-            return new RedirectResponse("index.php?controller=setup");
-        else
-            // Otherwise, redirect to the dev panel
-            return new RedirectResponse("index.php?controller=dev");
-    }
-    
-    public function runTestApi($req) {
-        $data = array("name" => "Chuck", "value" => 32);
-        return OM::obj("Responses", "API")->create($data);
-    }
+interface IApiFormatter {
+    function getContentType();
+    function getContentData($data);
 }
+
 ?>

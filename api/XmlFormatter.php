@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * Copyright (c) 2011, predakanga
  * All rights reserved.
  * 
@@ -25,39 +25,33 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * @author predakanga
- * @since 0.1
- * @category Fossil Core
- * @package Fossil
- * @subpackage Controllers
- * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Controllers;
+namespace Fossil\Api;
 
-use Fossil\OM,
-    Fossil\Responses\TemplateResponse,
-    Fossil\Responses\RedirectResponse;
+use Fossil\Interfaces\IApiFormatter;
 
 /**
- * Description of Default
+ * Description of XmlFormatter
  *
  * @author predakanga
+ * @F:Instanced("xml")
  */
-class Index extends AutoController {
-    public function runIndex($req) {
-        // Redirect to the setup controller if we have no settings
-        if(!OM::Settings()->bootstrapped())
-            return new RedirectResponse("index.php?controller=setup");
-        else
-            // Otherwise, redirect to the dev panel
-            return new RedirectResponse("index.php?controller=dev");
+class XmlFormatter implements IApiFormatter {
+    public function getContentType() {
+        return "application/xml";
     }
     
-    public function runTestApi($req) {
-        $data = array("name" => "Chuck", "value" => 32);
-        return OM::obj("Responses", "API")->create($data);
+    public function getContentData($data) {
+        require_once("XML/Serializer.php");
+        $serializer = new \XML_Serializer(array("addDecl" => true, "scalarAsAttributes" => true));
+        $res = $serializer->serialize($data);
+        if(\PEAR::isError($res)) {
+            die("XML Error");
+        } else {
+            return $serializer->getSerializedData();
+        }
     }
 }
+
 ?>
