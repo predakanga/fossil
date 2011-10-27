@@ -519,36 +519,47 @@ XML;
         return array($schemaFilename);
     }
     
-    public function search($model, $query, $returnRaw = false) {
+    public function search($model, $queryStr, $returnRaw = false, $boosts = array()) {
         $idxName = call_user_func(array($model,"getIndexName"));
         $types = call_user_func(array($model,"getSearchFields"));
         $fieldMappings = array();
 
         $query = new SolrQuery();
-        $id = $this->getID($entity);
         $query->setStart(0);
         $query->addFilterQuery("type:$idxName");
-        $query->setQuery(SolrUtils::escapeQueryChars($query));
-        
+        $query->setQuery(\SolrUtils::escapeQueryChars($queryStr));
         $query->addField("id")->addField("type");
         foreach($types as $field => $type) {
             $fieldName = $this->getFieldName($idxName, $field, $type);
-            $fieldMappings[$fieldName] = $field;
+            $fieldMappings[$field] = $fieldName;
             $query->addField($fieldName);
+        }
+        $query->setParam("defType", "edismax");
+        if(count($boosts)) {
+            $boostStr = "";
+            foreach($boosts as $name => $factor) {
+                if($boostStr != "") {
+                    $boostStr .= "+";
+                }
+                $docName = $fieldMappings[$name];
+                $boostStr .= "$docName^$factor";
+            }
+            $query->setParam("qf", $boostStr);
         }
         
         $queryResponse = $this->solr->query($query);
         if(!$queryResponse->success())
             return null;
         $response = $queryResponse->getResponse();
+        $response = $response->response;
         if($returnRaw)
             return $response->docs;
         $toRet = array();
         foreach($response->docs as $doc) {
             $data = array();
             $idParts = explode("_", $doc->id);
-            $data['dbId'] = (int)$idParts[1];
-            foreach($this->fieldMappings as $dataField => $docField) {
+            $data['dbId'] = (int)$idParts[count($idParts)-1];
+            foreach($fieldMappings as $dataField => $docField) {
                 $data[$dataField] = $doc->{$docField};
             }
             $toRet[] = new SearchResult($data);

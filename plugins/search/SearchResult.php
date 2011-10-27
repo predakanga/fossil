@@ -35,15 +35,10 @@ namespace Fossil\Plugins\Search;
  * @author predakanga
  */
 class SearchResult {
-    public $dbId;
-    protected $_data;
-    
     public function __construct($data) {
-        $this->_data = $data;
-    }
-    
-    public function __get($key) {
-        return $this->_data[$key];
+        foreach($data as $key => $value) {
+            $this->{$key} = $value;
+        }
     }
 }
 

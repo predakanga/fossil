@@ -169,7 +169,7 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
         return null;
     }
     
-    public function search($model, $query, $returnRaw = false) {
+    public function search($model, $query, $returnRaw = false, $boosts = array()) {
         $indexName = call_user_func(array($model, "getIndexName"));
         $idx = $this->getIndex($indexName);
         $results = $idx->find($query);
