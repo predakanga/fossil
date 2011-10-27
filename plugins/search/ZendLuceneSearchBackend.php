@@ -82,9 +82,6 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
         // Load dictionary index structures
         require_once("Zend/Search/Lucene/Index/Term.php");
         $idx->hasTerm(new \Zend_Search_Lucene_Index_Term('dummy_data', 'dummy_fieldname'));
-
-        var_dump(memory_get_usage());
-        var_dump(memory_get_usage(true));
     }
     /**
      *
@@ -136,7 +133,11 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
         $entityDoc->addField(\Zend_Search_Lucene_Field::keyword('dbId', $entity->{call_user_func(array($model, "getIDField"))}));
         // Then add each regular field
         foreach(call_user_func(array($model, "getSearchFields")) as $field => $type) {
-            $value = $entity->{$field};
+            $accessor = $field;
+            if(isset($type['accessor']))
+                $accessor = $type['accessor'];
+            $type = $type['options'];
+            $value = $this->getDataFromModel($entity, $accessor);
             $fieldObj = null;
             if($type & ISearchable::SEARCH_FIELD_BINARY) {
                 $fieldObj = \Zend_Search_Lucene_Field::binary($field, $value);

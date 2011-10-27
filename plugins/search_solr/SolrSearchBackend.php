@@ -115,8 +115,12 @@ class SolrSearchBackend extends BaseSearchBackend {
         $doc->addField("type", $idxName);
         $doc->addField("id", $this->getID($entity));
         foreach($types as $field => $type) {
-            $fieldName = $this->getFieldName($idxName, $field, $type);
-            $doc->addField($fieldName, $entity->{$field});
+            $typeAccessor = $field;
+            if(isset($type['accessor']))
+                $typeAccessor = $type['accessor'];
+
+            $fieldName = $this->getFieldName($idxName, $field, $type['options']);
+            $doc->addField($fieldName, $this->getDataFromModel($entity, $typeAccessor));
         }
         $this->solr->addDocument($doc);
     }
@@ -132,16 +136,14 @@ class SolrSearchBackend extends BaseSearchBackend {
         $query->setStart(0);
         $query->setRows(1);
         $query->setQuery("id:$id");
-        $query->addField("id")->addField("type");
-        foreach($types as $field => $type) {
-            $query->addField($this->getFieldName($idxName, $field, $type));
-        }
+        $query->addField("id")->addField("type")->addField("*");
         $queryResponse = $this->solr->query($query);
         if(!$queryResponse->success())
             return null;
         $response = $queryResponse->getResponse();
+        $response = $response->response;
         if($response->numFound >= 1) {
-            $doc = $response->numFound[0];
+            $doc = $response->docs[0];
             return array($doc->id, $doc);
         }
         return null;
@@ -448,6 +450,7 @@ XML;
             $idField = call_user_func(array($entity,"getIDField"));
             $types = call_user_func(array($entity,"getSearchFields"));
             foreach($types as $field => $type) {
+                $type = $type['options'];
                 $fieldName = $this->getFieldName($idxName, $field, $type);
                 // Append type string
                 if($type & ISearchable::SEARCH_FIELD_TEXT) {
@@ -530,7 +533,9 @@ XML;
         $query->setQuery(\SolrUtils::escapeQueryChars($queryStr));
         $query->addField("id")->addField("type");
         foreach($types as $field => $type) {
-            $fieldName = $this->getFieldName($idxName, $field, $type);
+            $fieldName = $this->getFieldName($idxName, $field, $type['options']);
+            if(!($type['options'] & ISearchable::SEARCH_FIELD_STORED))
+                continue;
             $fieldMappings[$field] = $fieldName;
             $query->addField($fieldName);
         }

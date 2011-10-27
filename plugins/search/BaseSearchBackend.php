@@ -75,6 +75,24 @@ abstract class BaseSearchBackend extends BaseDriver {
                            ->where("item.id IN " . $builder->createPositionalParameter($ids));
         return new PaginationProxy($builder->getQuery(), $pageSize);
     }
+    
+    // Utility functions for use while indexing entities
+    protected function getDataFromModel($entity, $accessor) {
+        if(is_callable($accessor)) {
+            return $accessor($entity);
+        } elseif(strpos($accessor, "->") === FALSE) {
+            return $entity->{$accessor};
+        } else {
+            // Decompose the accessors with explode
+            $curModel = $entity;
+            $accessParts = explode("->", $accessor);
+            $i = 0;
+            while($curPart = array_shift($accessParts)) {
+                $curModel = $curModel->{$curPart};
+            }
+            return $curModel;
+        }
+    }
 }
 
 ?>

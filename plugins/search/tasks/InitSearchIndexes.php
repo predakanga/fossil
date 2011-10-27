@@ -41,8 +41,8 @@ use Fossil\OM,
 class InitSearchIndexes extends StreamingTask {
     protected $curOffset;
     protected $curQuery;
-    protected $batchSize = 1000;
-    protected $cullPoint = 4000;
+    protected $batchSize = 500;
+    protected $cullPoint = 2000;
     
     public function runOneIteration(OutputInterface $out) {
         // Query for the objects
@@ -79,14 +79,7 @@ class InitSearchIndexes extends StreamingTask {
         foreach($searchData as $model => $entCount) {
             $out->writeln("\t$model ($entCount items)");
             $this->curOffset = 0;
-            $fields = array();
-            $fields[] = call_user_func(array($model, "getIDField"));
-            foreach(call_user_func(array($model, "getSearchFields")) as $field => $type) {
-                $fields[] = $field;
-            }
-            $fieldStr = "{" . implode(",", $fields) . "}";
-            $this->curQuery = OM::ORM()->getEM()->createQuery("SELECT partial entity.$fieldStr FROM " . $model . " entity");
-            $this->curQuery->setHint(\Doctrine\ORM\Query::HINT_FORCE_PARTIAL_LOAD, true);
+            $this->curQuery = OM::ORM()->getEM()->createQuery("SELECT entity FROM $model entity");
             $this->curQuery->setMaxResults($this->batchSize);
             $curIdx = call_user_func(array($model, "getIndexName"));
             
