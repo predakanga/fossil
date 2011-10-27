@@ -29,7 +29,8 @@
 
 namespace Fossil\Responses;
 
-use Fossil\OM;
+use Fossil\OM,
+    Fossil\Models\Model;
 
 /**
  * Description of ApiResponse
@@ -40,6 +41,29 @@ use Fossil\OM;
 class ApiResponse extends RenderableResponse {
     public function __construct($data) {
         $this->data = $data;
+    }
+    
+    public function apiValueAdapter($datum) {
+        if($datum instanceof Model)
+            $datum = $datum->toArray();
+        if($datum instanceof \DateTime)
+            return $datum->getTimestamp();
+        if(is_array($datum))
+            return $this->apiAdapter($datum);
+        return $datum;
+    }
+    
+    public function apiAdapter($data) {
+        $toRet = array();
+        
+        foreach($data as $key => $value) {
+            $key = $this->apiValueAdapter($key);
+            $value = $this->apiValueAdapter($value);
+            
+            $toRet[$key] = $value;
+        }
+        
+        return $toRet;
     }
     
     public function render() {
@@ -56,7 +80,7 @@ class ApiResponse extends RenderableResponse {
         $this->outputType = "text/plain";
         
         parent::render();
-        echo $formatter->getContentData($this->data);
+        echo $formatter->getContentData($this->apiAdapter($this->data));
     }
     //put your code here
 }
