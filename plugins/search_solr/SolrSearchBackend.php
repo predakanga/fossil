@@ -118,6 +118,10 @@ class SolrSearchBackend extends BaseSearchBackend {
             $typeAccessor = $field;
             if(isset($type['accessor']))
                 $typeAccessor = $type['accessor'];
+            if($type['options'] & ISearchable::BOOST_FIELD) {
+                $doc->setBoost($this->getDataFromModel($entity, $typeAccessor));
+                continue;
+            }
 
             $fieldName = $this->getFieldName($idxName, $field, $type['options']);
             $doc->addField($fieldName, $this->getDataFromModel($entity, $typeAccessor));

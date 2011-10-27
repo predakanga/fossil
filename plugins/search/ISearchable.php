@@ -46,6 +46,7 @@ interface ISearchable {
     const SEARCH_FIELD_BINARY = 32;
     const SEARCH_FIELD_DATE = 64;
     const SEARCH_FIELD_DEFAULT_SEARCH = 128;
+    const BOOST_FIELD = 256;
 }
 
 ?>
