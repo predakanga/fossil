@@ -365,7 +365,7 @@ class SmartyRenderer extends BaseRenderer {
         if($params['source'] instanceof Model) {
             $source = array($params['source']);
         }
-        elseif(is_array($params['source'])) {
+        elseif(is_array($params['source']) || $params['source'] instanceof Collection) {
             $source = $params['source'];
         }
         
