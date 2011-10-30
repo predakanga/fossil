@@ -49,19 +49,20 @@
    <arg line="${source}
               xml
               codesize,design,naming,unusedcode
+              --exclude */libs/*
               --reportfile ${basedir}/build/logs/pmd.xml" />
   </exec>
  </target>
 
  <target name="phpcpd" description="Generate pmd-cpd.xml using PHPCPD">
   <exec executable="phpcpd">
-   <arg line="--log-pmd ${basedir}/build/logs/pmd-cpd.xml ${source}" />
+   <arg line="--exclude src/libs --exclude src/plugins/search/libs --log-pmd ${basedir}/build/logs/pmd-cpd.xml ${source}" />
   </exec>
  </target>
 
  <target name="phploc" description="Generate phploc.csv">
   <exec executable="phploc">
-   <arg line="--log-csv ${basedir}/build/logs/phploc.csv ${source}" />
+   <arg line="--exclude src/libs --exclude src/plugins/search/libs --log-csv ${basedir}/build/logs/phploc.csv ${source}" />
   </exec>
  </target>
 
@@ -70,6 +71,7 @@
    <arg line="--report=checkstyle
               --report-file=${basedir}/build/logs/checkstyle.xml
               --standard=PEAR
+              --ignore=*/libs/*
               ${source}" />
   </exec>
  </target>
@@ -90,6 +92,7 @@
   <exec executable="phpcb">
    <arg line="--log    ${basedir}/build/logs
               --source ${source}
+			  --exclude=*/libs/*
               --output ${basedir}/build/code-browser" />
   </exec>
  </target>
