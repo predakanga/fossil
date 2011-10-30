@@ -30,7 +30,7 @@
    </sequential>
    <antcall target="phpcpd"/>
    <antcall target="phpcs"/>
-   <antcall target="phpdoc"/>
+   <antcall target="phpdoc-apigen"/>
    <antcall target="phploc"/>
   </parallel>
  </target>
@@ -77,6 +77,12 @@
  <target name="phpdoc" description="Generate API documentation using PHPDocumentor">
   <exec executable="phpdoc">
    <arg line="-d ${source} -t ${basedir}/build/api" />
+  </exec>
+ </target>
+
+ <target name="phpdoc-apigen" description="Generate API documentation using APIGen">
+  <exec executable="apigen">
+   <arg line="-c ${basedir}/apigen.conf" />
   </exec>
  </target>
 
