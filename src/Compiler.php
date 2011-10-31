@@ -46,7 +46,7 @@ class Compiler {
     protected $broker;
 
     public function __construct() {
-        $this->baseDir = OM::FS()->tempDir() . D_S . "compiled";
+        $this->baseDir = OM::FS()->tempDir() . D_S . "Compiled";
     }
     
     public function registerAutoloadPath() {
@@ -65,7 +65,7 @@ class Compiler {
         $parts = explode("\\", $fqcn);
         $real_parts = array_slice($parts, 2);
         $filename = array_pop($real_parts);
-        $dirpath = $this->baseDir . D_S . implode(D_S, array_map(function($a) { return lcfirst($a); }, $real_parts));
+        $dirpath = $this->baseDir . D_S . implode(D_S, $real_parts);
 
         if(!is_dir($dirpath))
             mkdir($dirpath, 0755, true);
