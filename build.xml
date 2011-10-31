@@ -23,7 +23,7 @@
  </target>
 
  <target name="parallelTasks" description="Run the pdepend, phpmd, phpcpd, phpcs, phpdoc and phploc tasks in parallel using a maximum of 2 threads.">
-  <parallel threadCount="2">
+  <parallel threadCount="1">
    <sequential>
     <antcall target="pdepend"/>
     <antcall target="phpmd"/>
@@ -40,6 +40,7 @@
    <arg line="--jdepend-xml=${basedir}/build/logs/jdepend.xml
               --jdepend-chart=${basedir}/build/pdepend/dependencies.svg
               --overview-pyramid=${basedir}/build/pdepend/overview-pyramid.svg
+              --ignore=libs,Plugins/Search/libs
               ${source}" />
   </exec>
  </target>
@@ -56,13 +57,13 @@
 
  <target name="phpcpd" description="Generate pmd-cpd.xml using PHPCPD">
   <exec executable="phpcpd">
-   <arg line="--exclude src/libs --exclude src/plugins/search/libs --log-pmd ${basedir}/build/logs/pmd-cpd.xml ${source}" />
+   <arg line="--exclude src/libs --exclude src/Plugins/Search/libs --log-pmd ${basedir}/build/logs/pmd-cpd.xml ${source}" />
   </exec>
  </target>
 
  <target name="phploc" description="Generate phploc.csv">
   <exec executable="phploc">
-   <arg line="--exclude src/libs --exclude src/plugins/search/libs --log-csv ${basedir}/build/logs/phploc.csv ${source}" />
+   <arg line="--exclude src/libs --exclude src/Plugins/Search/libs --log-csv ${basedir}/build/logs/phploc.csv ${source}" />
   </exec>
  </target>
 
