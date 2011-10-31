@@ -71,16 +71,16 @@ class User extends \Fossil\Models\Model {
     protected $joinDate;
     
     /** @Column */
-    protected $avatar;
+    protected $avatar = "";
     
     /** @Column(type="integer") */
-    protected $gender;
+    protected $gender = self::GENDER_UNKNOWN;
     
     /** @Column(type="date") */
     protected $birthday;
     
     /** @Column */
-    protected $timezone;
+    protected $timezone = "";
     
     /**
      * @ManyToOne(targetEntity="UserClass", inversedBy="members")
@@ -108,6 +108,8 @@ class User extends \Fossil\Models\Model {
     public function __construct() {
         parent::__construct();
         $this->userClass = $this->defaultUserclass();
+        $this->joinDate = new \DateTime();
+        $this->birthday = new \DateTime("1950-01-01");
     }
     
     protected function defaultUserclass() {
