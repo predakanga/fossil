@@ -29,7 +29,7 @@
 
 namespace Fossil\Plugins\Users\Controllers;
 
-use Fossil\Plugins\Users\Models\User,
+use Fossil\Plugins\Users\Models\User as UserModel,
     Fossil\Plugins\Users\Exceptions\AccessDeniedException;
 
 /**
@@ -44,7 +44,7 @@ abstract class PrivateController extends \Fossil\Controllers\AutoController {
     
     public function run(\Fossil\Requests\BaseRequest $req) {
         // Check that the user is authed
-        $user = User::me();
+        $user = UserModel::me();
         if(!$user) {
             return $this->unauthorizedAction($req);
         }

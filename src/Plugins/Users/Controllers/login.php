@@ -37,7 +37,7 @@
 namespace Fossil\Plugins\Users\Controllers;
 
 use \Fossil\OM,
-    \Fossil\Plugins\Users\Models\User,
+    \Fossil\Plugins\Users\Models\User as UserModel,
     \Fossil\Plugins\Users\Annotations\RequireRole;
 
 /**
@@ -54,7 +54,7 @@ class Login extends \Fossil\Controllers\AutoController {
         $loginForm = OM::Form("Login");
         
         if($loginForm->isSubmitted()) {
-            $user = User::findOneBy(array('name' => $loginForm->user));
+            $user = UserModel::findOneBy(array('name' => $loginForm->user));
             if(!$user || !$user->verifyPassword($loginForm->pass)) {
                 return OM::obj("Responses", "Template")->create("fossil:login", array('error' => 'Invalid user/pass'));
             }
@@ -77,7 +77,7 @@ class Login extends \Fossil\Controllers\AutoController {
         $signupForm = OM::Form("Signup");
         
         if($signupForm->isSubmitted() && $signupForm->isValid()) {
-            $user = User::findOneBy(array('name' => $signupForm->name));
+            $user = UserModel::findOneBy(array('name' => $signupForm->name));
             if($user)
                 return OM::obj("Responses", "Template")->create("fossil:signup", array('error' => 'Username already in use'));
             $user = $this->createUser();
@@ -92,7 +92,7 @@ class Login extends \Fossil\Controllers\AutoController {
     }
     
     protected function createUser() {
-        return new User();
+        return new UserModel();
     }
 }
 
