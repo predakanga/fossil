@@ -78,6 +78,8 @@ class Settings {
     }
     
     protected function loadSectionSettings($section) {
+        if(!OM::has("ORM"))
+            return;
         $settings = Setting::findBySection($section);
         if(!isset($this->store[$section]))
             $this->store[$section] = array();

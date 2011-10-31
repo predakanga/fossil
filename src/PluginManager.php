@@ -60,7 +60,7 @@ class PluginManager {
     
     public function findAvailablePlugins($root) {
         // Reuse the Filesystem filter
-        $globIter = new \GlobIterator($root . D_S . "plugins" . D_S . "*" . D_S . "plugin.yml");
+        $globIter = new \GlobIterator($root . D_S . "Plugins" . D_S . "*" . D_S . "plugin.yml");
         foreach($globIter as $pluginFile) {
             $pluginInfo = yaml_parse_file($pluginFile->getRealPath());
             $pluginInfo['root'] = $pluginFile->getPath();

@@ -62,10 +62,10 @@ class ORM {
     
     public function __construct() {
         $appEnv = "development";
-        
+
         // Load up custom types
         $types = array();
-        foreach(glob(OM::FS()->fossilRoot() . D_S . "DoctrineExtensions" . D_S . "types" . D_S . "*.php") as $type) {
+        foreach(glob(OM::FS()->fossilRoot() . D_S . "DoctrineExtensions" . D_S . "Types" . D_S . "*.php") as $type) {
             $types += require_once($type);
         }
         
@@ -132,10 +132,10 @@ class ORM {
     
     public function registerPaths() {
         $pluginsWithModels = array_filter(OM::FS()->pluginRoots(), function($root) {
-            return is_dir($root . D_S . "models");
+            return is_dir($root . D_S . "Models");
         });
         $this->driver->addPaths(array_map(function($root) {
-            return $root . D_S . "models";    
+            return $root . D_S . "Models";    
         }, $pluginsWithModels));
     }
     
@@ -184,18 +184,22 @@ class ORM {
             }
         }
         
-//        try
-//        {
+        try
+        {
             $schemaTool->updateSchema($allMD, true);
             $this->ensureInitialDatasets($schemaTool->newModels);
-//        }
-//        // TODO: Need to make this more specific, to ignore only on SQLite
-//        catch(\Doctrine\DBAL\DBALException $e) {
-//            echo "Got creation exception: " . $e->getMessage() . "\n";
-//            // If it's SQLite, try just creating it instead
-//            $schemaTool->createSchema($allMD);
-//            $this->ensureInitialDatasets($schemaTool->newModels);
-//        }
+        }
+        // TODO: Need to make this more specific, to ignore only on SQLite
+        catch(\Doctrine\DBAL\DBALException $e) {
+            // If it's SQLite, try just creating it instead
+            try {
+                $schemaTool->createSchema($allMD);
+                $this->ensureInitialDatasets($schemaTool->newModels);
+            }
+            catch(\Exception $e) {
+                // If we hit here, it most likely means that we're set up already
+            }
+        }
     }
     
     protected function ensureDataset($model, $dataset) {
