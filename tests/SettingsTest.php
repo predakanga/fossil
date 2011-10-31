@@ -43,50 +43,7 @@ class SettingsTest extends \PHPUnit_Framework_TestCase {
      * @todo Implement testBootstrapped().
      */
     public function testBootstrapped() {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @todo Implement testOffsetExists().
-     */
-    public function testOffsetExists() {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @todo Implement testOffsetGet().
-     */
-    public function testOffsetGet() {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @todo Implement testOffsetSet().
-     */
-    public function testOffsetSet() {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
-    }
-
-    /**
-     * @todo Implement testOffsetUnset().
-     */
-    public function testOffsetUnset() {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $this->assertFalse($this->object->bootstrapped());
     }
 
     /**
