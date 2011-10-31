@@ -49,6 +49,10 @@ class Compiler {
         $this->baseDir = OM::FS()->tempDir() . D_S . "Compiled";
     }
     
+    public function getAutoloadInfo() {
+        return array(rtrim($this->baseNamespace, "\\"), $this->baseDir);
+    }
+    
     public function registerAutoloadPath() {
         Autoloader::addNamespacePath(rtrim($this->baseNamespace, "\\"), $this->baseDir);
     }
@@ -102,7 +106,7 @@ class Compiler {
     protected function launchCompile($class) {
         // If it's already been compiled, just return
         if(isset($this->classMap[$class]))
-            return;
+            return $this->classMap[$class];
 
         // Gather the class tree for this class
         $classTree = $this->getClassExtensionTree($class);

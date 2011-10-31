@@ -157,8 +157,13 @@ class OM {
         self::FS()->setAppRoot(self::$appPath);
         self::FS()->setOverlayRoot(self::$overlayPath);
         
-        // Get the compiler, to set up the namespace path
-        self::Compiler()->registerAutoloadPath();
+        // Set up the compiler's autoload path
+        if(isset($cachedData['compiler_autoload'])) {
+            list($ns, $classPath) = $cachedData['compiler_autoload'];
+            Autoloader::addNamespacePath($ns, $classPath);
+        } else {
+            self::Compiler()->registerAutoloadPath();
+        }
         
         self::Annotations()->loadFromCache($cachedData['annotations']);
         
@@ -223,6 +228,10 @@ class OM {
         $cachedData['annotations'] = self::Annotations()->dumpForCache();
         $cachedData['mtime'] = self::getFossilMtime();
         $cachedData['version_guid'] = self::$versionGUID;
+        // If we're using the default compiler, don't bother saving the autoload info
+        if(get_class(self::Compiler()) != "Fossil\\Compiler") {
+            $cachedData['compiler_autoload'] = self::Compiler()->getAutoloadInfo();
+        }
         
         OM::Cache()->set("fossil_state", $cachedData);
     }

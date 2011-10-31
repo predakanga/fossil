@@ -38,8 +38,8 @@ namespace Fossil;
 class SourceDirectoryFilter extends \RecursiveFilterIterator {
 	public static $DIR_FILTERS = array('.git',
                                        'libs',
-                                       'plugins',
-                                       'compiled',
+                                       'Plugins',
+                                       'Compiled',
                                        'templates_c',
                                        'tests',
                                        'scratch');
