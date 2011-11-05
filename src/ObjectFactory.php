@@ -43,18 +43,18 @@ namespace Fossil;
 class ObjectFactory {
     protected static $knownTypes = array();
     
-    public static function defaultFromSettings($type) {
+    protected function defaultFromSettings($type) {
         $driverName = OM::Settings("Fossil", strtolower($type));
         if(!$driverName)
             return null;
         return $driverName['driver'];
     }
     
-    public static function registerType($type, $default = null, $loadCB = array(__CLASS__, "defaultFromSettings")) {
+    public function registerType($type, $default = null, $loadCB = array(__CLASS__, "defaultFromSettings")) {
         self::$knownTypes[$type] = array('default' => $default, 'cb' => $loadCB);
     }
     
-    public static function getObjectName($type) {
+    public function getConcreteClass($type) {
         $driverName = null;
         if(isset(self::$knownTypes[$type])) {
             $typeData = self::$knownTypes[$type];
