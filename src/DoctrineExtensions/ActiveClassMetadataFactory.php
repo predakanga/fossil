@@ -21,8 +21,14 @@ namespace Fossil\DoctrineExtensions;
 
 class ActiveClassMetadataFactory extends \Doctrine\ORM\Mapping\ClassMetadataFactory
 {
+    private $diContainer = null;
+    
+    public function __construct($diContainer) {
+        $this->diContainer = $diContainer;
+    }
+    
     protected function newClassMetadataInstance($className)
     {
-        return new ActiveClassMetadata($className);
+        return new ActiveClassMetadata($className, $diContainer);
     }
 }

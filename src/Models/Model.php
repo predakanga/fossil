@@ -36,7 +36,7 @@
 
 namespace Fossil\Models;
 
-use Fossil\OM,
+use Fossil\Object,
     Fossil\Exceptions\ValidationFailedException,
     Doctrine\ORM\Mapping\ClassMetadataInfo;
 
@@ -45,12 +45,20 @@ use Fossil\OM,
  *
  * @author predakanga
  */
-abstract class Model {
+abstract class Model extends Object {
+    /**
+     * @F:Inject("ORM")
+     * @var Fossil\ORM
+     */
+    private $orm;
+    
     private function getMetadata() {
-        return OM::ORM()->getEM()->getClassMetadata(get_class($this));
+        return $this->orm->getEM()->getClassMetadata(get_class($this));
     }
     
-    public function __construct() {
+    public function __construct($container) {
+        parent::__construct($container);
+        
         // Automatically create ArrayCollections for associations
         foreach($this->getMetadata()->getAssociationMappings() as $mapping) {
             if($mapping['type'] & ClassMetadataInfo::TO_MANY) {
@@ -61,11 +69,11 @@ abstract class Model {
     }
     
     public function save() {
-        OM::ORM()->getEM()->persist($this);
+        $this->orm->getEM()->persist($this);
     }
     
     public function delete() {
-        OM::ORM()->getEM()->remove($this);
+        $this->orm->getEM()->remove($this);
     }
     
     public function __toString() {
@@ -73,7 +81,7 @@ abstract class Model {
     }
     
     public function id() {
-        return OM::ORM()->getEM()->getUnitOfWork()->getEntityIdentifier($this);
+        return $this->orm->getEM()->getUnitOfWork()->getEntityIdentifier($this);
     }
     
     public function get($key) {
@@ -87,7 +95,7 @@ abstract class Model {
     public function set($key, $value) {
         // First, validate the value
         if(!$this->validate($key, $value))
-                throw new ValidationFailedException($this, $key, $value);
+            throw new ValidationFailedException($this, $key, $value);
         
         $methodName = "set" . ucfirst($key);
         if(method_exists($this, $methodName))
@@ -143,15 +151,19 @@ abstract class Model {
     
     public static function __callStatic($method, $arguments)
     {
+        // First argument must be ORM
+        $orm = array_shift($arguments);
+        assert($orm instanceof \Fossil\ORM);
         return call_user_func_array(
-            array(OM::ORM()->getEM()->getRepository(get_called_class()), $method),
+            array($orm->getEM()->getRepository(get_called_class()), $method),
             $arguments
         );
     }
     
-    public static function createFromArray($data) {
-        $model = new static();
-        $classMetadata = OM::ORM()->getEM()->getClassMetadata(get_called_class());
+    public static function createFromArray($diContainer, $data) {
+        $model = new static($diContainer);
+        $orm = $diContainer->get("ORM");
+        $classMetadata = $orm->getEM()->getClassMetadata(get_called_class());
         
         foreach($data as $key => $value) {
             if($classMetadata->hasAssociation($key)) {
@@ -162,7 +174,7 @@ abstract class Model {
                     $collection = new \Doctrine\Common\Collections\ArrayCollection();
 
                     foreach($value as $targetData) {
-                        $targetEntity = $targetClass::findOneBy($targetData);
+                        $targetEntity = $targetClass::findOneBy($orm, $targetData);
                         if(!$targetEntity) {
                             throw new \Exception("Required entity not found: $targetClass (" . var_export($targetData, true) . ")");
                         }
@@ -171,7 +183,7 @@ abstract class Model {
 
                     $model->set($key, $collection);
                 } else {
-                    $targetEntity = $targetClass::findOneBy($value);
+                    $targetEntity = $targetClass::findOneBy($orm, $value);
                     if(!$targetEntity) {
                         throw new \Exception("Required entity not found: $targetClass (" . var_export($targetData, true) . ")");
                     }
