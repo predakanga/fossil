@@ -321,6 +321,7 @@ class OM {
     public static function __callStatic($type, $args) {
         try
         {
+            trigger_error("Use of OM::$type is deprecated.", E_USER_WARNING);
             $obj = self::$objectRepo->getSingleton($type);
             if(count($args) > 0)
                 return call_user_func_array(array($obj, 'get'), $args);

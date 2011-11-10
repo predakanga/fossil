@@ -40,7 +40,7 @@ namespace Fossil\Caches;
  * Description of APC
  *
  * @author predakanga
- * @F:Object(type = "Cache", name = "APC")
+ * @F:Provides("Cache")
  */
 class APC extends BaseCache {
     public static function usable() {

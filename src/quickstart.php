@@ -33,11 +33,15 @@
  * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-use Fossil\Fossil;
+use Fossil\Core;
 
 require_once(__DIR__."/Fossil.php");
 
+$core = Core::create();
+$core->run();
+/*
 $core = Fossil::bootstrap(Fossil::TESTING);
 $core->run();
+*/
 
 ?>

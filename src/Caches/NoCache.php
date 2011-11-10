@@ -40,7 +40,8 @@ namespace Fossil\Caches;
  * Description of NoCache
  *
  * @author predakanga
- * @F:Object(type = "Cache", name = "NoCache")
+ * @F:Provides("Cache")
+ * @F:DefaultProvider
  */
 class NoCache extends BaseCache {
     public static function usable() {
@@ -54,11 +55,6 @@ class NoCache extends BaseCache {
     }
     public static function getForm() {
         return null;
-    }
-    
-    public function __construct($config = NULL) {
-        // Empty options for the bit bucket
-        parent::__construct($config);
     }
     
     protected function _has($key) {

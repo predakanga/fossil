@@ -50,7 +50,8 @@ use Fossil\DoctrineExtensions\CustomSchemaTool,
  * Description of ORM
  *
  * @author predakanga
- * @F:Object("ORM")
+ * @F:Provides("ORM")
+ * @F:DefaultProvider()
  */
 class ORM {
     protected $em;

@@ -41,18 +41,28 @@ use Fossil\Models\Setting;
  * Description of Settings
  *
  * @author predakanga
- * @F:Object("Settings")
+ * @F:Provides("Settings")
+ * @F:DefaultProvider
  */
-class Settings {
-    private $store;
-    private $fossilHash;
-    private $backingFile;
+class Settings extends Object {
+    private $store = array();
+    private $fossilHash = "";
+    private $backingFile = "";
+    /**
+     * @F:Inject(type = "ORM", lazy = true)
+     * @var Fossil\ORM
+     */
+    protected $orm;
+    /**
+     * @F:Inject("Filesystem")
+     * @var Fossil\Filesystem 
+     */
+    protected $fs;
     
-    public function __construct($backingFile = null) {
-        if(!$backingFile)
-            $backingFile = OM::FS()->execDir() . D_S . "settings.yml";
-        $this->backingFile = $backingFile;
-        $this->store = array();
+    public function __construct($container) {
+        parent::__construct($container);
+        
+        $this->backingFile = $this->fs->execDir() . D_S . "settings.yml";
         if(file_exists($backingFile)) {
             $this->store['Fossil'] = yaml_parse_file($backingFile);
             $this->fossilHash = md5(serialize($this->store['Fossil']));
@@ -67,7 +77,7 @@ class Settings {
         }
     }
     
-    public function bootstrapped() {
+    public function isBootstrapped() {
         if(!isset($this->store['Fossil']))
             return false;
         return true;
@@ -78,9 +88,9 @@ class Settings {
     }
     
     protected function loadSectionSettings($section) {
-        if(!OM::has("ORM"))
+        if(!$this->orm->_isReady())
             return;
-        $settings = Setting::findBySection($section);
+        $settings = Setting::findBySection($this->orm, $section);
         if(!isset($this->store[$section]))
             $this->store[$section] = array();
         foreach($settings as $setting) {
@@ -101,9 +111,9 @@ class Settings {
             $this->loadSectionSettings($section);
         $this->store[$section][$setting] = $value;
         // Persist to the DB as well
-        $settingModel = Setting::findOneBy(array('section' => $section, 'name' => $setting));
+        $settingModel = Setting::findOneBy($this->orm, array('section' => $section, 'name' => $setting));
         if(!$settingModel) {
-            $settingModel = new Setting();
+            $settingModel = new Setting($this->container);
             $settingModel->section = $section;
             $settingModel->name = $setting;
             $settingModel->save();

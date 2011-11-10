@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * Copyright (c) 2011, predakanga
  * All rights reserved.
  * 
@@ -25,29 +25,17 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * @author predakanga
- * @since 0.1
- * @category Fossil Core
- * @package Fossil
- * @subpackage Interfaces
- * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Interfaces;
+namespace Fossil\Annotations;
 
 /**
+ * Description of InstancedType
  *
  * @author predakanga
  */
-interface IDriver {
-    static function usable();
-    static function getName();
-    static function getVersion();
-    static function getForm();
-    
-    function getConfig();
-    function __construct($container, $driverType);
+class InstancedType extends Annotation {
+    //put your code here
 }
 
 ?>

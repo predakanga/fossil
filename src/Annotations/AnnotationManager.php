@@ -37,11 +37,16 @@
 namespace Fossil\Annotations;
 
 use Fossil\Autoloader,
+    Fossil\Object,
     \Doctrine\Common\Annotations\AnnotationReader,
     \Doctrine\Common\Annotations\AnnotationRegistry,
     \ReflectionClass;
 
-class AnnotationManager {
+/**
+ * @F:Provides("AnnotationManager")
+ * @F:DefaultProvider
+ */
+class AnnotationManager extends Object {
     /**
      * @var AnnotationReader
      */
@@ -50,8 +55,18 @@ class AnnotationManager {
      * @var string[]
      */
     private $namespaces;
-    private $annotationCache = array();
-    private $origErrorHandler;
+    private $annotations = array();
+
+    /**
+     * @F:Inject("Cache")
+     * @var Fossil\Caches\BaseCache
+     */
+    protected $cache;
+    /**
+     * @F:Inject("Reflection")
+     * @var Fossil\Reflection
+     */
+    protected $reflection;
     
     private function registerNamespaceAlias($namespace, $alias) {
         $this->namespaces[$alias] = $namespace;
@@ -67,7 +82,9 @@ class AnnotationManager {
         return $annoName;
     }
     
-    public function __construct($annotations = null) {
+    public function __construct($container) {
+        parent::__construct($container);
+        
         // Register our own class loader with the annotation registry
         AnnotationRegistry::registerLoader(function($class) {
             Autoloader::autoload($class);
@@ -76,48 +93,61 @@ class AnnotationManager {
         AnnotationReader::addGlobalIgnoredName('since');
     }
     
-    private function getReader() {
-        if(!$this->reader) {
-            $this->reader = new AnnotationReader();
-        
-            // Tweak the reader to use our own implementation of PhpParser
-            $reflClass = new \ReflectionClass($this->reader);
-            $reflProp = $reflClass->getProperty("phpParser");
-            $reflProp->setAccessible(true);
-            $reflProp->setValue($this->reader, new \Fossil\DoctrineExtensions\TokenizedPhpParser());
-        
-            $this->reader->setIgnoreNotImportedAnnotations(true);
-            $this->registerNamespaceAlias("\\Fossil\\Annotations\\", "F");
+    protected function determineObjects() {
+        // As a special case, we don't do auto-discovery on this object
+        return array(array('type' => 'Cache', 'destination' => 'cache',
+                           'required' => true, 'lazy' => true),
+                     array('type' => 'Reflection', 'destination' => 'reflection',
+                           'required' => true, 'lazy' => true));
+    }
+    
+    protected function ensureAnnotations() {
+        if($this->annotations) {
+            return;
         }
-        return $this->reader;
-    }
-    
-    public function loadFromCache($annotations) {
-        $this->namespaces = array('F' => "\\Fossil\\Annotations\\");
-        $this->annotationCache = $annotations;
-    }
-    
-    public function dumpForCache() {
-        return $this->annotationCache;
-    }
-    
-    public function tempErrorHandler($errno, $errstr, $errfile, $errline, $errctxt) {
-        if($errno == E_RECOVERABLE_ERROR && strpos($errstr, " must be an instance of ")) {
-                return true;
-        }
-        // Otherwise, pass on to our old error handler, or the PHP error handler as appropriate
-        if(is_callable($this->origErrorHandler))
-            return call_user_func_array($this->origErrorHandler, func_get_args());
-        return false;
-    }
-    
-    public function updateAnnotations($classes) {
-        $this->annotationCache = array();
         
-        // Because the Doctrine annotation reader uses strong type hinting and
-        // we want to use duck typing, we have to use a temporary error handler
-        $this->origErrorHandler = set_error_handler(array($this, "tempErrorHandler"));
+        // Ask for a copy of the annotations from the cache
+        if($this->cache->_isReady()) {
+            $this->annotations = $this->cache->get("annotations", true);
+        }
+        // If there's no cached copy, read the annotations in anew
+        if(!$this->annotations) {
+            $this->readAnnotations();
+        } else {
+            $this->namespaces = array('F' => "\\Fossil\\Annotations\\");
+        }
+    }
+    
+    protected function readAnnotations() {
+        $this->annotations = array();
+        
+        // Collect a list of classes to inspect
+        $classes = $this->reflection->getAllClasses();
+        
+        // Set up a temporary error handler, to bypass Doctrine's type hinting
+        $origErrorHandler = set_error_handler(array($this, "tempErrorHandler"));
+        
+        // Read annotations from all of the classes
         foreach($classes as $reflClass) {
+            $this->readClassAnnotations($reflClass);
+        }
+        
+        // And restore the original error handler
+        restore_error_handler();
+
+        // After all of the annotations have been built, we want to cull all those who don't have any annotations
+        $culledAnnos = array();
+        foreach(array_keys($this->annotations) as $class) {
+            if($this->hasAnnotations($class))
+                $culledAnnos[$class] = $this->annotations[$class];
+        }
+        
+        // And store the annotations, both in the cache and locally
+        // TODO: Store in cache
+        $this->annotations = $culledAnnos;
+    }
+    
+    protected function readClassAnnotations($reflClass) {
             $classData = array();
             $classData['methods'] = array();
             $classData['properties'] = array();
@@ -138,24 +168,41 @@ class AnnotationManager {
                 if(count($propAnnos))
                     $classData['properties'][$prop->name] = $propAnnos;
             }
-            $this->annotationCache[$reflClass->getName()] = $classData;
+            $this->annotations[$reflClass->getName()] = $classData;
+    }
+    
+    private function getReader() {
+        if(!$this->reader) {
+            $this->reader = new AnnotationReader();
+        
+            // Tweak the reader to use our own implementation of PhpParser
+            $reflClass = new \ReflectionClass($this->reader);
+            $reflProp = $reflClass->getProperty("phpParser");
+            $reflProp->setAccessible(true);
+            $reflProp->setValue($this->reader, new \Fossil\DoctrineExtensions\TokenizedPhpParser());
+        
+            $this->reader->setIgnoreNotImportedAnnotations(true);
+            $this->registerNamespaceAlias("\\Fossil\\Annotations\\", "F");
         }
-        // Restore the original error handler
-        restore_error_handler();
-        $this->origErrorHandler = null;
-        // After all of the annotations have been built, we want to cull all those who don't have any annotations
-        $culledAnnos = array();
-        foreach(array_keys($this->annotationCache) as $class) {
-            if($this->hasAnnotations($class))
-                $culledAnnos[$class] = $this->annotationCache[$class];
+        return $this->reader;
+    }
+    
+    public function tempErrorHandler($errno, $errstr, $errfile, $errline, $errctxt) {
+        if($errno == E_RECOVERABLE_ERROR && strpos($errstr, " must be an instance of ")) {
+                return true;
         }
-        $this->annotationCache = $culledAnnos;
+        // Otherwise, pass on to our old error handler, or the PHP error handler as appropriate
+        if(is_callable($this->origErrorHandler))
+            return call_user_func_array($this->origErrorHandler, func_get_args());
+        return false;
     }
     
     private function hasAnnotations($class) {
-        if(!isset($this->annotationCache[$class]))
+        $this->ensureAnnotations();
+        
+        if(!isset($this->annotations[$class]))
             return false;
-        $classData = $this->annotationCache[$class];
+        $classData = $this->annotations[$class];
         
         if(count($classData['annos']) || count($classData['methods']) || count($classData['properties']))
             return true;
@@ -170,15 +217,17 @@ class AnnotationManager {
      * @return \AddendumPP\Annotation[]
      */
     public function getClassAnnotations($class, $annotation = false, $recursive = true) {
+        $this->ensureAnnotations();
+        
         $startAnnos = array();
         
         if($class[0] == '\\')
             $class = substr($class, 1);
         
-        if(!isset($this->annotationCache[$class]))
+        if(!isset($this->annotations[$class]))
             return array();
         
-        $classData = $this->annotationCache[$class];
+        $classData = $this->annotations[$class];
         if(isset($classData['parent']) && $recursive) {
             $startAnnos = $this->getClassAnnotations($classData['parent'], $annotation, $recursive);
         }
@@ -193,44 +242,76 @@ class AnnotationManager {
         }));
     }
     
+    public function getClassAnnotation($class, $annotation, $recursive = true) {
+        $this->ensureAnnotations();
+        
+        assert($annotation != null);
+        $annos = $this->getClassAnnotations($class, $annotation, $recursive);
+        
+        if(!count($annos)) {
+            return null;
+        } else {
+            return reset($annos);
+        }
+    }
+    
     public function getPropertyAnnotations(\ReflectionProperty $reflProp, $annotation = false) {
+        $this->ensureAnnotations();
+        
         $class = $reflProp->getDeclaringClass()->name;
         $prop = $reflProp->name;
         
-        if(!isset($this->annotationCache[$class]))
+        if(!isset($this->annotations[$class]))
             return array();
-        if(!isset($this->annotationCache[$class]['properties'][$prop]))
+        if(!isset($this->annotations[$class]['properties'][$prop]))
             return array();
         
         if(!$annotation)
-            return $this->annotationCache[$class]['properties'][$prop];
+            return $this->annotations[$class]['properties'][$prop];
         
         $annotation = $this->resolveName($annotation);
-        return array_filter($this->annotationCache[$class]['properties'][$prop], function($thisAnno) use($annotation) {
+        return array_filter($this->annotations[$class]['properties'][$prop], function($thisAnno) use($annotation) {
             return is_a($thisAnno, $annotation);
         });
     }
     
+    public function getPropertyAnnotation(\ReflectionProperty $reflProp, $annotation) {
+        $this->ensureAnnotations();
+        
+        assert($annotation != null);
+        $annos = $this->getPropertyAnnotations($reflProp, $annotation);
+        
+        if(!count($annos)) {
+            return null;
+        } else {
+            return reset($annos);
+        }
+    }
+    
     public function getMethodAnnotations(\ReflectionMethod $reflMethod, $annotation = false) {
+        $this->ensureAnnotations();
+        
         $class = $reflMethod->getDeclaringClass()->name;
         $method = $reflMethod->name;
         
-        if(!isset($this->annotationCache[$class]))
+        if(!isset($this->annotations[$class]))
             return array();
-        if(!isset($this->annotationCache[$class]['methods'][$method]))
+        if(!isset($this->annotations[$class]['methods'][$method]))
             return array();
         
         if(!$annotation)
-            return $this->annotationCache[$class]['methods'][$method];
+            return $this->annotations[$class]['methods'][$method];
         
         $annotation = $this->resolveName($annotation);
-        return array_filter($this->annotationCache[$class]['methods'][$method], function ($thisAnno) use ($annotation) {
+        return array_filter($this->annotations[$class]['methods'][$method], function ($thisAnno) use ($annotation) {
             // Check inheritance
             return is_a($thisAnno, $annotation);
         });
     }
     
     public function classHasAnnotation($class, $annotation, $recursive = true) {
+        $this->ensureAnnotations();
+        
         $annotation = $this->resolveName($annotation);
         
         foreach($this->getClassAnnotations($class) as $anno) {
@@ -247,6 +328,8 @@ class AnnotationManager {
      * @return string[]
      */
     public function filterClassesByAnnotation($classes, $annotation, $negativeFilter = false) {
+        $this->ensureAnnotations();
+        
         $annotation = $this->resolveName($annotation);
         $self = $this;
         return array_filter($classes, function($class) use($annotation, $negativeFilter, $self) {
@@ -258,15 +341,19 @@ class AnnotationManager {
     }
     
     public function getClassesWithAnnotation($annotation) {
-        $classes = array_keys($this->annotationCache);
+        $this->ensureAnnotations();
+        
+        $classes = array_keys($this->annotations);
         
         return $this->filterClassesByAnnotation($classes, $annotation);
     }
     
     public function getClassesWithPropertyAnnotation($annotation) {
+        $this->ensureAnnotations();
+        
         $annotation = $this->resolveName($annotation);
         $toRet = array();
-        foreach($this->annotationCache as $class => $key) {
+        foreach($this->annotations as $class => $key) {
             foreach($key['properties'] as $method => $annos) {
                 foreach($annos as $anno) {
                     if(is_a($anno, $annotation))
@@ -278,10 +365,12 @@ class AnnotationManager {
     }
     
     public function getClassesWithMethodAnnotation($annotation) {
+        $this->ensureAnnotations();
+        
         $annotation = $this->resolveName($annotation);
         
         $toRet = array();
-        foreach($this->annotationCache as $class => $key) {
+        foreach($this->annotations as $class => $key) {
             foreach($key['methods'] as $method => $annos) {
                 foreach($annos as $anno) {
                     if(is_a($anno, $annotation))

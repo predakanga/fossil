@@ -46,9 +46,14 @@ use Fossil\BaseDriver,
  */
 abstract class BaseCache extends BaseDriver {
     protected $prefix;
+    /**
+     * @F:Inject("Core")
+     * @var Fossil\Core
+     */
+    protected $core;
     
-    public function __construct($config = NULL) {
-        parent::__construct($config);
+    public function __construct($container, $driverType = "cache") {
+        parent::__construct($container, "cache");
         $this->prefix = OM::getFossilID();
     }
     
@@ -61,7 +66,7 @@ abstract class BaseCache extends BaseDriver {
     }
     
     protected function versionKey($key) {
-        return $key . "_" . OM::getVersionGUID();
+        return $key . "_" . $this->core->getVersionID();
     }
     
     public function has($key, $versioned_key = false) {

@@ -42,9 +42,20 @@ use Fossil\OM;
  * 
  * @author predakanga
  * @since 0.1
- * @F:Object("Core")
+ * @F:Provides("Core")
+ * @F:DefaultProvider
  */
-class Core {
+class Core extends Object {
+    public $version = "1.0.0";
+    protected $instanceName = null;
+    protected $appDetails = null;
+    protected $overlayDetails = null;
+    
+    // Because this has no dependencies, it's guaranteed to be instantiated first
+    public function __construct($container) {
+        parent::__construct($container);
+    }
+    
 	public function run() {
         // Main loop process:
         // Parse out the main request
@@ -58,5 +69,55 @@ class Core {
         OM::ORM()->flush();
         // Run any registered background tasks
         return;
+    }
+    
+    public function setAppDetails($details) {
+        // Details should only be set *before* the Filesystem is created
+        assert(!$this->container->has("Filesystem"));
+        $this->appDetails = $details;
+        $this->instanceName = null;
+    }
+    
+    public function getAppDetails() {
+        return $this->appDetails;
+    }
+    
+    public function setOverlayDetails($details) {
+        // Details should only be set *before* the Filesystem is created
+        assert(!$this->container->has("Filesystem"));
+        $this->overlayDetails = $details;
+        $this->instanceName = null;
+    }
+    
+    public function getOverlayDetails() {
+        return $this->overlayDetails;
+    }
+    
+    public function getInstanceID() {
+        if(!$this->instanceName) {
+            $this->instanceName = "fossil";
+            if($this->appDetails) {
+                $this->instanceName .= "_" . $this->appDetails['name'];
+            }
+            if($this->overlayDetails) {
+                $this->instanceName .= "_" . $this->overlayDetails['name'];
+            }
+        }
+        return $this->instanceName;
+    }
+    
+    public function getInstanceHash() {
+        // If in dev mode, return a random hash per boot
+        static $devHash;
+        
+        if(!$devHash) {
+            $devHash = md5(uniqid());
+        }
+        return $devHash;
+    }
+    
+    public static function create() {
+        $newContainer = new ObjectContainer;
+        return $newContainer->get("Core");
     }
 }

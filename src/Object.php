@@ -35,10 +35,16 @@ namespace Fossil;
  * @author predakanga
  */
 class Object {
-    protected $_container;
+    /**
+     * @var Fossil\ObjectContainer
+     */
+    public $container;
     
     public function __construct(ObjectContainer $container) {
-        $this->_container = $container;
+        // TODO: When PHP 5.4 is standard, replace this constructor
+        // Use code similar to the following in ObjectContainer instead
+        // http://au.php.net/manual/en/reflectionclass.newinstancewithoutconstructor.php#105670
+        $this->container = $container;
         $this->setupObjects();
     }
     
@@ -55,8 +61,32 @@ class Object {
     }
     
     protected function determineObjects() {
-        // Default strategy is to use annotations
-        $annoMgr = $this->_container->get("Annotations");
+        $classname = get_class($this);
+        if(!isset($this->container->dependencies[$classname])) {
+            // Collect dependencies
+            $deps = array();
+            // Default strategy is to use annotations
+            /** @var Fossil\Annotations\AnnotationManager */
+            $annoMgr = $this->container->get("AnnotationManager");
+            
+            $reflClass = new \ReflectionClass($this);
+            foreach($reflClass->getProperties() as $reflProp) {
+                $propAnno = $annoMgr->getPropertyAnnotation($reflProp, "F:Inject");
+                if($propAnno) {
+                    $type = $propAnno->value;
+                    if(isset($propAnno->type)) {
+                        $type = $propAnno->type;
+                    }
+                    $deps[] = array('type' => $type, 'destination' => $reflProp->name,
+                                    'lazy' => $propAnno->lazy, 'required' => $propAnno->required);
+                }
+            }
+            
+            // And store them
+            $this->container->dependencies[$classname] = $deps;
+        }
+        
+        return $this->container->dependencies[$classname];
     }
     
     protected function unstoreObject($location) {
@@ -69,7 +99,7 @@ class Object {
     
     protected function setupObjects() {
         $requestObjs = $this->determineObjects();
-        
+
         foreach($requestObjs as $requestParams) {
             // Split off the details that we only need locally
             $destination = $requestParams['destination'];
@@ -78,7 +108,7 @@ class Object {
             unset($requestParams['required']);
             
             // Retrieve the object
-            $obj = $this->_container->getByParams($requestParams);
+            $obj = $this->container->getByParams($requestParams);
             
             // Throw an exception if it's required
             if($required && $obj === null) {

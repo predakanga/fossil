@@ -39,15 +39,37 @@ namespace Fossil;
  * Description of PluginManager
  *
  * @author predakanga
- * @F:Object("Plugins")
+ * @F:Provides("Plugins")
+ * @F:DefaultProvider
  */
-class PluginManager {
+class PluginManager extends Object {
     protected $availablePlugins = array();
     protected $enabledPlugins = array();
+    /**
+     * @F:Inject("Core")
+     * @var Fossil\Core
+     */
+    protected $core;
+    /**
+     * @F:Inject("Filesystem")
+     * @var Fossil\Filesystem
+     */
+    protected $fs;
+    /**
+     * @F:Inject("Settings")
+     * @var Fossil\Settings
+     */
+    protected $settings;
     
-    public function __construct() {
+    public function __construct($container) {
+        parent::__construct($container);
+        
+        $this->discoverPlugins();
+    }
+    
+    public function discoverPlugins() {
         // Look for available plugins
-        foreach(OM::FS()->roots(false) as $root) {
+        foreach($this->fs->roots(false) as $root) {
             $this->findAvailablePlugins($root);
         }
     }
@@ -88,7 +110,7 @@ class PluginManager {
         // Check that we have the plugin
         // Special case for Fossil
         if($pluginName == "fossil") {
-            $plugin = array("fossil", "1.0.0");
+            $plugin = array("fossil", $this->core->version);
         } else {
             if(!$this->has($pluginName))
                 throw new \Exception("Unsatisfied dependency: $pluginName");
@@ -142,7 +164,7 @@ class PluginManager {
     }
     
     public function loadEnabledPlugins() {
-        $plugins = OM::Settings("Fossil", "plugins", "");
+        $plugins = $this->settings->get("Fossil", "plugins", "");
         if($plugins != "") {
             foreach(explode(",", $plugins) as $plugin)
                 $this->enablePlugin($plugin);

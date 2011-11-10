@@ -36,6 +36,7 @@ namespace Fossil;
  */
 class LazyObject {
     private $_objectType;
+    /** @var Fossil\ObjectContainer */
     private $_container;
     private $_object = null;
     
@@ -46,6 +47,10 @@ class LazyObject {
     
     private function _init() {
         $this->_object = $this->_container->get($this->_objectType);
+    }
+    
+    public function _isReady() {
+        return $this->_container->has($this->_objectType);
     }
     
     public function __set($name, $value) {
@@ -99,7 +104,7 @@ class LazyObject {
         return $this->_object;
     }
     
-    function __clone() {
+    public function __clone() {
         if($this->_object === null) {
             $this->_object = clone $this->_object;
         }

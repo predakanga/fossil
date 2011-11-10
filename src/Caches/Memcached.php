@@ -42,7 +42,7 @@ use Fossil\OM;
  * Description of Memcached
  *
  * @author predakanga
- * @F:Object(type = "Cache", name = "Memcached")
+ * @F:Provides("Cache")
  */
 class Memcached extends BaseCache {
     /**
@@ -76,8 +76,8 @@ class Memcached extends BaseCache {
         return OM::Form("MemcachedConfig");
     }
     
-    public function __construct($config = NULL) {
-        parent::__construct($config);
+    public function __construct($container, $driverType = "cache") {
+        parent::__construct($container);
         
         // Conditionally use a persistent connection
         if(isset($this->config['id'])) {

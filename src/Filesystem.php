@@ -35,59 +35,43 @@
 
 namespace Fossil;
 
-class SourceDirectoryFilter extends \RecursiveFilterIterator {
-	public static $DIR_FILTERS = array('.git',
-                                       'libs',
-                                       'Plugins',
-                                       'Compiled',
-                                       'templates_c',
-                                       'tests',
-                                       'scratch');
+use Fossil\Util\FilesystemScanner;
 
-    public static $FILE_FILTERS = array('cli-config.php');
-	
-    public static $ROOT_FILE_FILTERS = array('index.php',
-                                             'quickstart.php');
-    
-    protected $roots;
-    
-    public function __construct($iter, $roots = array()) {
-        $this->roots = $roots;
-        parent::__construct($iter);
-    }
-    
-	public function accept() {
-		if($this->current()->isDir())
-            return !in_array($this->current()->getFilename(),
-                             self::$DIR_FILTERS,
-                             true);
-        else {
-            if(in_array($this->current()->getFilename(),
-                        self::$FILE_FILTERS,
-                        true))
-                return false;
-            elseif(in_array($this->current()->getFilename(),
-                            self::$ROOT_FILE_FILTERS, true)
-                    && in_array($this->current()->getPath(),
-                            $this->roots, true))
-                return false;
-        }
-        return true;
-	}
-}
 /**
  * Filesystem Helper
  * 
  * Provides functions to get provide access to a virtual filesystem
  * as defined by the various loaded plugins
  *
+ * @F:Provides("Filesystem")
+ * @F:DefaultProvider
  * @author predakanga
  * @since 0.1
  */
-class Filesystem {
-    protected $overlayRoot;
-    protected $appRoot;
+class Filesystem extends Object {
+    protected $overlayRoot = false;
+    protected $appRoot = false;
     protected $tempDir;
+    /**
+     * @F:Inject("Core")
+     * @var Fossil\Core
+     */
+    protected $core;
+    /**
+     * @F:Inject(type = "Settings", lazy = true)
+     * @var Fossil\Settings
+     */
+    protected $settings;
+    /**
+     * @F:Inject(type = "Plugins", lazy = true)
+     * @var Fossil\PluginManager
+     */
+    protected $plugins;
+    
+    public function __construct($container) {
+        parent::__construct($container);
+        $this->core->getAppDetails();
+    }
     
     /**
      * 
@@ -122,10 +106,10 @@ class Filesystem {
     }
     
     public function overlayRoot() {
-        if(!$this->overlayRoot === 0) {
+        if(!$this->overlayRoot === false) {
             $overlayRoot = $this->execDir();
             if($overlayRoot == $this->fossilRoot() || $overlayRoot == $this->appRoot())
-                $this->overlayRoot = null;
+                $this->overlayRoot = false;
             else
                 $this->overlayRoot = $overlayRoot;
         }
@@ -133,9 +117,11 @@ class Filesystem {
     }
     
     public function tempDir() {
+        if(!$this->settings->isBootstrapped())
+            return sys_get_temp_dir();
         if(!$this->tempDir) {
-            $tempDir = OM::Settings("Fossil", "temp_dir", sys_get_temp_dir());
-            $tempDir .= D_S . OM::getFossilID();
+            $tempDir = $this->settings->get("Fossil", "temp_dir", sys_get_temp_dir());
+            $tempDir .= D_S . $this->core->getInstanceID();
             
             // Ensure that it exists
             if(!file_exists($tempDir)) {
@@ -156,32 +142,22 @@ class Filesystem {
     public function pluginRoots() {
         $toRet = array();
         
-        if(!OM::knows("Plugins"))
+        if(!$this->plugins->_isReady()) {
             return $toRet;
-        $enabledPlugins = OM::Plugins()->getEnabledPlugins();
+        }
+        $enabledPlugins = $this->plugins->getEnabledPlugins();
         foreach($enabledPlugins as $pluginName) {
-            $plugin = OM::Plugins($pluginName);
+            $plugin = $this->plugins->get($pluginName);
             $toRet[] = $plugin['root'];
         }
         return $toRet;
-    }
-    
-    public function sourceFiles($root) {
-        $dirIter = new \RecursiveDirectoryIterator($root);
-        $filterIter = new SourceDirectoryFilter($dirIter, $this->roots());
-        $iterIter = new \RecursiveIteratorIterator($filterIter);
-        $regexIter = new \RegexIterator($iterIter, '/\\.php$/');
-        
-        return array_map(function($fileInfo) {
-            return $fileInfo->getPathname();
-        }, iterator_to_array($regexIter, false));
     }
     
     public function allSourceFiles() {
         $sourceFiles = array();
         
         foreach($this->roots() as $root) {
-            $sourceFiles = array_merge($sourceFiles, $this->sourceFiles($root));
+            $sourceFiles = array_merge($sourceFiles, FilesystemScanner::sourceFiles($root));
         }
         return $sourceFiles;
     }

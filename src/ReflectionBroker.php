@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * Copyright (c) 2011, predakanga
  * All rights reserved.
  * 
@@ -25,29 +25,58 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * @author predakanga
- * @since 0.1
- * @category Fossil Core
- * @package Fossil
- * @subpackage Interfaces
- * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Interfaces;
+namespace Fossil;
+
+use TokenReflection\Broker,
+    Fossil\Util\FilesystemScanner;
 
 /**
+ * Description of ReflectionBroker
  *
  * @author predakanga
+ * @F:Provides("Reflection")
+ * @F:DefaultProvider
  */
-interface IDriver {
-    static function usable();
-    static function getName();
-    static function getVersion();
-    static function getForm();
+class ReflectionBroker extends Object {
+    /**
+     * @F:Inject("Filesystem")
+     * @var Fossil\Filesystem
+     */
+    protected $fs;
+    /** @var TokenReflection\Broker */
+    protected $broker;
     
-    function getConfig();
-    function __construct($container, $driverType);
+    public function __construct($container) {
+        parent::__construct($container);
+        
+        $this->broker = new Broker(new \TokenReflection\Broker\Backend\Memory());
+        $this->rescan();
+    }
+    
+    protected function determineObjects() {
+        // As a special case, we don't do auto-discovery on this object
+        return array(array('type' => 'Filesystem', 'destination' => 'fs',
+                           'required' => true, 'lazy' => true));
+    }
+    
+    public function rescan() {
+        // If we're bootstrapping the container, just return the current file's dir
+        if(!$this->fs->_isReady()) {
+            foreach(FilesystemScanner::sourceFiles(__DIR__) as $sourceFile) {
+                $this->broker->processFile($sourceFile);
+            }
+        } else {
+            foreach($this->fs->allSourceFiles() as $sourceFile) {
+                $this->broker->processFile($sourceFile);
+            }
+        }
+    }
+    
+    public function getAllClasses() {
+        return $this->broker->getClasses();
+    }
 }
 
 ?>

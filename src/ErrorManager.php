@@ -39,7 +39,8 @@ namespace Fossil;
  * Description of ErrorManager
  *
  * @author predakanga
- * @F:Object("Error")
+ * @F:Provides("ErrorManager")
+ * @F:DefaultProvider
  */
 class ErrorManager {
     private $logMask = 11; // E_ERROR | E_WARNING | E_NOTICE
