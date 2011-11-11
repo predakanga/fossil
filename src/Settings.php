@@ -63,8 +63,8 @@ class Settings extends Object {
         parent::__construct($container);
         
         $this->backingFile = $this->fs->execDir() . D_S . "settings.yml";
-        if(file_exists($backingFile)) {
-            $this->store['Fossil'] = yaml_parse_file($backingFile);
+        if(file_exists($this->backingFile)) {
+            $this->store['Fossil'] = yaml_parse_file($this->backingFile);
             $this->fossilHash = md5(serialize($this->store['Fossil']));
         }
     }
