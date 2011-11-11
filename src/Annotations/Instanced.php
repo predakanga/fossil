@@ -42,8 +42,6 @@ namespace Fossil\Annotations;
  * @author predakanga
  */
 class Instanced extends Annotation {
-    public $type;
-    public $name;
 }
 
 ?>

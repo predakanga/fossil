@@ -77,6 +77,10 @@ class ReflectionBroker extends Object {
     public function getAllClasses() {
         return $this->broker->getClasses();
     }
+    
+    public function getClass($className) {
+        return $this->broker->getClass($className);
+    }
 }
 
 ?>

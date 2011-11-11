@@ -38,6 +38,7 @@ class ObjectContainer {
     private $instances = array();
     private $createStack = array();
     private $registrations = array();
+    private $instancedTypes = array();
     private $overwritten = array();
     private $classMap = array();
     /** Dependencies are stored in the container, to isolate instances */
@@ -58,21 +59,18 @@ class ObjectContainer {
         }
         
         // Then check for local DI cache
-        $diCache = $this->getCacheFile();
-        if(file_exists($diCache)) {
-            $this->cachedInit($diCache);
-            return;
+        if(!$this->cachedInit()) {
+            $this->uncachedInit();
         }
-        $this->uncachedInit();
     }
     
     protected function setupDefaults() {
-        $this->registrations = array('Filesystem' => 'Fossil\Filesystem',
-                                     'AnnotationManager' => 'Fossil\Annotations\AnnotationManager',
-                                     'Cache' => 'Fossil\Caches\NoCache',
-                                     'Reflection' => 'Fossil\ReflectionBroker',
-                                     'Core' => 'Fossil\Core',
-                                     'Settings' => 'Fossil\Settings');
+        $this->registerType("Filesystem", 'Fossil\Filesystem');
+        $this->registerType("AnnotationManager", 'Fossil\Annotations\AnnotationManager');
+        $this->registerType("Cache", 'Fossil\Caches\NoCache');
+        $this->registerType("Reflection", 'Fossil\ReflectionBroker');
+        $this->registerType("Core", 'Fossil\Core');
+        $this->registerType("Settings", 'Fossil\Settings');
     }
     
     protected function getCacheFile() {
@@ -81,12 +79,31 @@ class ObjectContainer {
         return $diCache;
     }
     
-    protected function cachedInit($diCache) {
-        $this->registrations = yaml_parse_file($diCache);
+    /**
+     * If any objects modify the registrations outside of their Init functions,
+     * it's their responsibility to call updateCache
+     */
+    public function updateCache() {
+        $filename = $this->getCacheFile();
+        $cacheObj = array('registrations' => $this->registrations,
+                          'instancedTypes' => $this->instancedTypes);
+        file_put_contents($filename, yaml_emit($cacheObj));
+    }
+    
+    protected function cachedInit() {
+        return false;
+        $filename = $this->getCacheFile();
+        if(!file_exists($filename)) {
+            return false;
+        }
+        $cache = yaml_parse_file($filename);
+        @$this->registrations = $cache['registrations'];
+        @$this->instancedTypes = $cache['instancedTypes'];
+        return ($this->registrations && $this->instancedTypes);
     }
     
     protected function uncachedInit() {
-        $this->annotationMgr = $this->get("AnnotationManager");
+        $this->annotationMgr = $this->getLazyObject("AnnotationManager");
         $this->discoverTypes();
     }
     
@@ -103,7 +120,8 @@ class ObjectContainer {
             }
         }
         
-        // TODO: Integrate instanced classes
+        // Integrate instanced classes
+        $this->discoverInstanced();
         
         // Overlay our selected registrations from the settings class
          
@@ -112,6 +130,7 @@ class ObjectContainer {
         // If a type has multiple providers registered, one can be tagged with
         // @F:DefaultProvider, which will cause it to be used by default
         // Otherwise, an exception will be thrown if the type is asked for
+        $this->updateCache();
     }
     
     protected function discoverProviders() {
@@ -122,8 +141,12 @@ class ObjectContainer {
         
         $providerClasses = $this->annotationMgr->getClassesWithAnnotation("F:Provides");
         foreach($providerClasses as $class) {
+            $reflClass = new \ReflectionClass($class);
+            if($reflClass->isAbstract()) {
+                continue;
+            }
             $providesAnno = $this->annotationMgr->getClassAnnotation($class, "F:Provides");
-            $type = $providesAnno->value;
+            $type = strtolower($providesAnno->value);
             
             if(!isset($retArray[$type])) {
                 $retArray[$type] = array();
@@ -137,7 +160,55 @@ class ObjectContainer {
         return $retArray;
     }
     
+    protected function discoverInstanced() {
+        // Discover InstancedTypes first
+        $typeClasses = $this->annotationMgr->getClassesWithAnnotation("F:InstancedType", false);
+        foreach($typeClasses as $class) {
+            $typeAnno = $this->annotationMgr->getClassAnnotation($class, "F:InstancedType", false);
+            $typeName = strtolower($typeAnno->value);
+            $impls = $this->discoverInstancedImplementations($class);
+            $this->instancedTypes[$typeName] = $impls;
+        }
+    }
+    
+    protected function discoverInstancedImplementations($parentTypeClass) {
+        /** @var Fossil\ReflectionBroker */
+        $broker = $this->get("Reflection");
+        $retArray = array();
+        // Every Instanced class must inherit from a class tagged with InstancedType
+        // This enforces semi-strict inheritance
+        
+        $reflClass = $broker->getClass($parentTypeClass);
+        // Gather the implementations of this class
+        $implementors = $reflClass->getDirectSubclasses();
+        $implementors += $reflClass->getIndirectSubclasses();
+        foreach($implementors as $implClass => $implReflClass) {
+            // Make sure that the class is concrete
+            if($implReflClass->isAbstract()) {
+                continue;
+            }
+            // Determine the name
+            $name = $implReflClass->getShortName();
+            // Don't allow recursive annotations to affect the name
+            $instancedAnno = $this->annotationMgr->getClassAnnotation($implClass, "F:Instanced", false);
+            if($instancedAnno) {
+                $name = $instancedAnno->value;
+            }
+            $name = strtolower($name);
+            // Ensure we don't already have an instance by this name for this type
+            if(isset($retArray[$name])) {
+                throw new \Exception("Instanced name collision between " . $retArray[$name] .
+                                     " and " . $implClass . ". Assign one of them a different name with @F:Instanced");
+            }
+            // Otherwise, store it
+            $retArray[$name] = $implClass;
+        }
+        // And return the list of implementations
+        return $retArray;
+    }
+    
     public function registerType($type, $fqcn, $overwrite = true, $noConflict = false) {
+        $type = strtolower($type);
         if(isset($this->registrations[$type]) && !$overwrite) {
             return;
         }
@@ -149,18 +220,25 @@ class ObjectContainer {
             $this->overwritten[$type] = true;
         }
         $this->registrations[$type] = $fqcn;
-        // Update the cache file
-        $diCache = $this->getCacheFile();
-        file_put_contents($diCache, yaml_emit($this->registrations));
     }
     
     public function has($objectType) {
+        $objectType = strtolower($objectType);
         return isset($this->instances[$objectType]);
     }
     
+    public function getAllInstanced($type) {
+        $type = strtolower($type);
+        if(!isset($this->instancedTypes[$type])) {
+            return array();
+        }
+        return array_keys($this->instancedTypes[$type]);
+    }
+    
     public function get($objectType) {
+        $objectType = strtolower($objectType);
         if(!isset($this->instances[$objectType])) {
-            $this->createObject($objectType);
+            $this->instantiateDependency($objectType);
         }
         return $this->instances[$objectType];
     }
@@ -171,6 +249,7 @@ class ObjectContainer {
             $lazy = (bool)$objectParams['lazy'];
         }
         $type = $objectParams['type'];
+        $type = strtolower($type);
         
         if($lazy) {
             return $this->getLazyObject($type);
@@ -179,17 +258,12 @@ class ObjectContainer {
         }
     }
     
-    public function getFactory($type) {
-        if(!isset($this->registrations[$type]))
-            $this->registrations[$type] = new ObjectFactory();
-        return $this->registrations[$type];
-    }
-    
     protected function getLazyObject($objectType) {
+        $objectType = strtolower($objectType);
         return new LazyObject($this, $objectType);
     }
     
-    protected function createObject($type) {
+    protected function instantiateDependency($type) {
         if(isset($this->createStack[$type])) {
             // TODO: Use a real exception
             throw new \Exception("Circular dependency detected while creating $type");
@@ -212,6 +286,31 @@ class ObjectContainer {
         array_pop($this->createStack);
     }
     
+    public function createObject($type, $name, $argList = array()) {
+        $type = strtolower($type);
+        $name = strtolower($name);
+        if(!isset($this->instancedTypes[$type])) {
+            throw new \Exception("Unknown instanced type: $type");
+        }
+        if(!isset($this->instancedTypes[$type][$name])) {
+            throw new \Exception("Unknown instanced type implementor: $name for $type");
+        }
+        $fqcn = $this->instancedTypes[$type][$name];
+        if(isset($this->classMap[$fqcn])) {
+            $fqcn = $this->classMap[$fqcn];
+        }
+        
+        if(count($argList) == 0) {
+            return new $fqcn($this);
+        } else {
+            $reflClass = new \ReflectionClass($fqcn);
+            // Unshift this back on to the arg list
+            array_unshift($argList, $this);
+            // And call the constructor
+            return $reflClass->newInstanceArgs($argList);
+        }
+    }
+    
     protected function instantiateClass($fqcn) {
         if(isset($this->classMap[$fqcn])) {
             return new $this->classMap[$fqcn]($this);
@@ -220,7 +319,7 @@ class ObjectContainer {
     }
     
     public function __sleep() {
-        return array('registrations', 'classmap');
+        return array('registrations', 'instancedTypes', 'classmap');
     }
 }
 

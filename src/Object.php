@@ -119,6 +119,15 @@ class Object {
             $this->storeObject($destination, $obj);
         }
     }
+    
+    protected function _new($type, $name) {
+        $argList = func_get_args();
+        // Shift off the type and name
+        array_shift($argList);
+        array_shift($argList);
+        // Create the object
+        return $this->container->createObject($type, $name, $argList);
+    }
 }
 
 ?>
