@@ -35,7 +35,8 @@
 
 namespace Fossil;
 
-use Fossil\Requests\BaseRequest,
+use Fossil\Object,
+    Fossil\Requests\BaseRequest,
     Fossil\Responses\RenderableResponse,
     Fossil\Responses\ActionableResponse,
     Fossil\Exceptions\NoSuchTargetException;
@@ -45,20 +46,39 @@ use Fossil\Requests\BaseRequest,
  *
  * @author predakanga
  * 
- * @F:Object("Dispatcher")
+ * @F:Provides("Dispatcher")
+ * @F:DefaultProvider
  */
-class Dispatcher {
+class Dispatcher extends Object {
     private $reqStack = array();
+    /**
+     * @F:Inject(type = "ORM", lazy = true)
+     * @var Fossil\ORM
+     */
+    protected $orm;
+    
+    protected function createEntryRequest() {
+        if(PHP_SAPI == "cli") {
+            return $this->_new("Request", "Cli");
+        } else {
+            return $this->_new("Request", "Web");
+        }
+    }
+    
+    public function run() {
+        $entryReq = $this->createEntryRequest();
+        $this->runRequest($entryReq);
+    }
     
     public function runRequest(BaseRequest $req, $react = true) {
         array_push($this->reqStack, $req);
         
         ob_start();
-        try {
+//        try {
             $response = $this->_run($req, $react);
-        } catch(\Exception $e) {
-            $this->handleRequestException($e, $req, $react);
-        }
+//        } catch(\Exception $e) {
+//            $this->handleRequestException($e, $req, $react);
+//        }
         ob_end_flush();
         
         array_pop($this->reqStack);
@@ -68,16 +88,16 @@ class Dispatcher {
     protected function handleRequestException(\Exception $e, BaseRequest $req, $react) {
         // Handle 404 errors
         if($e instanceof NoSuchTargetException) {
-            $fourohfourReq = OM::obj("Requests", "InternalRequest")->create("error", "404");
+            $fourohfourReq = $this->_new("Request", "Internal", "error", "404");
             ob_clean();
             $this->_run($fourohfourReq);
         } elseif($e instanceof \PDOException) {
-            $errorReq = OM::obj("Requests", "InternalRequest")->create("error", "db", array('e' => $e));
+            $errorReq = $this->_new("Request", "Internal", "error", "db", array('e' => $e));
             ob_clean();
             $this->_run($errorReq);
         } else {
             // Base request handling - provides nothing useful
-            $errorReq = OM::obj("Requests", "InternalRequest")->create("error", "show", array('e' => $e));
+            $errorReq = $this->_new("Request", "Internal", "error", "show", array('e' => $e));
             ob_clean();
             $this->_run($errorReq);
         }
@@ -87,8 +107,8 @@ class Dispatcher {
         // To allow HMVC style requests, return the response early if we're not to react
         $response = $req->run();
         // Flush immediately after running each request, so that we can grab any errors
-        if(OM::ORM()->getEM()->isOpen())
-            OM::ORM()->flush();
+        if($this->orm->getEM()->isOpen())
+            $this->orm->flush();
         
         if(!$react)
             return $response;

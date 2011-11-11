@@ -50,6 +50,16 @@ class Core extends Object {
     protected $instanceName = null;
     protected $appDetails = null;
     protected $overlayDetails = null;
+    /**
+     * @F:Inject("Dispatcher")
+     * @var Fossil\Dispatcher
+     */
+    protected $dispatcher;
+    /**
+     * @F:Inject(type = "ORM", lazy = true)
+     * @var Fossil\ORM
+     */
+    protected $orm;
     
     // Because this has no dependencies, it's guaranteed to be instantiated first
     public function __construct($container) {
@@ -58,15 +68,12 @@ class Core extends Object {
     
 	public function run() {
         // Main loop process:
-        // Parse out the main request
-        $req = OM::Request()->getEntryRequest();
-        // Dispatch the request
-        OM::Dispatcher()->runRequest($req);
+        $this->dispatcher->run();
         // fastcgi_finish_request() if available
         if(function_exists("fastcgi_finish_request"))
             fastcgi_finish_request();
         // Then flush the DB (note: might want to do this beforehand, in case of errors)
-        OM::ORM()->flush();
+        $this->orm->flush();
         // Run any registered background tasks
         return;
     }
