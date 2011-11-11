@@ -91,6 +91,7 @@ class AnnotationManager extends Object {
             return class_exists($class, false);
         });
         AnnotationReader::addGlobalIgnoredName('since');
+        $this->ensureAnnotations();
     }
     
     protected function determineObjects() {
@@ -198,8 +199,6 @@ class AnnotationManager extends Object {
     }
     
     private function hasAnnotations($class) {
-        $this->ensureAnnotations();
-        
         if(!isset($this->annotations[$class]))
             return false;
         $classData = $this->annotations[$class];
@@ -217,8 +216,6 @@ class AnnotationManager extends Object {
      * @return \AddendumPP\Annotation[]
      */
     public function getClassAnnotations($class, $annotation = false, $recursive = true) {
-        $this->ensureAnnotations();
-        
         $startAnnos = array();
         
         if($class[0] == '\\')
@@ -243,8 +240,6 @@ class AnnotationManager extends Object {
     }
     
     public function getClassAnnotation($class, $annotation, $recursive = true) {
-        $this->ensureAnnotations();
-        
         assert($annotation != null);
         $annos = $this->getClassAnnotations($class, $annotation, $recursive);
         
@@ -256,8 +251,6 @@ class AnnotationManager extends Object {
     }
     
     public function getPropertyAnnotations(\ReflectionProperty $reflProp, $annotation = false) {
-        $this->ensureAnnotations();
-        
         $class = $reflProp->getDeclaringClass()->name;
         $prop = $reflProp->name;
         
@@ -276,8 +269,6 @@ class AnnotationManager extends Object {
     }
     
     public function getPropertyAnnotation(\ReflectionProperty $reflProp, $annotation) {
-        $this->ensureAnnotations();
-        
         assert($annotation != null);
         $annos = $this->getPropertyAnnotations($reflProp, $annotation);
         
@@ -289,8 +280,6 @@ class AnnotationManager extends Object {
     }
     
     public function getMethodAnnotations(\ReflectionMethod $reflMethod, $annotation = false) {
-        $this->ensureAnnotations();
-        
         $class = $reflMethod->getDeclaringClass()->name;
         $method = $reflMethod->name;
         
@@ -310,16 +299,7 @@ class AnnotationManager extends Object {
     }
     
     public function classHasAnnotation($class, $annotation, $recursive = true) {
-        $this->ensureAnnotations();
-        
-        $annotation = $this->resolveName($annotation);
-        
-        foreach($this->getClassAnnotations($class) as $anno) {
-            if(is_a($anno, $annotation))
-                return true;
-        }
-        
-        return false;
+        return (count($this->getClassAnnotations($class, $annotation, $recursive)) != 0);
     }
     
     /**
@@ -327,30 +307,24 @@ class AnnotationManager extends Object {
      * @param string $annotation
      * @return string[]
      */
-    public function filterClassesByAnnotation($classes, $annotation, $negativeFilter = false) {
-        $this->ensureAnnotations();
-        
+    public function filterClassesByAnnotation($classes, $annotation, $negativeFilter = false, $recursive = true) {
         $annotation = $this->resolveName($annotation);
         $self = $this;
-        return array_filter($classes, function($class) use($annotation, $negativeFilter, $self) {
+        return array_filter($classes, function($class) use($annotation, $negativeFilter, $recursive, $self) {
             if($negativeFilter)
-                return !$self->classHasAnnotation($class, $annotation);
+                return !$self->classHasAnnotation($class, $annotation, $recursive);
             else
-                return $self->classHasAnnotation($class, $annotation);
+                return $self->classHasAnnotation($class, $annotation, $recursive);
         });
     }
     
-    public function getClassesWithAnnotation($annotation) {
-        $this->ensureAnnotations();
-        
+    public function getClassesWithAnnotation($annotation, $recursive = true) {
         $classes = array_keys($this->annotations);
         
-        return $this->filterClassesByAnnotation($classes, $annotation);
+        return $this->filterClassesByAnnotation($classes, $annotation, false, $recursive);
     }
     
     public function getClassesWithPropertyAnnotation($annotation) {
-        $this->ensureAnnotations();
-        
         $annotation = $this->resolveName($annotation);
         $toRet = array();
         foreach($this->annotations as $class => $key) {
@@ -365,8 +339,6 @@ class AnnotationManager extends Object {
     }
     
     public function getClassesWithMethodAnnotation($annotation) {
-        $this->ensureAnnotations();
-        
         $annotation = $this->resolveName($annotation);
         
         $toRet = array();
