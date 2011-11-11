@@ -36,13 +36,15 @@
 
 namespace Fossil\Controllers;
 
+use Fossil\Object;
+
 /**
  * Description of BaseController
  *
  * @author predakanga
- * @F:Instanced
+ * @F:InstancedType("Controller")
  */
-abstract class BaseController {
+abstract class BaseController extends Object {
     public abstract function run(\Fossil\Requests\BaseRequest $req);
 }
 

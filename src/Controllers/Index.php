@@ -46,18 +46,19 @@ use Fossil\OM,
  * @author predakanga
  */
 class Index extends AutoController {
+    /**
+     * @F:Inject("Settings")
+     * @var Fossil\Settings
+     */
+    protected $settings;
+    
     public function runIndex($req) {
         // Redirect to the setup controller if we have no settings
-        if(!OM::Settings()->bootstrapped())
-            return new RedirectResponse("index.php?controller=setup");
+        if(!$this->settings->isBootstrapped())
+            return $this->_new("Response", "Redirect", "index.php?controller=setup");
         else
             // Otherwise, redirect to the dev panel
-            return new RedirectResponse("index.php?controller=dev");
-    }
-    
-    public function runTestApi($req) {
-        $data = array("name" => "Chuck", "value" => 32);
-        return OM::obj("Responses", "API")->create($data);
+            return $this->_new("Response", "Redirect", "index.php?controller=dev");
     }
 }
 ?>

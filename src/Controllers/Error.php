@@ -45,16 +45,22 @@ use Fossil\OM,
  * @author predakanga
  */
 class Error extends AutoController {
+    /**
+     * @F:Inject("ORM")
+     * @var Fossil\ORM
+     */
+    protected $orm;
+    
     public function runShow(BaseRequest $req) {
-        return OM::obj("Responses", "Template")->create("fossil:error/generic", $req->args);
+        return $this->_new("Response", "Template", "fossil:error/generic", $req->args);
     }
     
     public function run404(BaseRequest $req) {
-        return OM::obj("Responses", "Template")->create("fossil:error/404", array(), 404);
+        return $this->_new("Response", "Template", "fossil:error/404", array(), 404);
     }
     
     public function runDb(BaseRequest $req) {
-        return OM::obj("Responses", "Template")->create("fossil:error/db", $req->args + array('query' => OM::ORM()->getLogger()->getQuery()), 503);
+        return $this->_new("Response", "Template", "fossil:error/db", $req->args + array('query' => $this->orm->getLogger()->getQuery()), 503);
     }
 }
 
