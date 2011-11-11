@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * Copyright (c) 2011, predakanga
  * All rights reserved.
  * 
@@ -25,37 +25,20 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * @author predakanga
- * @since 0.1
- * @category Fossil Core
- * @package Fossil
- * @subpackage Requests
- * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Requests;
+namespace Fossil\Responses;
+
+use Fossil\Interfaces\IResponse,
+    Fossil\Object;
 
 /**
- * Description of WebRequest
+ * Description of BaseResponse
  *
  * @author predakanga
- * @F:Instanced("Web")
+ * @F:InstancedType("Response")
  */
-class WebRequest extends BaseRequest {
-    public function __construct($container) {
-        parent::__construct($container);
-        if(isset($_REQUEST['controller']))
-            $this->controller = $_REQUEST['controller'];
-        if(isset($_REQUEST['action']))
-            $this->action = $_REQUEST['action'];
-        $this->args = array();
-        foreach($_REQUEST as $key => $value) {
-            if($key == 'controller' || $key == 'action')
-                continue;
-            $this->args[$key] = $value;
-        }
-    }
+class BaseResponse extends Object implements IResponse {
 }
 
 ?>

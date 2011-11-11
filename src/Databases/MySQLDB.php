@@ -42,7 +42,6 @@ use Fossil\OM;
  * Description of MySQLDB
  *
  * @author predakanga
- * @F:Object(type="Database", name="MySQL")
  */
 class MySQLDB extends BaseDatabase {
     public static function getName() { return "MySQL"; }
@@ -58,6 +57,10 @@ class MySQLDB extends BaseDatabase {
             $this->pdo = new \PDO($dsn, $this->config['user'], $this->config['password'], array(\PDO::ATTR_PERSISTENT));
         }
         return $this->pdo;
+    }
+    
+    protected function getDefaultConfig() {
+        return array('host' => 'localhost', 'dbname' => 'fossil', 'port' => 3306, 'user' => 'fossil', 'password' => 'fossil');
     }
     
     public function getConnectionConfig() {

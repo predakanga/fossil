@@ -43,7 +43,9 @@ namespace Fossil\Responses;
  * @F:Instanced("Redirect")
  */
 class RedirectResponse extends ActionableResponse {
-    public function __construct($url) {
+    public function __construct($container, $url) {
+        parent::__construct($container);
+        
         $this->url = $url;
     }
     

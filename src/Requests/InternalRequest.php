@@ -40,9 +40,11 @@ namespace Fossil\Requests;
  * Description of InternalRequest
  *
  * @author predakanga
+ * @F:Instanced("Internal")
  */
 class InternalRequest extends BaseRequest {
-    public function __construct($controller, $action, $args = array()) {
+    public function __construct($container, $controller, $action, $args = array()) {
+        parent::__construct($container);
         $this->controller = $controller;
         $this->action = $action;
         $this->args = $args;

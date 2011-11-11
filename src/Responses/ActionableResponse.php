@@ -36,14 +36,12 @@
 
 namespace Fossil\Responses;
 
-use Fossil\Interfaces\IResponse;
-
 /**
  * Description of ActionableResponse
  *
  * @author predakanga
  */
-abstract class ActionableResponse implements IResponse {
+abstract class ActionableResponse extends BaseResponse {
     abstract public function runAction();
 }
 

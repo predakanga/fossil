@@ -36,14 +36,14 @@
 
 namespace Fossil\Responses;
 
-use Fossil\Interfaces\IResponse;
+use Fossil\Object;
 
 /**
  * Description of RenderableResponse
  *
  * @author predakanga
  */
-abstract class RenderableResponse implements IResponse {
+abstract class RenderableResponse extends BaseResponse {
     protected $outputType = "text/html";
     protected $responseCode = 200;
 

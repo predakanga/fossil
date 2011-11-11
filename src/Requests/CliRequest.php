@@ -46,18 +46,31 @@ use Symfony\Component\Console\Application,
  * Description of CliRequest
  *
  * @author predakanga
+ * @F:Instanced("Cli")
  */
 class CliRequest extends BaseRequest {
     /**
      * @var Symfony\Component\Console\Application
      */
     protected $app;
+    /**
+     * @F:Inject("Core")
+     * @var Fossil\Core
+     */
+    protected $core;
+    /**
+     * @F:Inject("ORM")
+     * @var Fossil\ORM
+     */
+    protected $orm;
     
-    public function __construct() {
+    public function __construct($container) {
+        parent::__construct($container);
+        
         // Figure out the app name
         $this->app = new Application($this->decideName(), "1.0");
-        $helperSet = new HelperSet(array('db' => new ConnectionHelper(OM::ORM()->getEM()->getConnection()),
-                                         'em' => new EntityManagerHelper(OM::ORM()->getEM())));
+        $helperSet = new HelperSet(array('db' => new ConnectionHelper($this->orm->getEM()->getConnection()),
+                                         'em' => new EntityManagerHelper($this->orm->getEM())));
         $this->app->setHelperSet($helperSet);
         $this->app->setAutoExit(false);
         // And add any commands
@@ -66,10 +79,12 @@ class CliRequest extends BaseRequest {
     
     protected function decideName() {
         $appName = "Fossil";
-        if(OM::overlayNamespace()) {
-            $appName = basename(OM::overlayNamespace());
-        } elseif(OM::appNamespace()) {
-            $appName = basename(OM::appNamespace());
+        $details = $this->core->getOverlayDetails();
+        if(!$details) {
+            $details = $this->core->getAppDetails();
+        }
+        if($details) {
+            $appname = basename($details['namespace']);
         }
         return $appName . " CLI";
     }
@@ -77,8 +92,8 @@ class CliRequest extends BaseRequest {
     protected function registerCommands() {
         // Add run DQL, for our own purposes
         $this->app->add(new \Doctrine\ORM\Tools\Console\Command\RunDqlCommand());
-        foreach(array_keys(OM::getAllInstanced("Commands")) as $commandName) {
-            $this->app->add(OM::obj("Commands", $commandName)->create());
+        foreach($this->container->getAllInstanced("Command") as $commandName) {
+            $this->app->add($this->_new("Command", $commandName));
         }
     }
     

@@ -29,8 +29,7 @@
 
 namespace Fossil\Responses;
 
-use Fossil\OM,
-    Fossil\Models\Model;
+use Fossil\Models\Model;
 
 /**
  * Description of ApiResponse
@@ -39,6 +38,17 @@ use Fossil\OM,
  * @F:Instanced("API")
  */
 class ApiResponse extends RenderableResponse {
+    /**
+     * @F:Inject("Settings")
+     * @var Fossil\Settings
+     */
+    protected $settings;
+    /**
+     * @F:Inject("Dispatcher")
+     * @var Fossil\Dispatcher
+     */
+    protected $dispatcher;
+    
     public function __construct($data) {
         $this->data = $data;
     }
@@ -68,12 +78,12 @@ class ApiResponse extends RenderableResponse {
     
     public function render() {
         // Decide the API format
-        $mode = OM::Settings("Fossil", "DefaultAPI", "json");
-        $req = OM::Dispatcher()->getCurrentRequest();
+        $mode = $this->settings->get("Fossil", "DefaultAPI", "json");
+        $req = $this->dispatcher->getCurrentRequest();
         if(isset($req->args['format']))
             $mode = $req->args['format'];
         // And fetch the renderer
-        $formatter = OM::obj("Api", $mode)->create();
+        $formatter = $this->_new("Api", $mode);
         if(!$formatter)
             die("Unknown formatter specified");
         $this->outputType = $formatter->getContentType();

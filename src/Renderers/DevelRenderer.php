@@ -42,7 +42,6 @@ use Fossil\Responses\BaseResponse;
  * Description of DevelRenderer
  *
  * @author predakanga
- * @F:Object(type = "Renderer", name = "Development")
  */
 class DevelRenderer extends BaseRenderer {
     public static function getName() { return "Development"; }

@@ -47,8 +47,14 @@ use Fossil\OM;
 class TemplateResponse extends RenderableResponse {
     private $templateName;
     private $templateData;
+    /**
+     * @F:Inject("Renderer")
+     * @var Fossil\Renderers\BaseRenderer
+     */
+    protected $renderer;
     
-    public function __construct($template, $args = array(), $code = 200) {
+    public function __construct($container, $template, $args = array(), $code = 200) {
+        parent::__construct($container);
         $this->templateName = $template;
         $this->templateData = $args;
         $this->responseCode = $code;
@@ -56,7 +62,7 @@ class TemplateResponse extends RenderableResponse {
     
     public function render() {
         parent::render();
-        OM::Renderer()->render($this->templateName, $this->templateData);
+        $this->renderer->render($this->templateName, $this->templateData);
     }
 }
 

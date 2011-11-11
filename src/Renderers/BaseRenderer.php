@@ -43,14 +43,11 @@ use Fossil\OM,
  * Description of BaseRenderer
  *
  * @author predakanga
+ * @F:Provides("Renderer")
  */
 abstract class BaseRenderer extends BaseDriver {
-    protected function getDefaultConfig() {
-        $cacheOpts = OM::Settings("Fossil", "renderer", NULL);
-        if($cacheOpts && isset($cacheOpts['config'])) {
-            return $cacheOpts['config'];
-        }
-        return NULL;
+    public function __construct($container, $type = "renderer") {
+        parent::__construct($container, $type);
     }
     
     abstract public function render($templateName, $templateData);

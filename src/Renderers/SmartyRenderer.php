@@ -47,7 +47,7 @@ use Fossil\Responses\BaseResponse,
  * Description of SmartyRenderer
  *
  * @author predakanga
- * @F:Object(type = "Renderer", name = "Smarty")
+ * @F:DefaultProvider
  */
 class SmartyRenderer extends BaseRenderer {
     /**
@@ -55,11 +55,21 @@ class SmartyRenderer extends BaseRenderer {
      * @var \Smarty
      */
     private $smarty;
+    /**
+     * @F:Inject("Filesystem")
+     * @var Fossil\Filesystem
+     */
+    protected $fs;
+    /**
+     * @F:Inject("Dispatcher")
+     * @var Fossil\Dispatcher
+     */
+    protected $dispatcher;
     
     public static function getName() { return "Smarty"; }
     public static function getVersion() { return 1.0; }
     public static function usable() { /* TODO: Real test here */ return true; }
-    public static function getForm() { return OM::Form("SmartyConfig"); }
+    public static function getForm() { return $this->_new("Form", "SmartyConfig"); }
     
     protected function getDefaultConfig() {
         $config = parent::getDefaultConfig();
@@ -70,14 +80,15 @@ class SmartyRenderer extends BaseRenderer {
         return $config;
     }
     
-    public function __construct($config = null) {
-        parent::__construct($config);
-        require_once(OM::FS()->fossilRoot() . D_S . "libs/smarty/distribution/libs/Smarty.class.php");
+    public function __construct($container, $type = "renderer") {
+        parent::__construct($container, $type);
+        
+        require_once($this->fs->fossilRoot() . D_S . "libs/smarty/distribution/libs/Smarty.class.php");
         $this->smarty = new \Smarty();
-        foreach(OM::FS()->roots() as $root) {
+        foreach($this->fs->roots() as $root) {
             $this->smarty->addTemplateDir($root . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "smarty");
         }
-        $this->smarty->compile_dir = OM::FS()->tempDir() . D_S . "templates_c";
+        $this->smarty->compile_dir = $this->fs->tempDir() . D_S . "templates_c";
         $this->smarty->registerPlugin('function', 'form', array($this, 'formFunction'));
         $this->smarty->registerPlugin('function', 'display', array($this, 'displayFunction'));
         $this->smarty->registerPlugin('function', 'paginate', array($this, 'paginateFunction'));
@@ -96,7 +107,7 @@ class SmartyRenderer extends BaseRenderer {
     }
     
     protected function setDefaultVariables($tpl) {
-        $tpl->assign('errors', OM::Error()->getLog());
+//        $tpl->assign('errors', OM::Error()->getLog());
         $tpl->assign('now', new \DateTime());
     }
     
@@ -136,7 +147,7 @@ class SmartyRenderer extends BaseRenderer {
             if($tag[0] == "multiform")
                 $data['multiform'] = true;
         }
-        $form = OM::Form($params['name']);
+        $form = $this->_new("Form", $params['name']);
         
         $data['method'] = "post";
         if(isset($params['method']))
@@ -146,7 +157,7 @@ class SmartyRenderer extends BaseRenderer {
         if(isset($params['action'])) {
             $data['action'] = htmlentities($params['action']);
         } else {
-            $curRequest = OM::Dispatcher()->getCurrentRequest();
+            $curRequest = $this->dispatcher->getCurrentRequest();
             $controller = $curRequest->controller;
             $f_action = $curRequest->action;
             if(isset($params['fossil_controller'])) {
@@ -190,7 +201,7 @@ class SmartyRenderer extends BaseRenderer {
     }
     
     function bbdecodeModifier($input) {
-        return OM::BBCode()->decode($input);
+//        return OM::BBCode()->decode($input);
     }
     
     function dateIntervalFmtModifier(\DateInterval $interval) {
@@ -257,7 +268,7 @@ class SmartyRenderer extends BaseRenderer {
         if(isset($params['action'])) {
             $action = htmlentities($params['action']);
         } else {
-            $curRequest = OM::Dispatcher()->getCurrentRequest();
+            $curRequest = $this->dispatcher->getCurrentRequest();
             $controller = $curRequest->controller;
             $f_action = $curRequest->action;
             if(isset($params['fossil_controller'])) {
@@ -290,7 +301,7 @@ class SmartyRenderer extends BaseRenderer {
     
     function linkFunction($params, $content, $smarty, &$repeat) {
         // Set up default params
-        $curRequest = OM::Dispatcher()->getCurrentRequest();
+        $curRequest = $this->dispatcher->getCurrentRequest();
         $target = array('controller' => $curRequest->controller);
         $classStr = "";
         
@@ -302,7 +313,7 @@ class SmartyRenderer extends BaseRenderer {
             $target['action'] = $params['action'];
             unset($params['action']);
         } else {
-            $target['action'] = OM::Controller($target['controller'])->indexAction();
+            $target['action'] = $this->_new("Controller", $target['controller'])->indexAction();
         }
         if(isset($params['cssClass'])) {
             $classStr = " class=\"" . $params['cssClass'] . "\"";
@@ -328,7 +339,7 @@ class SmartyRenderer extends BaseRenderer {
     
     function linkPageFunction($params, $content, $smarty, &$repeat) {
         // Generate our current arguments
-        $req = OM::Dispatcher()->getCurrentRequest();
+        $req = $this->dispatcher->getCurrentRequest();
         if($req->controller)
             $toAdd['controller'] = $req->controller;
         if($req->action)
@@ -407,7 +418,7 @@ class SmartyRenderer extends BaseRenderer {
             $pageSize = $params['pageSize'];
         $page = 1;
         // Get the page from the request by default
-        $req = OM::Dispatcher()->getCurrentRequest();
+        $req = $this->dispatcher->getCurrentRequest();
         if(isset($req->args['page']))
             $page = $req->args['page'];
         if(isset($params['page']))
@@ -499,7 +510,7 @@ class SmartyRenderer extends BaseRenderer {
             return $plugin['root'] . D_S . $suffix;
         } else {
             // Check real roots first
-            foreach(array_reverse(OM::FS()->roots(false)) as $root) {
+            foreach(array_reverse($this->fs->roots(false)) as $root) {
                 if(file_exists($root . D_S . $suffix))
                     return $root . D_S . $suffix;
             }

@@ -42,7 +42,6 @@ use Fossil\OM;
  * Description of PgSQLDB
  *
  * @author predakanga
- * @F:Object(type="Database", name="PostgreSQL")
  */
 class PgSQLDB extends BaseDatabase {
     public static function getName() { return "PgSQL"; }
@@ -59,7 +58,11 @@ class PgSQLDB extends BaseDatabase {
         }
         return $this->pdo;
     }
-    
+
+    protected function getDefaultConfig() {
+        return array('host' => 'localhost', 'dbname' => 'fossil', 'port' => 5432, 'user' => 'fossil', 'password' => 'fossil');
+    }
+
     public function getConnectionConfig() {
         return array_merge(array('driver' => 'pdo_pgsql'), parent::getConnectionConfig());
     }

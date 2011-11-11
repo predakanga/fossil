@@ -43,15 +43,11 @@ use Fossil\BaseDriver,
  * Description of BaseDatabase
  *
  * @author predakanga
+ * @F:Provides("Database")
  */
 abstract class BaseDatabase extends BaseDriver {
-    protected function getDefaultConfig() {
-        $dbOpts = OM::Settings("Fossil", "database", NULL);
-        
-        if($dbOpts && isset($dbOpts['config'])) {
-            return $dbOpts['config'];
-        }
-        return NULL;
+    public function __construct($container, $type = "database") {
+        parent::__construct($container, $type);
     }
     
     abstract public function getPDO();

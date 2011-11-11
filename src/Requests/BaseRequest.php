@@ -36,21 +36,25 @@
 
 namespace Fossil\Requests;
 
-use Fossil\OM;
+use Fossil\Object;
 
 /**
  * Description of BaseRequest
  *
  * @author predakanga
- * @F:Instanced
+ * @F:InstancedType("Request")
  */
-abstract class BaseRequest {
+abstract class BaseRequest extends Object {
     public $controller;
     public $action;
     public $args;
     
     public function run() {
-        return OM::Controller($this->controller)->run($this);
+        if(!$this->controller) {
+            $this->controller = "index";
+        }
+        $controllerObj = $this->_new("Controller", $this->controller);
+        return $controllerObj->run($this);
     }
 }
 

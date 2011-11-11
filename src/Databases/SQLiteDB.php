@@ -42,7 +42,7 @@ use Fossil\OM;
  * Description of SQLiteDB
  *
  * @author predakanga
- * @F:Object(type="Database", name="SQLite")
+ * @F:DefaultProvider
  */
 class SQLiteDB extends BaseDatabase {
     public static function getName() { return "SQLite"; }
@@ -51,6 +51,11 @@ class SQLiteDB extends BaseDatabase {
     public static function getForm() { return OM::Form("SQLiteConfig"); }
     
     protected $pdo;
+    /**
+     * @F:Inject("Filesystem")
+     * @var Fossil\Filesystem
+     */
+    protected $fs;
     
     public function getPDO() {
         if(!$this->pdo) {
@@ -63,10 +68,7 @@ class SQLiteDB extends BaseDatabase {
     
     protected function getDefaultConfig() {
         // Default driver, so it must have a default config
-        $config = parent::getDefaultConfig();
-        if(!$config) {
-            return array('path' => OM::FS()->tempDir() . D_S . 'default.db');
-        }
+        return array('path' => $this->fs->tempDir() . D_S . 'default.db');
     }
     
     public function getConnectionConfig() {
