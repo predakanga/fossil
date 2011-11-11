@@ -35,7 +35,8 @@
 
 namespace Fossil;
 
-use Fossil\DoctrineExtensions\CustomSchemaTool,
+use Fossil\Object,
+    Fossil\DoctrineExtensions\CustomSchemaTool,
     Fossil\DoctrineExtensions\CustomAnnotationDriver,
     Fossil\DoctrineExtensions\ReverseMappingGenerator,
     Fossil\DoctrineExtensions\DiscriminatorMapGenerator,
@@ -53,20 +54,37 @@ use Fossil\DoctrineExtensions\CustomSchemaTool,
  * @F:Provides("ORM")
  * @F:DefaultProvider()
  */
-class ORM {
+class ORM extends Object {
     protected $em;
     protected $evm;
     protected $config;
     protected $driver;
     protected $logger;
     protected $mappingModifiers = array();
+    /**
+     * @F:Inject("Filesystem")
+     * @var Fossil\Filesystem
+     */
+    protected $fs;
+    /**
+     * @F:Inject("AnnotationManager")
+     * @var Fossil\Annotations\AnnotationManager
+     */
+    protected $annotationMgr;
+    /**
+     * @F:Inject("Database")
+     * @var Fossil\Databases\BaseDatabase
+     */
+    protected $db;
     
-    public function __construct() {
+    public function __construct($container) {
+        parent::__construct($container);
+        
         $appEnv = "development";
 
         // Load up custom types
         $types = array();
-        foreach(glob(OM::FS()->fossilRoot() . D_S . "DoctrineExtensions" . D_S . "Types" . D_S . "*.php") as $type) {
+        foreach(glob($this->fs->fossilRoot() . D_S . "DoctrineExtensions" . D_S . "Types" . D_S . "*.php") as $type) {
             $types += require_once($type);
         }
         
@@ -74,7 +92,7 @@ class ORM {
         $config = new \Doctrine\ORM\Configuration(); // (2)
 
         // Proxy Configuration (3)
-        $tempDir = OM::FS()->tempDir() . D_S . "proxies";
+        $tempDir = $this->fs->tempDir() . D_S . "proxies";
         // TODO: Only run this when the cache isn't primed
         if(!file_exists($tempDir))
             mkdir($tempDir);
@@ -89,7 +107,7 @@ class ORM {
 
         $this->driver = CustomAnnotationDriver::create();
         
-        foreach(OM::FS()->roots(false) as $root) {
+        foreach($this->fs->roots(false) as $root) {
             if(is_dir($root . D_S . "models"))
                 $this->driver->addPaths((array)($root . D_S . "models"));
         }
@@ -116,11 +134,14 @@ class ORM {
         foreach($this->mappingModifiers as $gen)
             $this->evm->addEventListener(\Doctrine\ORM\Events::loadClassMetadata, $gen);
         
-        if(!OM::Database()->getConnectionConfig())
-            $conn = array('pdo' => OM::Database()->getPDO(), 'dbname' => null);
-        else
-            $conn = OM::Database()->getConnectionConfig();
+        if(!$this->db->getConnectionConfig()) {
+            $conn = array('pdo' => $this->db->getPDO(), 'dbname' => null);
+        } else {
+            $conn = $this->db->getConnectionConfig();
+        }
+        
         $this->em = EntityManager::create($conn, $this->config, $this->evm);
+        $this->em->getMetadataFactory()->setDIContainer($this->container);
         
         $realConn = $this->em->getConnection();
         $platform = $realConn->getDatabasePlatform();
@@ -132,7 +153,7 @@ class ORM {
     }
     
     public function registerPaths() {
-        $pluginsWithModels = array_filter(OM::FS()->pluginRoots(), function($root) {
+        $pluginsWithModels = array_filter($this->fs->pluginRoots(), function($root) {
             return is_dir($root . D_S . "Models");
         });
         $this->driver->addPaths(array_map(function($root) {
@@ -205,7 +226,7 @@ class ORM {
     
     protected function ensureDataset($model, $dataset) {
         foreach($dataset as $data) {
-            $instance = $model::createFromArray($data);
+            $instance = $model::createFromArray($this->container, $data);
             $instance->save();
         }
         // Flush after each model, so that subsequent models can use the new entities
@@ -215,7 +236,7 @@ class ORM {
     protected function ensureInitialDatasets($newModels) {
         $modelData = array();
         foreach($newModels as $model) {
-            $annos = OM::Annotations()->getClassAnnotations($model, "F:InitialDataset", false);
+            $annos = $this->annotationMgr->getClassAnnotations($model, "F:InitialDataset", false);
             if($annos) {
                 $modelData[$model] = array();
                 foreach($annos as $anno) {

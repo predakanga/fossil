@@ -22,7 +22,6 @@ namespace Fossil\DoctrineExtensions;
 
 class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
 {
-    private $diProp = null;
     private $diFunc = null;
     // As with parent class, this will be serialized, so leave it's scope public
     public $diContainer = null;
@@ -32,10 +31,7 @@ class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
         $this->diContainer = $diContainer;
         parent::__construct($entityName);
         $this->reflClass = new ActiveEntityReflectionClass($entityName);
-        $this->diProp = $this->reflClass->getProperty("_container");
-        if($this->diProp) {
-            $this->diProp->setAccessible(true);
-        }
+        
         $this->diFunc = $this->reflClass->getMethod("setupObjects");
         $this->namespace = $this->reflClass->getNamespaceName();
         $this->table['name'] = $this->reflClass->getShortName();
@@ -56,7 +52,6 @@ class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
     {
         // Restore ReflectionClass and properties
         $this->reflClass = new ActiveEntityReflectionClass($this->name);
-        $this->diProp = $this->reflClass->getProperty("_container");
         $this->diFunc = $this->reflClass->getMethod("setupObjects");
 
         foreach ($this->fieldMappings as $field => $mapping) {
@@ -82,8 +77,8 @@ class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
     public function newInstance() {
         $newInst = parent::newInstance();
         // If we have diProp, put the container in place
-        if($this->diProp) {
-            $this->diProp->setValue($newInst, $this->diContainer);
+        if($this->diContainer) {
+            $newInst->container = $this->diContainer;
             // And setup the objects
             $this->diFunc->invokeArgs($newInst);
         }

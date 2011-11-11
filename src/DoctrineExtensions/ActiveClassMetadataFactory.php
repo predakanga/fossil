@@ -23,7 +23,7 @@ class ActiveClassMetadataFactory extends \Doctrine\ORM\Mapping\ClassMetadataFact
 {
     private $diContainer = null;
     
-    public function __construct($diContainer) {
+    public function setDIContainer($diContainer) {
         $this->diContainer = $diContainer;
     }
     
