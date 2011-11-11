@@ -35,10 +35,12 @@ use Symfony\Component\Console\Command\Command;
  * Description of BaseCommand
  *
  * @author predakanga
- * @F:Instanced
+ * @F:InstancedType("Command")
  */
 abstract class BaseCommand extends Command {
-    //put your code here
+    public function __construct($container) {
+        parent::__construct();
+    }
 }
 
 ?>
