@@ -43,6 +43,7 @@ use Fossil\Object,
 /**
  * Description of Model
  *
+ * @F:InstancedType("Model")
  * @author predakanga
  */
 abstract class Model extends Object {
