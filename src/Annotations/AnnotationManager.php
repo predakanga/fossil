@@ -119,6 +119,11 @@ class AnnotationManager extends Object {
         }
     }
     
+    public function rescanAnnotations() {
+        $this->reflection->rescan();
+        $this->readAnnotations();
+    }
+    
     protected function readAnnotations() {
         $this->annotations = array();
         
