@@ -32,22 +32,26 @@ namespace Fossil\DoctrineExtensions;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs,
     Doctrine\ORM\Mapping\ClassMetadata,
     Doctrine\ORM\Mapping\ClassMetadataInfo,
-    Doctrine\Common\Util\Debug,
-    Fossil\OM;
+    Doctrine\Common\Util\Debug;
 
 /**
  * Description of ReverseMappingGenerator
  *
  * @author predakanga
  */
-class ReverseMappingGenerator {
+class ReverseMappingGenerator extends BaseMetadataListener {
     protected $outOfBand = array();
+    /**
+     * @F:Inject("AnnotationManager")
+     * @var Fossil\Annotations\AnnotationManager
+     */
+    protected $annotationMgr;
     
     public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs) {
         $classMetadata = $eventArgs->getClassMetadata();
         $em = $eventArgs->getEntityManager();
         // Enumerate the mappings to add to this class
-        $classes = OM::Annotations()->getClassesWithPropertyAnnotation("F:GenerateReverse");
+        $classes = $this->annotationMgr->getClassesWithPropertyAnnotation("F:GenerateReverse");
         foreach($classes as $class) {
             // Don't check our own class for annotations
             if($classMetadata->getName() == $class)
@@ -57,7 +61,7 @@ class ReverseMappingGenerator {
                 // Skip over inherited properties
                 if($property->class != $class)
                     continue;
-                $annos = OM::Annotations()->getPropertyAnnotations($property, "F:GenerateReverse");
+                $annos = $this->annotationMgr->getPropertyAnnotations($property, "F:GenerateReverse");
                 if(count($annos)) {
                     // Identified a reverse association
                     $md = null;
@@ -69,7 +73,7 @@ class ReverseMappingGenerator {
                     } else {
                         // Load the metadata out-of-band, otherwise
                         if(!isset($this->outOfBand[$class])) {
-                            $cm = new ActiveClassMetadata($class);
+                            $cm = new ActiveClassMetadata($class, $this->container);
                             $em->getConfiguration()->getMetadataDriverImpl()->loadMetadataForClass($class, $cm);
                             $this->outOfBand[$class] = $cm;
                         }

@@ -40,8 +40,13 @@ use Doctrine\ORM\Event\LoadClassMetadataEventArgs,
  *
  * @author predakanga
  */
-class DiscriminatorMapGenerator {
+class DiscriminatorMapGenerator extends BaseMetadataListener {
     protected $loadedClasses = array();
+    /**
+     * @F:Inject("AnnotationManager")
+     * @var Fossil\Annotations\AnnotationManager
+     */
+    protected $annotationMgr;
     
     public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs) {
         $classMetadata = $eventArgs->getClassMetadata();
@@ -66,7 +71,7 @@ class DiscriminatorMapGenerator {
 
         if($classMetadata->isInheritanceTypeJoined() || $classMetadata->isInheritanceTypeSingleTable()) {
             // Grab the list of extension entities that are subclasses
-            $allEntities = OM::Annotations()->getClassesWithAnnotation('F:ExtendsDiscriminatorMap');
+            $allEntities = $this->annotationMgr->getClassesWithAnnotation('F:ExtendsDiscriminatorMap');
             foreach($allEntities as $ent) {
                 if(is_subclass_of($ent, $ourClass)) {
                     $discriminatorMap[$ent] = $ent;

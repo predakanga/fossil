@@ -129,8 +129,8 @@ class ORM extends Object {
         $this->config = $config;
         
         $this->evm = new \Doctrine\Common\EventManager();
-        $this->mappingModifiers[] = new ReverseMappingGenerator();
-        $this->mappingModifiers[] = new DiscriminatorMapGenerator();
+        $this->mappingModifiers[] = $this->_new("MetadataListener", "ReverseMappingGenerator");
+        $this->mappingModifiers[] = $this->_new("MetadataListener", "DiscriminatorMapGenerator");
         foreach($this->mappingModifiers as $gen)
             $this->evm->addEventListener(\Doctrine\ORM\Events::loadClassMetadata, $gen);
         

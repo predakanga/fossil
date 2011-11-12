@@ -27,8 +27,7 @@ class ActiveClassMetadataFactory extends \Doctrine\ORM\Mapping\ClassMetadataFact
         $this->diContainer = $diContainer;
     }
     
-    protected function newClassMetadataInstance($className)
-    {
-        return new ActiveClassMetadata($className, $diContainer);
+    protected function newClassMetadataInstance($className) {
+        return new ActiveClassMetadata($className, $this->diContainer);
     }
 }
