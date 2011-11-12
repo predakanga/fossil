@@ -148,13 +148,6 @@ class PluginManager extends Object {
         }
         // Finally, store it
         $this->enabledPlugins[] = $pluginName;
-        
-        // And call it's initializer, if one exists
-        $initClass = "Fossil\\Plugins\\" . ucfirst($pluginName) . "\\Init";
-        if(class_exists($initClass)) {
-            $initInst = new $initClass;
-            $initInst->initialize();
-        }
     }
     
     public function disablePlugin($pluginName) {

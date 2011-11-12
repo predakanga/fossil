@@ -38,6 +38,7 @@ class ObjectContainer {
     private $instances = array();
     private $createStack = array();
     private $registrations = array();
+    private $potentialProviders = array();
     private $instancedTypes = array();
     private $overwritten = array();
     private $classMap = array();
@@ -45,6 +46,10 @@ class ObjectContainer {
     public $dependencies = array();
     /** @var Fossil\Annotations\AnnotationManager */
     private $annotationMgr;
+    private $fossilInit;
+    private $appInit;
+    private $overlayInit;
+    private $pluginInits;
     
     public function __construct($overlayDetails = null, $appDetails = null) {
         // Set up the defaults
@@ -62,6 +67,7 @@ class ObjectContainer {
         if(!$this->cachedInit()) {
             $this->uncachedInit();
         }
+        $this->appSpecificEveryTimeInit();
     }
     
     protected function setupDefaults() {
@@ -105,10 +111,123 @@ class ObjectContainer {
     protected function uncachedInit() {
         $this->annotationMgr = $this->getLazyObject("AnnotationManager");
         $this->discoverTypes();
+
+        // By this point, we do not have any preference-specific classes loaded
+        // Call the various applications' init classes to set these up
+        $this->appSpecificOneTimeInit();
+        \Doctrine\Common\Util\Debug::dump($this);
+        var_dump($this->get("Plugins")->getEnabledPlugins());
+        die();
     }
     
-    protected function discoverTypes() {
-        $providers = $this->discoverProviders();
+    protected function ensureFossilInitializer() {
+        if(!$this->fossilInit) {
+            $this->fossilInit = $this->instantiateClass('Fossil\Init');
+        }
+    }
+    
+    protected function ensureAppInitializer() {
+        $core = $this->get("Core");
+        
+        if(!$this->appInit) {
+            $details = $core->getAppDetails();
+            if($details) {
+                $initClass = $details['ns'] . '\\' . 'Init';
+                if(class_exists($initClass)) {
+                    $this->appInit = $this->instantiateClass($initClass);
+                }
+            }
+        }
+    }
+    
+    protected function ensureOverlayInitializer() {
+        $core = $this->get("Core");
+        
+        if(!$this->overlayInit) {
+            $details = $core->getOverlayDetails();
+            if($details) {
+                $initClass = $details['ns'] . '\\' . 'Init';
+                if(class_exists($initClass)) {
+                    $this->overlayInit = $this->instantiateClass($initClass);
+                }
+            }
+        }
+    }
+    
+    protected function ensurePluginInitializers() {
+        $pluginMgr = $this->get("Plugins");
+
+        if(!$this->pluginInits) {
+            $pluginMgr = $this->get("Plugins");
+            $pluginList = $pluginMgr->getEnabledPlugins();
+
+            $this->pluginInits = array();
+            foreach($pluginList as $pluginName) {
+                $initClass = 'Fossil\Plugins\\' . ucfirst($pluginName) . '\Init';
+                if(class_exists($initClass)) {
+                    $newInit = $this->instantiateClass($initClass);
+                    $this->pluginInits[] = $newInit;
+                }
+            }
+        }        
+    }
+    
+    protected function appSpecificOneTimeInit() {
+        // Check for the existence of various Init classes
+        $this->ensureFossilInitializer();
+        if($this->fossilInit) {
+            // Also loads existing plugins
+            $this->fossilInit->registerObjects();
+        }
+        
+        $this->ensureAppInitializer();
+        if($this->appInit) {
+            $this->appInit->registerObjects();
+        }
+        
+        $this->ensureOverlayInitializer();
+        if($this->overlayInit) {
+            $this->overlayInit->registerObjects();
+        }
+
+        // Now that plugins are enabled, update annotations,
+        // then scan for new providers in plugin roots only
+        $this->annotationMgr->rescanAnnotations();
+        $this->discoverTypes(true);
+        
+        // And finally, run per-plugin initialization
+        $this->ensurePluginInitializers();
+        foreach($this->pluginInits as $init) {
+            $init->registerObjects();
+        }
+    }
+    
+    protected function appSpecificEveryTimeInit() {
+        // Run each layer's initializers$this->ensureFossilInitializer();
+        if($this->fossilInit) {
+            // Also loads existing plugins
+            $this->fossilInit->initialize();
+        }
+        
+        $this->ensureAppInitializer();
+        if($this->appInit) {
+            $this->appInit->initialize();
+        }
+        
+        $this->ensureOverlayInitializer();
+        if($this->overlayInit) {
+            $this->overlayInit->initialize();
+        }
+        
+        $this->ensurePluginInitializers();
+        foreach($this->pluginInits as $init) {
+            $init->initialize();
+        }
+    }
+    
+    protected function discoverTypes($pluginPass = false) {
+        $providers = $this->discoverProviders($pluginPass);
+
         foreach($providers as $providerType => $providerArray) {
             if(count($providerArray) == 1) {
                 $this->registerType($providerType, reset($providerArray));
@@ -121,10 +240,8 @@ class ObjectContainer {
         }
         
         // Integrate instanced classes
-        $this->discoverInstanced();
+        $this->discoverInstanced($pluginPass);
         
-        // Overlay our selected registrations from the settings class
-         
         // Explore all classes for annotations, they needn't be Objects
         // Provider objects will be tagged with @F:Provides("Type")
         // If a type has multiple providers registered, one can be tagged with
@@ -133,14 +250,25 @@ class ObjectContainer {
         $this->updateCache();
     }
     
-    protected function discoverProviders() {
+    protected function discoverProviders($pluginPass = false) {
         // Discover classes
         // Use @F:Provides($type) to denote providers
         // Use @F:DefaultProvider to set the default provider, when there's more than one
-        $retArray = array();
+        $retArray = $this->potentialProviders;
+        $returning = array();
         
         $providerClasses = $this->annotationMgr->getClassesWithAnnotation("F:Provides");
         foreach($providerClasses as $class) {
+            if($pluginPass) {
+                if(strpos($class, 'Fossil\Plugins') !== 0) {
+                    continue;
+                }
+            } else {
+                if(strpos($class, 'Fossil\Plugins') === 0) {
+                    continue;
+                }
+            }
+            
             $reflClass = new \ReflectionClass($class);
             if($reflClass->isAbstract()) {
                 continue;
@@ -148,22 +276,38 @@ class ObjectContainer {
             $providesAnno = $this->annotationMgr->getClassAnnotation($class, "F:Provides");
             $type = strtolower($providesAnno->value);
             
+            $returning[$type] = true;
             if(!isset($retArray[$type])) {
                 $retArray[$type] = array();
             }
-            if($this->annotationMgr->classHasAnnotation($class, "F:DefaultProvider")) {
+            if($this->annotationMgr->classHasAnnotation($class, "F:DefaultProvider", false)) {
                 $retArray[$type]['default'] = $class;
             } else {
                 $retArray[$type][] = $class;
             }
         }
+        
+        // Store our list of potential providers
+        $this->potentialProviders = $retArray;
+        // And filter the return array to only return those that have changed this run
+        $retArray = array_intersect_key($this->potentialProviders, $returning);
+        
         return $retArray;
     }
     
-    protected function discoverInstanced() {
+    protected function discoverInstanced($pluginPass = false) {
         // Discover InstancedTypes first
         $typeClasses = $this->annotationMgr->getClassesWithAnnotation("F:InstancedType", false);
         foreach($typeClasses as $class) {
+            if($pluginPass) {
+                if(strpos($class, 'Fossil\Plugins') !== 0) {
+                    continue;
+                }
+            } else {
+                if(strpos($class, 'Fossil\Plugins') === 0) {
+                    continue;
+                }
+            }
             $typeAnno = $this->annotationMgr->getClassAnnotation($class, "F:InstancedType", false);
             $typeName = strtolower($typeAnno->value);
             $impls = $this->discoverInstancedImplementations($class);

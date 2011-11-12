@@ -29,27 +29,41 @@
 
 namespace Fossil;
 
-use Doctrine\Common\EventManager;
-
 /**
- * Description of BaseInit
+ * Description of Init
  *
  * @author predakanga
  */
-abstract class BaseInit extends Object {
+class Init extends BaseInit {
     /**
-     * @F:Inject("ORM")
-     * @var Fossil\ORM
+     * @F:Inject("Settings")
+     * @var Fossil\Settings
      */
-    protected $orm;
+    protected $settings;
+    /**
+     * @F:Inject(type = "Plugins", lazy = true)
+     * @var Fossil\PluginManager
+     */
+    protected $plugins;
     
-    public function initialize() {
-        $evm = $this->orm->getEVM();
-        $this->registerEventSubscribers($evm);
+    public function registerObjects() {
+        if(!$this->settings->isBootstrapped()) {
+            return;
+        }
+        // Look up the chosen drivers for this instance
+        $drivers = $this->settings->get("Fossil", "Drivers", array());
+        if(isset($drivers['database'])) {
+            $this->container->registerType("Database", $drivers['database']['class']);
+        }
+        if(isset($drivers['cache'])) {
+            $this->container->registerType("Cache", $drivers['cache']['class']);
+        }
+        if(isset($drivers['renderer'])) {
+            $this->container->registerType("Renderer", $drivers['renderer']['class']);
+        }
+        // And load the plugins that are enabled
+        $this->plugins->loadEnabledPlugins();
     }
-    
-    protected function registerEventSubscribers(EventManager $evm) {}
-    public function registerObjects() {}
 }
 
 ?>
