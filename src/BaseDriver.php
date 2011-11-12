@@ -55,7 +55,7 @@ abstract class BaseDriver extends Object implements Interfaces\IDriver {
     protected function loadSettings() {
         $driverConfigs = $this->settings->get("Fossil", "Drivers");
         if(isset($driverConfigs[$this->driverType])) {
-            return $driverConfigs[$this->driverType]['config'];
+            return $driverConfigs[$this->driverType]['Config'];
         }
         return null;
     }

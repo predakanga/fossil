@@ -52,14 +52,14 @@ class Init extends BaseInit {
         }
         // Look up the chosen drivers for this instance
         $drivers = $this->settings->get("Fossil", "Drivers", array());
-        if(isset($drivers['database'])) {
-            $this->container->registerType("Database", $drivers['database']['class']);
+        if(isset($drivers['Database'])) {
+            $this->container->registerType("Database", $drivers['Database']['Class'], true, true);
         }
-        if(isset($drivers['cache'])) {
-            $this->container->registerType("Cache", $drivers['cache']['class']);
+        if(isset($drivers['Cache'])) {
+            $this->container->registerType("Cache", $drivers['Cache']['Class'], true, true);
         }
-        if(isset($drivers['renderer'])) {
-            $this->container->registerType("Renderer", $drivers['renderer']['class']);
+        if(isset($drivers['Renderer'])) {
+            $this->container->registerType("Renderer", $drivers['Renderer']['Class'], true, true);
         }
         // And load the plugins that are enabled
         $this->plugins->loadEnabledPlugins();
