@@ -46,8 +46,10 @@ use Fossil\OM,
  * @F:Provides("Renderer")
  */
 abstract class BaseRenderer extends BaseDriver {
-    public function __construct($container, $type = "renderer") {
-        parent::__construct($container, $type);
+    public function __construct($container) {
+        $this->driverType = "Renderer";
+        
+        parent::__construct($container);
     }
     
     abstract public function render($templateName, $templateData);

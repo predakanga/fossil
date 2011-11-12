@@ -47,7 +47,7 @@ interface IDriver {
     static function getForm();
     
     function getConfig();
-    function __construct($container, $driverType);
+    function __construct($container);
 }
 
 ?>

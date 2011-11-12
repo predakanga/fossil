@@ -51,15 +51,9 @@ class Memcached extends BaseCache {
     protected $mc;
     
     protected function getDefaultConfig() {
-        // Grab options from the settings
-        $config = parent::getDefaultConfig();
-        if(!$config) {
-            $config = array('id' => 'fossil',
-                            'servers' => array(array('host' => 'localhost',
-                                                     'port' => 11211)));
-        }
-        
-        return $config;
+        return array('id' => 'fossil',
+                     'servers' => array(array('host' => 'localhost',
+                                              'port' => 11211)));
     }
     
     public static function usable() {
@@ -76,7 +70,7 @@ class Memcached extends BaseCache {
         return OM::Form("MemcachedConfig");
     }
     
-    public function __construct($container, $driverType = "cache") {
+    public function __construct($container) {
         parent::__construct($container);
         
         // Conditionally use a persistent connection

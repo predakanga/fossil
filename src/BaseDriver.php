@@ -37,17 +37,31 @@ namespace Fossil;
 abstract class BaseDriver extends Object implements Interfaces\IDriver {
     protected $config;
     protected $driverType;
+    /**
+     * @F:Inject(type = "Settings", lazy = true)
+     * @var Fossil\Settings
+     */
+    protected $settings;
     
-    public function __construct($container, $driverType) {
+    public function __construct($container) {
         parent::__construct($container);
         
-        $this->driverType = $driverType;
-        $this->config = $this->getDefaultConfig();
+        $this->config = $this->loadSettings();
+        if(!$this->config) {
+            $this->config = $this->getDefaultConfig();
+        }
+    }
+    
+    protected function loadSettings() {
+        $driverConfigs = $this->settings->get("Fossil", "Drivers");
+        if(isset($driverConfigs[$this->driverType])) {
+            return $driverConfigs[$this->driverType]['config'];
+        }
+        return null;
     }
     
     protected function getDefaultConfig() {
-        // TODO: Load from settings
-        return null;
+        return array();
     }
     
     public function getConfig() {

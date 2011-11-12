@@ -46,8 +46,10 @@ use Fossil\BaseDriver,
  * @F:Provides("Database")
  */
 abstract class BaseDatabase extends BaseDriver {
-    public function __construct($container, $type = "database") {
-        parent::__construct($container, $type);
+    public function __construct($container) {
+        $this->driverType = "Database";
+        
+        parent::__construct($container);
     }
     
     abstract public function getPDO();

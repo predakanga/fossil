@@ -72,16 +72,11 @@ class SmartyRenderer extends BaseRenderer {
     public static function getForm() { return $this->_new("Form", "SmartyConfig"); }
     
     protected function getDefaultConfig() {
-        $config = parent::getDefaultConfig();
-        if(!$config) {
-            return array('useTidy' => false);
-        }
-        
-        return $config;
+        return array('useTidy' => false);
     }
     
-    public function __construct($container, $type = "renderer") {
-        parent::__construct($container, $type);
+    public function __construct($container) {
+        parent::__construct($container);
         
         require_once($this->fs->fossilRoot() . D_S . "libs/smarty/distribution/libs/Smarty.class.php");
         $this->smarty = new \Smarty();

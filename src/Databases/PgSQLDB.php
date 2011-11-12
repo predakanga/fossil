@@ -47,7 +47,7 @@ class PgSQLDB extends BaseDatabase {
     public static function getName() { return "PgSQL"; }
     public static function getVersion() { return 1.0; }
     public static function usable() { return extension_loaded('pdo') && in_array("pgsql", \PDO::getAvailableDrivers()); }
-    public static function getForm() { return OM::Form("PgSQLConfig"); }
+    public static function getForm() { return $this->_new("Form", "PgSQLConfig"); }
     
     protected $pdo;
     

@@ -52,21 +52,15 @@ abstract class BaseCache extends BaseDriver {
      */
     protected $core;
     
-    public function __construct($container, $driverType = "cache") {
-        parent::__construct($container, "cache");
-        $this->prefix = OM::getFossilID();
-    }
-    
-    protected function getDefaultConfig() {
-        $cacheOpts = OM::Settings("Fossil", "cache", NULL);
-        if($cacheOpts && isset($cacheOpts['config'])) {
-            return $cacheOpts['config'];
-        }
-        return NULL;
+    public function __construct($container) {
+        $this->driverType = "Cache";
+        
+        parent::__construct($container);
+        $this->prefix = $this->core->getInstanceID();
     }
     
     protected function versionKey($key) {
-        return $key . "_" . $this->core->getVersionID();
+        return $key . "_" . $this->core->getInstanceHash();
     }
     
     public function has($key, $versioned_key = false) {
