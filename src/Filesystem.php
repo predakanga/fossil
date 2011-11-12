@@ -70,7 +70,15 @@ class Filesystem extends Object {
     
     public function __construct($container) {
         parent::__construct($container);
-        $this->core->getAppDetails();
+        
+        $appDetails = $this->core->getAppDetails();
+        if($appDetails) {
+            $this->appRoot = $appDetails['path'];
+        }
+        $overlayDetails = $this->core->getOverlayDetails();
+        if($overlayDetails && isset($overlayDetails['path'])) {
+            $this->overlayRoot = $overlayDetails['path'];
+        }
     }
     
     /**

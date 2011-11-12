@@ -51,7 +51,7 @@ class Core extends Object {
     protected $appDetails = null;
     protected $overlayDetails = null;
     /**
-     * @F:Inject("Dispatcher")
+     * @F:Inject(type = "Dispatcher", lazy = true)
      * @var Fossil\Dispatcher
      */
     protected $dispatcher;
@@ -104,10 +104,10 @@ class Core extends Object {
         if(!$this->instanceName) {
             $this->instanceName = "fossil";
             if($this->appDetails) {
-                $this->instanceName .= "_" . $this->appDetails['name'];
+                $this->instanceName .= "_" . $this->appDetails['ns'];
             }
             if($this->overlayDetails) {
-                $this->instanceName .= "_" . $this->overlayDetails['name'];
+                $this->instanceName .= "_" . $this->overlayDetails['ns'];
             }
         }
         return $this->instanceName;
@@ -123,8 +123,23 @@ class Core extends Object {
         return $devHash;
     }
     
-    public static function create() {
-        $newContainer = new ObjectContainer;
+    public static function create($appNS = null, $appPath = null) {
+        global $overlayNamespace, $overlayPath;
+        
+        $appDetails = null;
+        $overlayDetails = null;
+        if($appNS) {
+            $appDetails = array('ns' => $appNS, 'path' => $appPath);
+            // Add the target to the autoloader
+            Autoloader::addNamespacePath($appNS, $appPath);
+        }
+        if($overlayNamespace) {
+            $overlayDetails = array('ns' => $overlayNamespace, 'path' => $overlayPath);
+            // Add the target to the autoloader
+            Autoloader::addNamespacePath($overlayNamespace, $overlayPath);
+        }
+        
+        $newContainer = new ObjectContainer($appDetails, $overlayDetails);
         return $newContainer->get("Core");
     }
 }

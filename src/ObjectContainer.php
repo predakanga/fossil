@@ -51,7 +51,7 @@ class ObjectContainer {
     private $overlayInit;
     private $pluginInits;
     
-    public function __construct($overlayDetails = null, $appDetails = null) {
+    public function __construct($appDetails = null, $overlayDetails = null) {
         // Set up the defaults
         $this->setupDefaults();
 
@@ -110,14 +110,14 @@ class ObjectContainer {
     
     protected function uncachedInit() {
         $this->annotationMgr = $this->getLazyObject("AnnotationManager");
+        // Create the Filesystem object and rescan annotations, to pick up overlay objects
+        $this->get("Filesystem");
+        $this->annotationMgr->rescanAnnotations();
         $this->discoverTypes();
 
         // By this point, we do not have any preference-specific classes loaded
         // Call the various applications' init classes to set these up
         $this->appSpecificOneTimeInit();
-        \Doctrine\Common\Util\Debug::dump($this);
-        var_dump($this->get("Plugins")->getEnabledPlugins());
-        die();
     }
     
     protected function ensureFossilInitializer() {
@@ -240,7 +240,7 @@ class ObjectContainer {
         }
         
         // Integrate instanced classes
-        $this->discoverInstanced($pluginPass);
+        $this->discoverInstanced();
         
         // Explore all classes for annotations, they needn't be Objects
         // Provider objects will be tagged with @F:Provides("Type")
@@ -295,19 +295,10 @@ class ObjectContainer {
         return $retArray;
     }
     
-    protected function discoverInstanced($pluginPass = false) {
+    protected function discoverInstanced() {
         // Discover InstancedTypes first
         $typeClasses = $this->annotationMgr->getClassesWithAnnotation("F:InstancedType", false);
         foreach($typeClasses as $class) {
-            if($pluginPass) {
-                if(strpos($class, 'Fossil\Plugins') !== 0) {
-                    continue;
-                }
-            } else {
-                if(strpos($class, 'Fossil\Plugins') === 0) {
-                    continue;
-                }
-            }
             $typeAnno = $this->annotationMgr->getClassAnnotation($class, "F:InstancedType", false);
             $typeName = strtolower($typeAnno->value);
             $impls = $this->discoverInstancedImplementations($class);
@@ -341,8 +332,9 @@ class ObjectContainer {
             $name = strtolower($name);
             // Ensure we don't already have an instance by this name for this type
             if(isset($retArray[$name])) {
-                throw new \Exception("Instanced name collision between " . $retArray[$name] .
-                                     " and " . $implClass . ". Assign one of them a different name with @F:Instanced");
+                // TODO: Create a hierarchy here of priority
+//                throw new \Exception("Instanced name collision between " . $retArray[$name] .
+//                                     " and " . $implClass . ". Assign one of them a different name with @F:Instanced");
             }
             // Otherwise, store it
             $retArray[$name] = $implClass;
