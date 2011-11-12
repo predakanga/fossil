@@ -35,6 +35,10 @@
 
 namespace Fossil;
 
+// Set up the autoloader
+require_once(__DIR__ . DIRECTORY_SEPARATOR . "Autoloader.php");
+Autoloader::registerAutoloader();
+
 /**
  * The Fossil startup class
  * 
@@ -156,10 +160,6 @@ class Fossil {
         // First thing's first, check that the environment is okay for Fossil
         if(($mode & self::AssertionsAndChecks) && !self::checkEnvironment())
             return NULL;
-
-        // Next, set up the autoloaders
-        require_once(__DIR__ . DIRECTORY_SEPARATOR . "Autoloader.php");
-        Autoloader::registerAutoloader();
 
         if(self::$app)
             OM::setApp(self::$app[0], self::$app[1]);
