@@ -42,7 +42,6 @@ use Fossil\OM,
  * Description of SolrSearchBackend
  *
  * @author predakanga
- * @F:Object(type = "Search", name = "Solr")
  */
 class SolrSearchBackend extends BaseSearchBackend {
     /** @var SolrClient */
@@ -99,8 +98,9 @@ class SolrSearchBackend extends BaseSearchBackend {
         return $idxName . "_" . $entity->{$idField};
     }
     
-    public function __construct($config = null) {
-        parent::__construct($config);
+    public function __construct($container) {
+        parent::__construct($container);
+        
         $this->solr = new SolrClient($this->config);
     }
     public function clearIndexes($indexes) {

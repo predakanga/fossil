@@ -39,7 +39,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__ . D_S . "libs");
  * Description of ZendLuceneSearch
  *
  * @author predakanga
- * @F:Object(type = "Search", name = "ZendLucene")
+ * @F:DefaultProvider
  */
 class ZendLuceneSearchBackend extends BaseSearchBackend {
     protected $indexes = array();
@@ -62,8 +62,9 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
         return array();
     }
     
-    public function __construct($config = null) {
-        parent::__construct($config);
+    public function __construct($container) {
+        parent::__construct($container);
+        
         require_once("Zend/Search/Lucene.php");
         require_once("StandardAnalyzer/Analyzer/Standard/English.php");
         // Set the default analyzer to the stemming, english stop-words analyzer

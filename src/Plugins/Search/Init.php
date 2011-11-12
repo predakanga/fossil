@@ -42,10 +42,6 @@ class Init extends BaseInit {
     protected function registerEventSubscribers(EventManager $evm) {
         $evm->addEventSubscriber(new Subscribers\SearchSubscriber());
     }
-    
-    protected function registerObjectFactories() {
-        ObjectFactory::registerType("Search", "ZendLucene");
-    }
 }
 
 ?>

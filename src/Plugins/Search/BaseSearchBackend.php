@@ -35,8 +35,14 @@ use Fossil\BaseDriver;
  * Description of BaseSearchBackend
  *
  * @author predakanga
+ * @F:Provides("Search")
  */
 abstract class BaseSearchBackend extends BaseDriver {
+    public function __construct($container) {
+        $this->driverType = "Search";
+        parent::__construct($container);
+    }
+    
     abstract public function clearIndexes($indexes);
     abstract public function indexEntity(ISearchable $entity);
     abstract public function removeEntity(ISearchable $entity);

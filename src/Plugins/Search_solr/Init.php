@@ -40,8 +40,8 @@ use Fossil\OM,
  * @author predakanga
  */
 class Init extends BaseInit {
-    protected function registerObjectFactories() {
-        ObjectFactory::registerType("Search", "Solr");
+    public function registerObjects() {
+        $this->container->registerType("Search", "Fossil\Plugins\Search_solr\SolrSearchBackend");
     }
 }
 
