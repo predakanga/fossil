@@ -42,6 +42,7 @@ use Fossil\OM;
  * Description of BaseForm
  *
  * @author predakanga
+ * @F:InstancedType("Form")
  */
 abstract class BaseForm {
     protected $form_identifier;
