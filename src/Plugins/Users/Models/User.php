@@ -129,11 +129,12 @@ class User extends \Fossil\Models\Model {
         return $this->hashPassword($value) == $this->password;
     }
     
-    public static function me() {
+    public static function me($container) {
         // TODO: Add cookie support
+        $session = $container->get("Session");
         $haveCookie = false;
-        if(isset(OM::Session("FossilAuth")->userID)) {
-            $user = self::find(OM::Session("FossilAuth")->userID);
+        if(isset($session->get("FossilAuth")->userID)) {
+            $user = self::find($container->get("ORM"), $session->get("FossilAuth")->userID);
             return $user;
         } else if($haveCookie) {
             

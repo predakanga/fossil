@@ -40,7 +40,7 @@ use Fossil\Plugins\Users\Models\User;
 class SmartyRenderer extends \Fossil\Renderers\SmartyRenderer {
     protected function setDefaultVariables($tpl) {
         parent::setDefaultVariables($tpl);
-        $tpl->assign('me', User::me());
+        $tpl->assign('me', User::me($this->container));
     }
 }
 
