@@ -33,16 +33,21 @@ use Doctrine\DBAL\Schema\Comparator,
     Doctrine\DBAL\Schema\Schema,
     Doctrine\ORM\Tools\SchemaTool,
     Doctrine\ORM\EntityManager,
+    Doctrine\Common\Util\Debug,
     Fossil\OM;
 
 class CustomComparator extends Comparator {
-    protected $retainDeleted;
+    protected $__em;
     public $newModels = array();
+    
+    public function __construct(EntityManager $em) {
+        $this->__em = $em;
+    }
     
     public function compare(Schema $fromSchema, Schema $toSchema) {
         $diff = parent::compare($fromSchema, $toSchema);
-        
-        $classes = OM::ORM()->getEM()->getMetadataFactory()->getAllMetadata();
+
+        $classes = $this->__em->getMetadataFactory()->getAllMetadata();
         foreach($diff->newTables as $newTable) {
             $tableName = $newTable->getName();
             foreach($classes as $class) {
@@ -95,7 +100,7 @@ class CustomSchemaTool extends SchemaTool {
         $fromSchema = $sm->createSchema();
         $toSchema = $this->getSchemaFromMetadata($classes);
 
-        $comparator = new CustomComparator($this->__retainDeleted);
+        $comparator = new CustomComparator($this->__em);
         $schemaDiff = $comparator->compare($fromSchema, $toSchema);
         $this->newModels = $comparator->newModels;
 

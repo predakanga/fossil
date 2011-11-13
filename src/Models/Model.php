@@ -51,7 +51,7 @@ abstract class Model extends Object {
      * @F:Inject("ORM")
      * @var Fossil\ORM
      */
-    private $orm;
+    protected $orm;
     
     private function getMetadata() {
         return $this->orm->getEM()->getClassMetadata(get_class($this));

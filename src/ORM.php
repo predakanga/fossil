@@ -45,7 +45,8 @@ use Fossil\Object,
     Doctrine\DBAL\Types\Type,
     Doctrine\ORM\Tools\SchemaTool,
     Doctrine\ORM\EntityManager,
-    Doctrine\Common\Annotations\AnnotationRegistry;
+    Doctrine\Common\Annotations\AnnotationRegistry,
+    Doctrine\Common\Util\Debug;
 
 /**
  * Description of ORM
@@ -108,8 +109,8 @@ class ORM extends Object {
         $this->driver = CustomAnnotationDriver::create();
         
         foreach($this->fs->roots(false) as $root) {
-            if(is_dir($root . D_S . "models"))
-                $this->driver->addPaths((array)($root . D_S . "models"));
+            if(is_dir($root . D_S . "Models"))
+                $this->driver->addPaths((array)($root . D_S . "Models"));
         }
         
         $config->setMetadataDriverImpl($this->driver);
@@ -152,7 +153,7 @@ class ORM extends Object {
         }
     }
     
-    public function registerPaths() {
+    public function registerPluginPaths() {
         $pluginsWithModels = array_filter($this->fs->pluginRoots(), function($root) {
             return is_dir($root . D_S . "Models");
         });
@@ -240,7 +241,7 @@ class ORM extends Object {
             if($annos) {
                 $modelData[$model] = array();
                 foreach($annos as $anno) {
-                    $modelData[$model] = array_merge($modelData[$model], $anno->getData());
+                    $modelData[$model] = array_merge($modelData[$model], $anno->getData($this->container));
                 }
             }
         }

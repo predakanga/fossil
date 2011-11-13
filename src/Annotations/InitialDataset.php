@@ -47,11 +47,11 @@ class InitialDataset extends Annotation {
     public $format = "yml";
     public $file;
     
-    public function getData() {
+    public function getData($container) {
         $file = $this->file ?: $this->value;
         
         // It might be in any of the roots, so try each
-        foreach(array_reverse(OM::FS()->roots(false)) as $root) {
+        foreach(array_reverse($container->get("Filesystem")->roots(false)) as $root) {
             if(file_exists($root . D_S . $file)) {
                 $file = $root . D_S . $file;
                 break;
