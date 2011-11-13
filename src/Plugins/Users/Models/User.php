@@ -105,15 +105,15 @@ class User extends \Fossil\Models\Model {
     /** @OneToMany(targetEntity="PrivateMessageConversationParticipant", mappedBy="user") */
     protected $conversations;
     
-    public function __construct() {
-        parent::__construct();
+    public function __construct($container) {
+        parent::__construct($container);
         $this->userClass = $this->defaultUserclass();
         $this->joinDate = new \DateTime();
         $this->birthday = new \DateTime("1950-01-01");
     }
     
     protected function defaultUserclass() {
-        return UserClass::findOneBy(array("name" => "Users"));
+        return UserClass::findOneBy($this->orm, array("name" => "Users"));
     }
     
     protected function hashPassword($value) {

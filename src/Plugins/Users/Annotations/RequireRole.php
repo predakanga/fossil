@@ -48,8 +48,8 @@ use Fossil\Plugins\Users\Models\User,
 class RequireRole extends \Fossil\Annotations\Compilation {
     public function call($funcname, $args, $compileArgs) {
         $found = false;
-        if(User::me()) {
-            foreach(User::me()->getRoles() as $role) {
+        if(User::me($this->container)) {
+            foreach(User::me($this->container)->getRoles() as $role) {
                 if($role->name == $compileArgs['value'])
                     $found = true;
                 break;
