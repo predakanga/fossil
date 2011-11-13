@@ -29,6 +29,8 @@
 
 namespace Fossil;
 
+use Doctrine\Common\Util\Debug;
+
 /**
  * Description of ObjectContainer
  *
@@ -62,7 +64,7 @@ class ObjectContainer {
         if($appDetails) {
             $this->get("Core")->setAppDetails($appDetails);
         }
-        
+
         // Then check for local DI cache
         if(!$this->cachedInit()) {
             $this->uncachedInit();
@@ -178,16 +180,17 @@ class ObjectContainer {
         if($this->fossilInit) {
             // Also loads existing plugins
             $this->fossilInit->registerObjects();
+            $this->fossilInit->setupPlugins();
         }
         
         $this->ensureAppInitializer();
         if($this->appInit) {
-            $this->appInit->registerObjects();
+            $this->appInit->oneTimeInit();
         }
         
         $this->ensureOverlayInitializer();
         if($this->overlayInit) {
-            $this->overlayInit->registerObjects();
+            $this->overlayInit->oneTimeInit();
         }
 
         // Now that plugins are enabled, update annotations,
@@ -198,30 +201,34 @@ class ObjectContainer {
         // And finally, run per-plugin initialization
         $this->ensurePluginInitializers();
         foreach($this->pluginInits as $init) {
-            $init->registerObjects();
+            $init->oneTimeInit();
         }
+        // After all classes are known, etc, make sure the schemas are updated
+        $this->get("ORM")->ensureSchema();
+        // TODO: Trigger compilation here
     }
     
     protected function appSpecificEveryTimeInit() {
         // Run each layer's initializers$this->ensureFossilInitializer();
         if($this->fossilInit) {
             // Also loads existing plugins
-            $this->fossilInit->initialize();
+            $this->fossilInit->everyTimeInit();
+            $this->fossilInit->setupPlugins();
         }
         
         $this->ensureAppInitializer();
         if($this->appInit) {
-            $this->appInit->initialize();
+            $this->appInit->everyTimeInit();
         }
         
         $this->ensureOverlayInitializer();
         if($this->overlayInit) {
-            $this->overlayInit->initialize();
+            $this->overlayInit->everyTimeInit();
         }
         
         $this->ensurePluginInitializers();
         foreach($this->pluginInits as $init) {
-            $init->initialize();
+            $init->everyTimeInit();
         }
     }
     
