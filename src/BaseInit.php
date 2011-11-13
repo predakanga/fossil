@@ -38,12 +38,16 @@ use Doctrine\Common\EventManager;
  */
 abstract class BaseInit extends Object {
     /**
-     * @F:Inject("ORM")
+     * @F:Inject(type = "ORM", lazy = true)
      * @var Fossil\ORM
      */
     protected $orm;
     
-    public function initialize() {
+    public function oneTimeInit() {
+        $this->registerObjects();
+    }
+    
+    public function everyTimeInit() {
         $evm = $this->orm->getEVM();
         $this->registerEventSubscribers($evm);
     }

@@ -45,6 +45,7 @@ class Init extends BaseInit {
      * @var Fossil\PluginManager
      */
     protected $plugins;
+    protected $pluginsSetup = false;
     
     public function registerObjects() {
         if(!$this->settings->isBootstrapped()) {
@@ -61,8 +62,15 @@ class Init extends BaseInit {
         if(isset($drivers['Renderer'])) {
             $this->container->registerType("Renderer", $drivers['Renderer']['Class'], true, true);
         }
-        // And load the plugins that are enabled
+    }
+    
+    public function setupPlugins() {
+        if($this->pluginsSetup) {
+            return;
+        }
         $this->plugins->loadEnabledPlugins();
+        $this->orm->registerPluginPaths();
+        $this->pluginsSetup = true;
     }
 }
 
