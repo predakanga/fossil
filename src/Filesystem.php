@@ -125,9 +125,14 @@ class Filesystem extends Object {
     }
     
     public function tempDir() {
-        if(!$this->settings->isBootstrapped())
-            return sys_get_temp_dir();
-        if(!$this->tempDir) {
+        if(!$this->settings->isBootstrapped()) {
+            $tempDir = sys_get_temp_dir() . D_S . $this->core->getInstanceID();
+            // Ensure that it exists
+            if(!file_exists($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+            return $tempDir;
+        } else if(!$this->tempDir) {
             $tempDir = $this->settings->get("Fossil", "temp_dir", sys_get_temp_dir());
             $tempDir .= D_S . $this->core->getInstanceID();
             
