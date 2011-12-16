@@ -36,16 +36,21 @@
 
 namespace Fossil\Session;
 
+use Fossil\Object;
+
 /**
  * Description of Session
  *
  * @author predakanga
- * @F:Object("Session")
+ * @F:Provides("Session")
+ * @F:DefaultProvider
  */
-class Session {
+class Session extends Object {
     private $namespaces = array();
     
-    public function __construct() {
+    public function __construct($container) {
+        parent::__construct($container);
+        
         session_start();
     }
     public function &get($namespace) {
