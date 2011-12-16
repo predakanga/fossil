@@ -60,6 +60,10 @@ class TemplateResponse extends RenderableResponse {
         $this->responseCode = $code;
     }
     
+    public function getTemplateName() {
+        return $this->templateName;
+    }
+    
     public function render() {
         parent::render();
         $this->renderer->render($this->templateName, $this->templateData);
