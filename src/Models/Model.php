@@ -154,7 +154,7 @@ abstract class Model extends Object {
     {
         // First argument must be ORM
         $orm = array_shift($arguments);
-        assert($orm instanceof \Fossil\ORM);
+        assert($orm instanceof \Fossil\ORM || $orm instanceof \Fossil\LazyObject);
         return call_user_func_array(
             array($orm->getEM()->getRepository(get_called_class()), $method),
             $arguments

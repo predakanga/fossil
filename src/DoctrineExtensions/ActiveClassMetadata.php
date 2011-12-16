@@ -33,6 +33,7 @@ class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
         $this->reflClass = new ActiveEntityReflectionClass($entityName);
         
         $this->diFunc = $this->reflClass->getMethod("setupObjects");
+        $this->diFunc->setAccessible(true);
         $this->namespace = $this->reflClass->getNamespaceName();
         $this->table['name'] = $this->reflClass->getShortName();
     }
@@ -53,6 +54,7 @@ class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
         // Restore ReflectionClass and properties
         $this->reflClass = new ActiveEntityReflectionClass($this->name);
         $this->diFunc = $this->reflClass->getMethod("setupObjects");
+        $this->diFunc->setAccessible(true);
 
         foreach ($this->fieldMappings as $field => $mapping) {
             if (isset($mapping['declared'])) {
@@ -80,7 +82,7 @@ class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
         if($this->diContainer) {
             $newInst->container = $this->diContainer;
             // And setup the objects
-            $this->diFunc->invokeArgs($newInst);
+            $this->diFunc->invokeArgs($newInst, array());
         }
         return $newInst;
     }

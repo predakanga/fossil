@@ -49,6 +49,7 @@ class Object {
     }
     
     public function __sleep() {
+        // TODO: Check whether we even need a __sleep
         // Pre-sleep, discard all the objects managed by the ObjectContainer
         foreach($this->determineObjects() as $obj) {
             $this->unstoreObject($location);
@@ -57,7 +58,7 @@ class Object {
     
     public function __wakeup() {
         // After wakeup, set up the object again
-        $this->setupObjects();
+//        $this->setupObjects();
     }
     
     protected function determineObjects() {
