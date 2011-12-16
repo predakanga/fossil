@@ -39,6 +39,7 @@ namespace Fossil\Annotations;
 use Fossil\Autoloader,
     Fossil\Object,
     \Doctrine\Common\Annotations\AnnotationReader,
+    \Doctrine\Common\Annotations\CachedReader,
     \Doctrine\Common\Annotations\AnnotationRegistry,
     \ReflectionClass;
 
@@ -51,6 +52,7 @@ class AnnotationManager extends Object {
      * @var AnnotationReader
      */
     private $reader;
+    private $realReader;
     /**
      * @var string[]
      */
@@ -70,7 +72,7 @@ class AnnotationManager extends Object {
     
     private function registerNamespaceAlias($namespace, $alias) {
         $this->namespaces[$alias] = $namespace;
-        $this->reader->setAnnotationNamespaceAlias($namespace, $alias);
+        $this->realReader->setAnnotationNamespaceAlias($namespace, $alias);
     }
     
     private function resolveName($annoName) {
@@ -179,15 +181,17 @@ class AnnotationManager extends Object {
     
     private function getReader() {
         if(!$this->reader) {
-            $this->reader = new AnnotationReader();
+            $this->realReader = new AnnotationReader();
         
             // Tweak the reader to use our own implementation of PhpParser
-            $reflClass = new \ReflectionClass($this->reader);
+            $reflClass = new \ReflectionClass($this->realReader);
             $reflProp = $reflClass->getProperty("phpParser");
             $reflProp->setAccessible(true);
-            $reflProp->setValue($this->reader, new \Fossil\DoctrineExtensions\TokenizedPhpParser());
+            $reflProp->setValue($this->realReader, new \Fossil\DoctrineExtensions\TokenizedPhpParser());
         
-            $this->reader->setIgnoreNotImportedAnnotations(true);
+            $this->realReader->setIgnoreNotImportedAnnotations(true);
+            
+            $this->reader = new CachedReader($this->realReader, new \Doctrine\Common\Cache\ApcCache());
             $this->registerNamespaceAlias("\\Fossil\\Annotations\\", "F");
         }
         return $this->reader;
