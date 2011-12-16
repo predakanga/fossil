@@ -86,7 +86,14 @@ class ORM extends Object {
         // Load up custom types
         $types = array();
         foreach(glob($this->fs->fossilRoot() . D_S . "DoctrineExtensions" . D_S . "Types" . D_S . "*.php") as $type) {
-            $types += require_once($type);
+            require_once($type);
+        }
+        
+        // Grab the list of custom types
+        foreach(get_declared_classes() as $class) {
+            if(strpos($class, 'DoctrineExtensions\Types\\')) {
+                $types += call_user_func(array($class, 'getRegisteredTypes'));
+            }
         }
         
         // Use basic default EM for now
@@ -147,7 +154,8 @@ class ORM extends Object {
         $realConn = $this->em->getConnection();
         $platform = $realConn->getDatabasePlatform();
         foreach($types as $typeName => $typeClass) {
-            Type::addType($typeName, $typeClass);
+            if(!Type::hasType($typeName))
+                Type::addType($typeName, $typeClass);
             // Convention - our Doctrine type names must map directly to DB type names
             $platform->registerDoctrineTypeMapping($typeName, $typeName);
         }

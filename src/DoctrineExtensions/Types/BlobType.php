@@ -74,8 +74,11 @@ class BlobType extends Type {
     {
         return self::BLOB;
     }
+    
+    public static function getRegisteredTypes() {
+        return array('blob' => "Fossil\\DoctrineExtensions\\Types\\BlobType",
+                     'bytea' => "Fossil\\DoctrineExtensions\\Types\\BlobType");
+    }
 }
 
-return array('blob' => "Fossil\\DoctrineExtensions\\Types\\BlobType",
-             'bytea' => "Fossil\\DoctrineExtensions\\Types\\BlobType");
 ?>
