@@ -74,11 +74,12 @@ class Dispatcher extends Object {
         array_push($this->reqStack, $req);
         
         ob_start();
-//        try {
+        $response = null;
+        try {
             $response = $this->_run($req, $react);
-//        } catch(\Exception $e) {
-//            $this->handleRequestException($e, $req, $react);
-//        }
+        } catch(\Exception $e) {
+            $response = $this->handleRequestException($e, $req, $react);
+        }
         ob_end_flush();
         
         array_pop($this->reqStack);
@@ -90,16 +91,16 @@ class Dispatcher extends Object {
         if($e instanceof NoSuchTargetException) {
             $fourohfourReq = $this->_new("Request", "Internal", "error", "404");
             ob_clean();
-            $this->_run($fourohfourReq);
+            return $this->_run($fourohfourReq, $react);
         } elseif($e instanceof \PDOException) {
             $errorReq = $this->_new("Request", "Internal", "error", "db", array('e' => $e));
             ob_clean();
-            $this->_run($errorReq);
+            return $this->_run($errorReq, $react);
         } else {
             // Base request handling - provides nothing useful
             $errorReq = $this->_new("Request", "Internal", "error", "show", array('e' => $e));
             ob_clean();
-            $this->_run($errorReq);
+            return $this->_run($errorReq, $react);
         }
     }
     
@@ -107,8 +108,10 @@ class Dispatcher extends Object {
         // To allow HMVC style requests, return the response early if we're not to react
         $response = $req->run();
         // Flush immediately after running each request, so that we can grab any errors
-        if($this->orm->getEM()->isOpen())
-            $this->orm->flush();
+        if($this->orm->_isReady()) {
+            if($this->orm->getEM()->isOpen())
+                $this->orm->flush();
+        }
         
         if(!$react)
             return $response;
@@ -118,10 +121,11 @@ class Dispatcher extends Object {
         } else if($response instanceof ActionableResponse) {
             $response->runAction();
         }
+        return $response;
     }
     
     public function getTopRequest() {
-        return $this->reqStack[0];
+        return reset($this->reqStack);
     }
     
     public function getCurrentRequest() {
