@@ -64,7 +64,7 @@ abstract class AutoController extends BaseController {
         // Decide what action to use
         $action = $req->action ?: $this->indexAction();
         // Compute the method name
-        $actionMethod = "run" . ucfirst(strtolower($action));
+        $actionMethod = "run" . ucfirst($action);
         
         if(!method_exists($this, $actionMethod))
             throw new NoSuchActionException($req->controller, $action);
