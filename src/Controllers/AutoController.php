@@ -54,11 +54,6 @@ abstract class AutoController extends BaseController {
      * @var Fossil\Forms\FormManager
      */
     protected $forms;
-    /**
-     * @F:Inject(type = "ORM", lazy = true)
-     * @var Fossil\ORM
-     */
-    protected $orm;
     
     public function run(\Fossil\Requests\BaseRequest $req) {
         // Decide what action to use
@@ -117,7 +112,7 @@ abstract class AutoController extends BaseController {
         // If the type hint is a model...
         if($paramType->isSubclassOf("Fossil\Models\Model")) {
             // Look it up by primary key, which the value should be the value of
-            $retval = call_user_func_array(array($paramTypeName, "find"), array($this->orm, $value));
+            $retval = call_user_func_array(array($paramTypeName, "find"), array($this->container, $value));
             if(!$retval && !$reflParam->isOptional()) {
                 throw new \Fossil\Exceptions\NoSuchInstanceException("Unknown " . $reflParam->getName() . " specified");
             }
