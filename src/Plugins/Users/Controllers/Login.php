@@ -54,7 +54,7 @@ class Login extends \Fossil\Controllers\AutoController {
     
     public function runLogin(LoginForm $loginForm) {
         if($loginForm->isSubmitted()) {
-            $user = UserModel::findOneBy(array('name' => $loginForm->user));
+            $user = UserModel::findOneBy($this->container, array('name' => $loginForm->user));
             if(!$user || !$user->verifyPassword($loginForm->pass)) {
                 return OM::obj("Responses", "Template")->create("fossil:login", array('error' => 'Invalid user/pass'));
             }
@@ -75,7 +75,7 @@ class Login extends \Fossil\Controllers\AutoController {
     
     public function runSignup(SignupForm $signupForm) {
         if($signupForm->isSubmitted() && $signupForm->isValid()) {
-            $user = UserModel::findOneBy(array('name' => $signupForm->name));
+            $user = UserModel::findOneBy($this->container, array('name' => $signupForm->name));
             if($user)
                 return OM::obj("Responses", "Template")->create("fossil:signup", array('error' => 'Username already in use'));
             $user = $this->createUser();

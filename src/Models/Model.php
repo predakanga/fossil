@@ -152,9 +152,10 @@ abstract class Model extends Object {
     
     public static function __callStatic($method, $arguments)
     {
-        // First argument must be ORM
-        $orm = array_shift($arguments);
-        assert($orm instanceof \Fossil\ORM || $orm instanceof \Fossil\LazyObject);
+        // First argument must be container
+        $container = array_shift($arguments);
+        assert($container instanceof \Fossil\ObjectManager);
+        $orm = $container->get("ORM");
         return call_user_func_array(
             array($orm->getEM()->getRepository(get_called_class()), $method),
             $arguments
@@ -163,7 +164,6 @@ abstract class Model extends Object {
     
     public static function createFromArray($diContainer, $data) {
         $model = new static($diContainer);
-        $orm = $diContainer->get("ORM");
         $classMetadata = $orm->getEM()->getClassMetadata(get_called_class());
         
         foreach($data as $key => $value) {
@@ -175,7 +175,7 @@ abstract class Model extends Object {
                     $collection = new \Doctrine\Common\Collections\ArrayCollection();
 
                     foreach($value as $targetData) {
-                        $targetEntity = $targetClass::findOneBy($orm, $targetData);
+                        $targetEntity = $targetClass::findOneBy($diContainer, $targetData);
                         if(!$targetEntity) {
                             throw new \Exception("Required entity not found: $targetClass (" . var_export($targetData, true) . ")");
                         }
@@ -184,7 +184,7 @@ abstract class Model extends Object {
 
                     $model->set($key, $collection);
                 } else {
-                    $targetEntity = $targetClass::findOneBy($orm, $value);
+                    $targetEntity = $targetClass::findOneBy($diContainer, $value);
                     if(!$targetEntity) {
                         throw new \Exception("Required entity not found: $targetClass (" . var_export($targetData, true) . ")");
                     }

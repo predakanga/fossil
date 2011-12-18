@@ -113,7 +113,7 @@ class User extends \Fossil\Models\Model {
     }
     
     protected function defaultUserclass() {
-        return UserClass::findOneBy($this->orm, array("name" => "Users"));
+        return UserClass::findOneBy($this->container, array("name" => "Users"));
     }
     
     protected function hashPassword($value) {
@@ -134,7 +134,7 @@ class User extends \Fossil\Models\Model {
         $session = $container->get("Session");
         $haveCookie = false;
         if(isset($session->get("FossilAuth")->userID)) {
-            $user = self::find($container->get("ORM"), $session->get("FossilAuth")->userID);
+            $user = self::find($container, $session->get("FossilAuth")->userID);
             return $user;
         } else if($haveCookie) {
             

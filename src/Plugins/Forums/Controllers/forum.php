@@ -71,7 +71,7 @@ class Forum extends \Fossil\Controllers\AutoController {
     
     public function runNewTopic(NewTopic $form) {
         if($form->isSubmitted() && $form->isValid()) {
-            $forum = ForumModel::find($form->fid);
+            $forum = ForumModel::find($this->container, $form->fid);
             if(!$forum)
                 throw new NoSuchInstanceException("Subforum not found");
             // Create the new topic
@@ -104,7 +104,7 @@ class Forum extends \Fossil\Controllers\AutoController {
             // Show the user an appropriate message
             die("Form was invalid");
         }
-        $topic = ForumTopic::find($form->tid);
+        $topic = ForumTopic::find($this->container, $form->tid);
         if(!$topic) {
             throw new NoSuchInstanceException("Topic not found");
         }

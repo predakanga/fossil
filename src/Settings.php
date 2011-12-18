@@ -90,7 +90,7 @@ class Settings extends Object {
     protected function loadSectionSettings($section) {
         if(!$this->orm->_isReady())
             return;
-        $settings = Setting::findBySection($this->orm, $section);
+        $settings = Setting::findBySection($this->container, $section);
         if(!isset($this->store[$section]))
             $this->store[$section] = array();
         foreach($settings as $setting) {
@@ -111,7 +111,7 @@ class Settings extends Object {
             $this->loadSectionSettings($section);
         $this->store[$section][$setting] = $value;
         // Persist to the DB as well
-        $settingModel = Setting::findOneBy($this->orm, array('section' => $section, 'name' => $setting));
+        $settingModel = Setting::findOneBy($this->container, array('section' => $section, 'name' => $setting));
         if(!$settingModel) {
             $settingModel = new Setting($this->container);
             $settingModel->section = $section;
