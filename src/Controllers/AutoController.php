@@ -79,10 +79,6 @@ abstract class AutoController extends BaseController {
     }
     
     protected function resolveArguments($method, $args) {
-        // If the input is empty, return immediately
-        if(count($args) == 0) {
-            return array();
-        }
         $args = array_change_key_case($args, CASE_LOWER);
         $outputArgs = array();
         
@@ -121,7 +117,11 @@ abstract class AutoController extends BaseController {
         // If the type hint is a model...
         if($paramType->isSubclassOf("Fossil\Models\Model")) {
             // Look it up by primary key, which the value should be the value of
-            return call_user_func_array(array($paramTypeName, "find"), array($this->orm, $value));
+            $retval = call_user_func_array(array($paramTypeName, "find"), array($this->orm, $value));
+            if(!$retval && !$reflParam->isOptional()) {
+                throw new \Fossil\Exceptions\NoSuchInstanceException("Unknown " . $reflParam->getName() . " specified");
+            }
+            return $retval;
         } elseif($paramType->isSubclassOf("Fossil\Forms\BaseForm")) {
             return $this->forms->get($paramTypeName);
         }
