@@ -65,6 +65,16 @@ class SmartyRenderer extends BaseRenderer {
      * @var Fossil\Dispatcher
      */
     protected $dispatcher;
+    /**
+     * @F:Inject("FormManager")
+     * @var Fossil\Forms\FormManager
+     */
+    protected $forms;
+    /**
+     * @F:Inject("ErrorManager")
+     * @var Fossil\ErrorManager
+     */
+    protected $errorMgr;
     
     public static function getName() { return "Smarty"; }
     public static function getVersion() { return 1.0; }
@@ -102,7 +112,7 @@ class SmartyRenderer extends BaseRenderer {
     }
     
     protected function setDefaultVariables($tpl) {
-//        $tpl->assign('errors', OM::Error()->getLog());
+        $tpl->assign('errors', $this->errorMgr->getLog());
         $tpl->assign('now', new \DateTime());
     }
     
@@ -142,7 +152,7 @@ class SmartyRenderer extends BaseRenderer {
             if($tag[0] == "multiform")
                 $data['multiform'] = true;
         }
-        $form = $this->_new("Form", $params['name']);
+        $form = $this->forms->get($params['name']);
         
         $data['method'] = "post";
         if(isset($params['method']))
