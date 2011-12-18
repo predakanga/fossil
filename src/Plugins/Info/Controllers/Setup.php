@@ -35,7 +35,7 @@ namespace Fossil\Plugins\Info\Controllers;
  * @author predakanga
  */
 class Setup extends \Fossil\Controllers\Setup {
-    public function runInfo($args) {
+    public function runInfo() {
         phpinfo();
     }
 }

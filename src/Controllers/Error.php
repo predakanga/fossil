@@ -51,16 +51,16 @@ class Error extends AutoController {
      */
     protected $orm;
     
-    public function runShow(BaseRequest $req) {
-        return $this->_new("Response", "Template", "fossil:error/generic", $req->args);
+    public function runShow(\Exception $e) {
+        return $this->_new("Response", "Template", "fossil:error/generic", array('e' => $e));
     }
     
-    public function run404(BaseRequest $req) {
+    public function run404() {
         return $this->_new("Response", "Template", "fossil:error/404", array(), 404);
     }
     
-    public function runDb(BaseRequest $req) {
-        return $this->_new("Response", "Template", "fossil:error/db", $req->args + array('query' => $this->orm->getLogger()->getQuery()), 503);
+    public function runDb(\Exception $e) {
+        return $this->_new("Response", "Template", "fossil:error/db", array('e' => $e, 'query' => $this->orm->getLogger()->getQuery()), 503);
     }
 }
 

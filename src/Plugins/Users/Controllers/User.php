@@ -42,10 +42,10 @@ class user extends LoginRequiredController {
         return "view";
     }
     
-    public function runView($req) {
-        if(isset($req->args['id'])) {
-            $user = UserModel::find($req->args['id']);
-        } else {
+    public function runView(UserModel $id = null) {
+        $user = $id;
+        
+        if(!$user) {
             $user = UserModel::me();
         }
         if(!$user) {
@@ -54,15 +54,15 @@ class user extends LoginRequiredController {
         return OM::obj("Responses", "Template")->create("fossil:users/view", array("user" => $user));
     }
     
-    public function runEdit($req) {
+    public function runEdit() {
         $user = UserModel::me();
         return OM::obj("Responses", "Template")->create("fossil:users/edit", array("user" => $user));
     }
     
-    public function runStaffEdit($req) {
-        if(isset($req->args['id'])) {
-            $user = UserModel::find($req->args['id']);
-        } else {
+    public function runStaffEdit($id) {
+        $user = $id;
+        
+        if(!$user) {
             $user = UserModel::me();
         }
         if(!$user) {

@@ -48,11 +48,11 @@ use Fossil\OM,
  * @author predakanga
  */
 class Setup extends AutoController {
-    public function runIndex(BaseRequest $req) {
+    public function runIndex() {
         return new TemplateResponse("setup/index");
     }
     
-    public function runCheckCompatibility(BaseRequest $req) {
+    public function runCheckCompatibility() {
         // Dependency data
         $data = array();
         // TODO: Have some way of genericizing this
@@ -126,8 +126,7 @@ class Setup extends AutoController {
         return $toRet;
     }
     
-    public function runSelectDrivers(BaseRequest $req) {
-        $driverForm = OM::Form("DriverSelection");
+    public function runSelectDrivers(\Fossil\Forms\DriverSelection $driverForm) {
         $sideSet = new Settings("temp_settings.yml");
         
         if(!$driverForm->isSubmitted()) {
@@ -163,7 +162,7 @@ class Setup extends AutoController {
         return new RedirectResponse("?controller=setup&action=configureDrivers");
     }
     
-    public function runConfigureDrivers(BaseRequest $req) {
+    public function runConfigureDrivers() {
         $sideSet = new Settings("temp_settings.yml");
         
         $cacheSet = $sideSet->get('Fossil', 'cache');
@@ -218,7 +217,7 @@ class Setup extends AutoController {
         return new TemplateResponse("setup/configDrivers", $data);
     }
     
-    public function runFinished(BaseRequest $req) {
+    public function runFinished() {
         rename('temp_settings.yml', 'settings.yml');
         return new TemplateResponse("setup/finished");
     }

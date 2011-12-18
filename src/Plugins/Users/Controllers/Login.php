@@ -38,7 +38,9 @@ namespace Fossil\Plugins\Users\Controllers;
 
 use \Fossil\OM,
     \Fossil\Plugins\Users\Models\User as UserModel,
-    \Fossil\Plugins\Users\Annotations\RequireRole;
+    \Fossil\Plugins\Users\Annotations\RequireRole,
+    \Fossil\Plugins\Users\Forms\LoginForm,
+    \Fossil\Plugins\Users\Forms\SignupForm;
 
 /**
  * Description of login
@@ -50,9 +52,7 @@ class Login extends \Fossil\Controllers\AutoController {
         return "login";
     }
     
-    public function runLogin($req) {
-        $loginForm = OM::Form("Login");
-        
+    public function runLogin(LoginForm $loginForm) {
         if($loginForm->isSubmitted()) {
             $user = UserModel::findOneBy(array('name' => $loginForm->user));
             if(!$user || !$user->verifyPassword($loginForm->pass)) {
@@ -66,16 +66,14 @@ class Login extends \Fossil\Controllers\AutoController {
         return OM::obj("Responses", "Template")->create("fossil:login", array());
     }
     
-    public function runLogout($req) {
+    public function runLogout() {
         // TODO: Invalidate the cookie
         OM::Session("FossilAuth")->wipe();
         
         return OM::obj("Responses", "Redirect")->create("?");
     }
     
-    public function runSignup($req) {
-        $signupForm = OM::Form("Signup");
-        
+    public function runSignup(SignupForm $signupForm) {
         if($signupForm->isSubmitted() && $signupForm->isValid()) {
             $user = UserModel::findOneBy(array('name' => $signupForm->name));
             if($user)

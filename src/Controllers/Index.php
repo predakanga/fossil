@@ -52,7 +52,7 @@ class Index extends AutoController {
      */
     protected $settings;
     
-    public function runIndex($req) {
+    public function runIndex() {
         // Redirect to the setup controller if we have no settings
         if(!$this->settings->isBootstrapped())
             return $this->_new("Response", "Redirect", "index.php?controller=setup");

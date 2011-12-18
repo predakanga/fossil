@@ -44,7 +44,7 @@ abstract class PrivateController extends \Fossil\Controllers\AutoController {
     
     public function run(\Fossil\Requests\BaseRequest $req) {
         // Check that the user is authed
-        $user = UserModel::me();
+        $user = UserModel::me($this->container);
         if(!$user) {
             return $this->unauthorizedAction($req);
         }

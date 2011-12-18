@@ -36,44 +36,40 @@ use Fossil\OM,
     Fossil\Plugins\Users\Models\User,
     Fossil\Plugins\Forums\Models\Forum as ForumModel,
     Fossil\Plugins\Forums\Models\ForumTopic,
-    Fossil\Plugins\Forums\Models\ForumPost;
+    Fossil\Plugins\Forums\Models\ForumPost,
+    Fossil\Plugins\Forums\Forms\NewTopic;
+    Fossil\Plugins\Forums\Forms\NewPost;
+
 /**
  * Description of Forum
  *
  * @author predakanga
  */
-class Forum extends LoginRequiredController {
+class Forum extends \Fossil\Controllers\AutoController {
     public function indexAction() {
         return "list";
     }
     
-    public function runList(BaseRequest $req) {
+    public function runList() {
         $data = array('categories' => $this->collectSubforums());
         return OM::obj("Responses", "Template")->create("fossil:forums/listForums", $data);
     }
     
-    public function runViewForum(BaseRequest $req) {
-        if(!isset($req->args['id']))
-            throw new NoSuchInstanceException("Subforum not found");
-        $forum = ForumModel::find($req->args['id']);
-        if(!$forum)
-            throw new NoSuchInstanceException("Subforum not found");
+    public function runViewForum(ForumModel $id) {
+        // TODO: Rewrite templates to use forum= in links
+        $forum = $id;
         return OM::obj("Responses", "Template")->create("fossil:forums/viewForum", array('forum' => $forum));
     }
     
-    public function runViewTopic(BaseRequest $req) {
-        if(!isset($req->args['id']))
-            throw new NoSuchInstanceException("Topic not found");
-        $topic = ForumTopic::find($req->args['id']);
-        if(!$topic)
-            throw new NoSuchInstanceException("Topic not found");
+    public function runViewTopic(ForumTopic $id, NewPost $form) {
+        // TODO: Rewrite templates to use topic= in links
+        $topic = $id;
         $topic->viewCount++;
-        OM::Form("NewPost")->tid = $topic->id;
+        $form->tid = $topic->id;
         return OM::obj("Responses", "Template")->create("fossil:forums/viewTopic", array('topic' => $topic));
     }
     
-    public function runNewTopic(BaseRequest $req) {
-        $form = OM::Form("NewTopic");
+    public function runNewTopic(NewTopic $form) {
         if($form->isSubmitted() && $form->isValid()) {
             $forum = ForumModel::find($form->fid);
             if(!$forum)
@@ -101,9 +97,7 @@ class Forum extends LoginRequiredController {
         }
     }
     
-    public function runNewPost(BaseRequest $req) {
-        $form = OM::Form("NewPost");
-        
+    public function runNewPost(NewPost $form) {
         if(!$form->isSubmitted()) {
             throw new NoSuchInstanceException("You shouldn't be here...");
         } else if(!$form->isValid()) {
