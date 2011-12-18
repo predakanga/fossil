@@ -44,6 +44,22 @@ use Fossil\Exceptions\NoSuchActionException;
  * @author predakanga
  */
 abstract class AutoController extends BaseController {
+    /**
+     * @F:Inject(type = "Reflection", lazy = true)
+     * @var Fossil\ReflectionBroker
+     */
+    protected $reflections;
+    /**
+     * @F:Inject("FormManager")
+     * @var Fossil\Forms\FormManager
+     */
+    protected $forms;
+    /**
+     * @F:Inject(type = "ORM", lazy = true)
+     * @var Fossil\ORM
+     */
+    protected $orm;
+    
     public function run(\Fossil\Requests\BaseRequest $req) {
         // Decide what action to use
         $action = $req->action ?: $this->indexAction();
@@ -54,11 +70,62 @@ abstract class AutoController extends BaseController {
             throw new NoSuchActionException($req->controller, $action);
         
         // And try to call it on ourselves
-        return call_user_func(array($this, $actionMethod), $req);
+        $realArgs = $this->resolveArguments($actionMethod, $req->args);
+        return call_user_func_array(array($this, $actionMethod), $realArgs);
     }
     
     public function indexAction() {
         return "index";
+    }
+    
+    protected function resolveArguments($method, $args) {
+        // If the input is empty, return immediately
+        if(count($args) == 0) {
+            return array();
+        }
+        $args = array_change_key_case($args, CASE_LOWER);
+        $outputArgs = array();
+        
+        // For each of the method's arguments, grab the input from the args
+        $reflClass = $this->reflections->getClass(get_class($this));
+        $reflMethod = $reflClass->getMethod($method);
+        foreach($reflMethod->getParameters() as $reflParam) {
+            $name = strtolower($reflParam->getName());
+            $finalArg = null;
+            if(isset($args[$name])) {
+                $finalArg = $this->resolveArgument($reflParam, $args[$name]);
+            }
+            if($finalArg == null) {
+                // If the argument isn't optional, throw an exception immediately
+                if(!$reflParam->isOptional()) {
+                    throw new \Exception("Required parameter was not provided: " . $name);
+                } else {
+                    $finalArg = $reflParam->getDefaultValue();
+                }
+            }
+            $outputArgs[] = $finalArg;
+        }
+        return $outputArgs;
+    }
+    
+    protected function resolveArgument($reflParam, $value) {
+        $paramType = $reflParam->getClass();
+        
+        // If there's no type hint, return the value un-modified
+        if($paramType == null) {
+            return $value;
+        }
+        
+        $paramTypeName = $reflParam->getClassName();
+        
+        // If the type hint is a model...
+        if($paramType->isSubclassOf("Fossil\Models\Model")) {
+            // Look it up by primary key, which the value should be the value of
+            return call_user_func_array(array($paramTypeName, "find"), array($this->orm, $value));
+        } elseif($paramType->isSubclassOf("Fossil\Forms\BaseForm")) {
+            return $this->forms->get($paramTypeName);
+        }
+        return $value;
     }
 }
 
