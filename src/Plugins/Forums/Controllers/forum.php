@@ -37,7 +37,7 @@ use Fossil\OM,
     Fossil\Plugins\Forums\Models\Forum as ForumModel,
     Fossil\Plugins\Forums\Models\ForumTopic,
     Fossil\Plugins\Forums\Models\ForumPost,
-    Fossil\Plugins\Forums\Forms\NewTopic;
+    Fossil\Plugins\Forums\Forms\NewTopic,
     Fossil\Plugins\Forums\Forms\NewPost;
 
 /**
