@@ -92,7 +92,7 @@ class CliRequest extends BaseRequest {
     protected function registerCommands() {
         // Add run DQL, for our own purposes
         $this->app->add(new \Doctrine\ORM\Tools\Console\Command\RunDqlCommand());
-        foreach($this->container->getAllInstanced("Command") as $commandName) {
+        foreach(array_keys($this->container->getAllInstanced("Command")) as $commandName) {
             $this->app->add($this->_new("Command", $commandName));
         }
     }

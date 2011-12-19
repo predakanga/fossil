@@ -375,7 +375,15 @@ class ObjectContainer {
         if(!isset($this->instancedTypes[$type])) {
             return array();
         }
-        return array_keys($this->instancedTypes[$type]);
+        return $this->instancedTypes[$type];
+    }
+    
+    public function getAllSingleton($type) {
+        $type = strtolower($type);
+        if(!isset($this->potentialProviders[$type])) {
+            return array();
+        }
+        return $this->potentialProviders[$type];
     }
     
     public function get($objectType) {
