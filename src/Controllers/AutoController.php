@@ -81,9 +81,13 @@ abstract class AutoController extends BaseController {
         $reflClass = $this->reflections->getClass(get_class($this));
         $reflMethod = $reflClass->getMethod($method);
         foreach($reflMethod->getParameters() as $reflParam) {
+            $paramType = $reflParam->getClass();
             $name = strtolower($reflParam->getName());
             $finalArg = null;
-            if(isset($args[$name])) {
+            
+            if($paramType && $paramType->isSubclassOf("Fossil\Forms\BaseForm")) {
+                $finalArg = $this->resolveForm($reflParam);
+            } elseif(isset($args[$name])) {
                 $finalArg = $this->resolveArgument($reflParam, $args[$name]);
             }
             if($finalArg == null) {
@@ -117,10 +121,12 @@ abstract class AutoController extends BaseController {
                 throw new \Fossil\Exceptions\NoSuchInstanceException("Unknown " . $reflParam->getName() . " specified");
             }
             return $retval;
-        } elseif($paramType->isSubclassOf("Fossil\Forms\BaseForm")) {
-            return $this->forms->get($paramTypeName);
         }
         return $value;
+    }
+    
+    protected function resolveForm($reflParam) {
+        return $this->forms->get($reflParam->getClassName());
     }
 }
 

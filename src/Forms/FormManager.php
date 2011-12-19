@@ -52,7 +52,7 @@ class FormManager extends Object {
      * @param type $fqcnOrName Form name, or FQCN
      * @return Fossil\Forms\BaseForm An instance of the requested form particular to this request
      */
-    protected function get($fqcnOrName) {
+    public function get($fqcnOrName) {
         $localName = $this->classMap($fqcnOrName);
         if(!isset($this->formInstances[$localName])) {
             $this->formInstances[$localName] = $this->_new("Form", $localName);
@@ -66,7 +66,7 @@ class FormManager extends Object {
      * @param type $fqcnOrName Form name, or FQCN
      * @return boolean Whether or not Fossil knows about this type of form
      */
-    protected function has($fqcnOrName) {
+    public function has($fqcnOrName) {
         $localName = $this->classMap($fqcnOrName);
         if($localName === FALSE) {
             return false;
