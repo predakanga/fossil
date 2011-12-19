@@ -36,7 +36,7 @@
 
 namespace Fossil\Forms;
 
-use Fossil\OM;
+use Fossil\Object;
 
 /**
  * Description of BaseForm
@@ -44,15 +44,27 @@ use Fossil\OM;
  * @author predakanga
  * @F:InstancedType("Form")
  */
-abstract class BaseForm {
+abstract class BaseForm extends Object {
     protected $form_identifier;
     protected $form_template;
     protected $form_fields;
+    /**
+     * @F:Inject("AnnotationManager")
+     * @var Fossil\Annotations\AnnotationManager
+     */
+    protected $annotations;
+    /**
+     * @F:Inject("Dispatcher")
+     * @var Fossil\Dispatcher
+     */
+    protected $dispatcher;
     
-    public function __construct() {
+    public function __construct($container) {
+        parent::__construct($container);
+        
         // If form_identifier isn't set, default to the form name
         if(!$this->form_identifier) {
-            $form_anno = OM::Annotations()->getClassAnnotations(get_class($this), "F:Form");
+            $form_anno = $this->annotations->getClassAnnotations(get_class($this), "F:Form");
             $this->form_identifier = $form_anno[0]->name;
             $this->form_template = $form_anno[0]->template;
         }
@@ -65,7 +77,7 @@ abstract class BaseForm {
         // For each property that we have, check for FormField annotations
         $reflClass = new \ReflectionClass($this);
         foreach($reflClass->getProperties() as $reflProp) {
-            $annotations = OM::Annotations()->getPropertyAnnotations($reflProp, "F:FormField");
+            $annotations = $this->annotations->getPropertyAnnotations($reflProp, "F:FormField");
             // Should only be one
             // TODO: Double check that Doctrine's annotation layer only allows one annotation per type
             if(count($annotations)) {
@@ -90,7 +102,7 @@ abstract class BaseForm {
     
     private function populate() {
         // FIXME: Do we always want to populate forms from the topmost request?
-        $request = OM::Dispatcher()->getTopRequest();
+        $request = $this->dispatcher->getTopRequest();
         // For each property that we have, check for FormField annotations
         foreach($this->form_fields as $propName => $data) {
             if($data['type'] == "file") {
@@ -113,7 +125,7 @@ abstract class BaseForm {
     
     public function isSubmitted() {
         // FIXME: Do we always want to populate forms from the topmost request?
-        $request = OM::Dispatcher()->getTopRequest();
+        $request = $this->dispatcher->getTopRequest();
         if(!isset($request->args['form_id']))
             return false;
         if(is_array($request->args['form_id']) && in_array($this->form_identifier, $request->args['form_id']))
