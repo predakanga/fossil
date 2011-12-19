@@ -45,7 +45,7 @@ use Fossil\OM,
  *
  * @author predakanga
  */
-class Forum extends \Fossil\Controllers\AutoController {
+class Forum extends LoginRequiredController {
     public function indexAction() {
         return "list";
     }
