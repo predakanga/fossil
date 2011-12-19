@@ -66,8 +66,8 @@ class Memcached extends BaseCache {
         return 1.0;
     }
     
-    public static function getForm() {
-        return OM::Form("MemcachedConfig");
+    public static function getFormName() {
+        return "MemcachedConfig";
     }
     
     public function __construct($container) {

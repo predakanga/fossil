@@ -56,7 +56,7 @@ class SolrSearchBackend extends BaseSearchBackend {
     static function getVersion() {
         return "1.4";
     }
-    static function getForm() {
+    static function getFormName() {
         return null;
     }
     protected function getDefaultConfig() {

@@ -55,7 +55,7 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
     static function getVersion() {
         return "1.6";
     }
-    static function getForm() {
+    static function getFormName() {
         return null;
     }
     protected function getDefaultConfig() {

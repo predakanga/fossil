@@ -79,7 +79,7 @@ class SmartyRenderer extends BaseRenderer {
     public static function getName() { return "Smarty"; }
     public static function getVersion() { return 1.0; }
     public static function usable() { /* TODO: Real test here */ return true; }
-    public static function getForm() { return $this->_new("Form", "SmartyConfig"); }
+    public static function getFormName() { return "SmartyConfig"; }
     
     protected function getDefaultConfig() {
         return array('useTidy' => false);

@@ -53,7 +53,7 @@ class APC extends BaseCache {
         return 1.0;
     }
     
-    public static function getForm() {
+    public static function getFormName() {
         return null;
     }
     
