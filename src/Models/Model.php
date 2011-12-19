@@ -154,7 +154,7 @@ abstract class Model extends Object {
     {
         // First argument must be container
         $container = array_shift($arguments);
-        assert($container instanceof \Fossil\ObjectManager);
+        assert($container instanceof \Fossil\ObjectContainer);
         $orm = $container->get("ORM");
         return call_user_func_array(
             array($orm->getEM()->getRepository(get_called_class()), $method),
