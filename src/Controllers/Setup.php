@@ -48,14 +48,33 @@ use Fossil\OM,
  * @author predakanga
  */
 class Setup extends AutoController {
-    public function runIndex() {
-        return new TemplateResponse("setup/index");
+    /**
+     * @F:Inject("Dispatcher")
+     * @var Fossil\Dispatcher
+     */
+    protected $dispatcher;
+    /**
+     * @F:Inject("Filesystem")
+     * @var Fossil\Filesystem
+     */
+    protected $fs;
+    
+    private $steps = array(array('action' => 'index', 'desc' => 'Introduction'),
+                           array('action' => 'checkCompatibility', 'desc' => 'Check compatibility'),
+                           array('action' => 'selectDrivers', 'desc' => 'Select drivers'),
+                           array('action' => 'configureDrivers', 'desc' => 'Configure drivers'),
+                           array('action' => 'selectPlugins', 'desc' => 'Select plugins (optional)'),
+                           array('action' => 'runTests', 'desc' => 'Run tests (optional)'),
+                           array('action' => 'finished', 'desc' => 'Start coding'));
+    
+    protected function getSteps() {
+        return $this->steps;
     }
     
-    public function runCheckCompatibility() {
-        // Dependency data
-        $data = array();
-        // TODO: Have some way of genericizing this
+    protected function getDependencies() {
+        $deps = array();
+        $fs = $this->fs;
+        
         $deps['Required'] = array(
             'PHP' => array('Version' => '>= 5.3', 'URL' => 'http://www.php.net', 'Type' => 'Runtime', 'Test' => function() {
                 if(!defined('PHP_VERSION_ID'))
@@ -64,11 +83,11 @@ class Setup extends AutoController {
                     return false;
                 return true;
             }),
-            'Smarty' => array('Version' => '>= 3', 'URL' => 'http://www.smarty.net', 'Type' => 'Templating Engine', 'Test' => function() {
+            'Smarty' => array('Version' => '>= 3', 'URL' => 'http://www.smarty.net', 'Type' => 'Templating Engine', 'Test' => function() use($fs) {
                 // TODO: Looser coupling for Smarty
-                if(!file_exists(OM::FS()->fossilRoot() . D_S . 'libs/smarty/distribution/libs/Smarty.class.php'))
+                if(!file_exists($fs->fossilRoot() . D_S . 'libs/smarty/distribution/libs/Smarty.class.php'))
                     return false;
-                require_once(OM::FS()->fossilRoot() . D_S . 'libs/smarty/distribution/libs/Smarty.class.php');
+                require_once($fs->fossilRoot() . D_S . 'libs/smarty/distribution/libs/Smarty.class.php');
                 
                 if(!defined('\Smarty::SMARTY_VERSION'))
                     return false;
@@ -91,6 +110,36 @@ class Setup extends AutoController {
                 return false;
             })
         );
+            
+        return $deps;
+    }
+    
+    protected function addSteps($args = array()) {
+        $steps = $this->getSteps();
+        // Calculate the current step
+        $curReq = $this->dispatcher->getCurrentRequest();
+        $curAct = $curReq->action ?: $this->indexAction();
+        $curStep = 0;
+        foreach($steps as $stepIdx => $stepArr) {
+            if($stepArr['action'] == $curAct) {
+                $curStep = $stepIdx;
+                break;
+            }
+        }
+        $tempArr = array('currentStep' => $curStep,
+                         'nextStep' => $curStep+1,
+                         'steps' => $steps);
+        return $tempArr + $args;
+    }
+    
+    public function runIndex() {
+        return $this->_new("Response", "Template", "setup/index", $this->addSteps());
+    }
+    
+    public function runCheckCompatibility() {
+        // Dependency data
+        $data = array();
+        $deps = $this->getDependencies();
         
         // Simple var to keep track of whether all required dependencies were met
         $result = true;
@@ -105,80 +154,80 @@ class Setup extends AutoController {
         $data = array_merge($data, $deps);
         
         $data['allOK'] = $result;
-        
-        return new TemplateResponse("setup/checkCompat", $data);
+        return $this->_new("Response", "Template", "setup/checkCompat", $this->addSteps($data));
     }
 
     private function getClassDrivers($type) {
         $toRet = array();
-        foreach(OM::getAll($type) as $classArr) {
-            $class = $classArr['fqcn'];
-            if(\is_subclass_of($class, '\\Fossil\\Interfaces\\IDriver')) {
-                // Check that it's usable
-                if(!$class::usable())
-                    continue;
-                // Grab it's name
-                $nameAnno = OM::Annotations()->getClassAnnotations($class, 'F:Object');
-                $name = $nameAnno[0]->name;
-                $toRet[$name] = $class::getName();
+        
+        $typeProviders = $this->container->getAllSingleton($type);
+        foreach($typeProviders as $class) {
+            if(!$class::usable())
+                continue;
+            $name = $class::getName();
+            if(!array_search($name, $toRet)) {
+                $toRet[$class] = $name;
             }
         }
+        
         return $toRet;
     }
     
     public function runSelectDrivers(\Fossil\Forms\DriverSelection $driverForm) {
-        $sideSet = new Settings("temp_settings.yml");
-        
+        if(!file_exists("temp_settings.yml") || (filemtime("settings.yml") > filemtime("temp_settings.yml"))) {
+            copy("settings.yml", "temp_settings.yml");
+        }
+        $sideSet = new Settings($this->container, "temp_settings.yml");
+
         if(!$driverForm->isSubmitted()) {
             // Build the list of possible drivers
             $driverForm->setFieldOptions('cacheDriver', $this->getClassDrivers('Cache'));
             $driverForm->setFieldOptions('templateDriver', $this->getClassDrivers('Renderer'));
             $driverForm->setFieldOptions('dbDriver', $this->getClassDrivers('Database'));
             // Prepopulate the form with our existings values if temp_settings.yml exists
-            if($sideSet->bootstrapped()) {
-                $cacheSet = $sideSet->get('Fossil', 'cache');
-                if($cacheSet) {
-                    $driverForm->cacheDriver = $cacheSet['driver'];
+            if($sideSet->isBootstrapped()) {
+                $driverSet = $sideSet->get('Fossil', 'Drivers', array());
+                if(isset($driverSet['Cache'])) {
+                    $driverForm->cacheDriver = $driverSet['Cache']['Class'];
                 }
-                $tmplSet = $sideSet->get('Fossil', 'renderer');
-                if($tmplSet) {
-                    $driverForm->templateDriver = $tmplSet['driver'];
+                if(isset($driverSet['Renderer'])) {
+                    $driverForm->templateDriver = $driverSet['Renderer']['Class'];
                 }
-                $dbSet = $sideSet->get('Fossil', 'database');
-                if($tmplSet) {
-                    $driverForm->dbDriver = $dbSet['driver'];
+                if(isset($driverSet['Database'])) {
+                    $driverForm->dbDriver = $driverSet['Database']['Class'];
                 }
             }
             // And render
-            return new TemplateResponse("setup/selectDrivers");
+            return $this->_new("Response", "Template", "setup/selectDrivers", $this->addSteps());
         }
         
         // Otherwise, set the drivers in the temp file
-        $sideSet->set('Fossil', 'cache', array('driver' => $driverForm->cacheDriver));
-        $sideSet->set('Fossil', 'database', array('driver' => $driverForm->dbDriver));
-        $sideSet->set('Fossil', 'renderer', array('driver' => $driverForm->templateDriver));
+        $drivers = $sideSet->get('Fossil', 'Drivers', array());
+        $drivers['Cache'] = array('Class' => $driverForm->cacheDriver);
+        $drivers['Database'] = array('Class' => $driverForm->dbDriver);
+        $drivers['Renderer'] = array('Class' => $driverForm->templateDriver);
+        $sideSet->set('Fossil', 'Drivers', $drivers);
         
         // And forward to configureDrivers
-        return new RedirectResponse("?controller=setup&action=configureDrivers");
+        return $this->_new("Response", "Redirect", "?controller=setup&action=configureDrivers");
     }
     
     public function runConfigureDrivers() {
-        $sideSet = new Settings("temp_settings.yml");
+        $sideSet = new Settings($this->container, "temp_settings.yml");
         
-        $cacheSet = $sideSet->get('Fossil', 'cache');
-        $rendererSet = $sideSet->get('Fossil', 'renderer');
-        $dbSet = $sideSet->get('Fossil', 'database');
+        $drivers = $sideSet->get('Fossil', 'Drivers', array());
         
-        if(!$cacheSet || !$rendererSet || !$dbSet)
-            return new RedirectResponse("?controller=setup&action=selectDrivers");
+        if(!isset($drivers['Cache']) || !isset($drivers['Database']) || !isset($drivers['Renderer'])) {
+            return $this->_new("Response", "Redirect", "?controller=setup&action=selectDrivers");
+        }
         
-        $cacheDriver = OM::getSpecificSingleton("Cache", $cacheSet['driver']);
-        $rendererDriver = OM::getSpecificSingleton("Renderer", $rendererSet['driver']);
-        $dbDriver = OM::getSpecificSingleton("Database", $dbSet['driver']);
+        $cacheFormName = $drivers['Cache']['Class']::getFormName();
+        $rendererFormName = $drivers['Renderer']['Class']::getFormName();
+        $dbFormName = $drivers['Database']['Class']::getFormName();
         
-        $dbForm = $dbDriver['fqcn']::getForm();
-        $cacheForm = $cacheDriver['fqcn']::getForm();
-        $rendererForm = $rendererDriver['fqcn']::getForm();
+        $dbForm = $dbFormName ? $this->forms->get($dbFormName) : null;
+        $cacheForm = $cacheFormName ? $this->forms->get($cacheFormName) : null;
+        $rendererForm = $rendererFormName ? $this->forms->get($rendererFormName) : null;
         
         $submitted = true;
         if($dbForm && !$dbForm->isSubmitted())
@@ -191,22 +240,18 @@ class Setup extends AutoController {
         if($submitted) {
             // Save settings
             if($dbForm) {
-                $settings = $sideSet->get('Fossil', 'database', array());
-                $settings['config'] = $dbForm->toConfig();
-                $sideSet->set('Fossil', 'database', $settings);
+                $drivers['Database']['Config'] = $dbForm->toConfig();
             }
             if($cacheForm) {
-                $settings = $sideSet->get('Fossil', 'cache', array());
-                $settings['config'] = $cacheForm->toConfig();
-                $sideSet->set('Fossil', 'cache', $settings);
+                $drivers['Cache']['Config'] = $cacheForm->toConfig();
             }
             if($rendererForm) {
-                $settings = $sideSet->get('Fossil', 'renderer', array());
-                $settings['config'] = $rendererForm->toConfig();
-                $sideSet->set('Fossil', 'renderer', $settings);
+                $drivers['Renderer']['Config'] = $rendererForm->toConfig();
             }
+            $sideSet->set('Fossil', 'Drivers', $drivers);
             // And push on to the next step
-            return new RedirectResponse("?controller=setup&action=finished");
+            // TODO: Edit this to automatically jump to the next step
+            return $this->_new("Response", "Redirect", "?controller=setup&action=finished");
         }
         
         // Otherwise, render the form
@@ -214,12 +259,12 @@ class Setup extends AutoController {
                       'cacheForm' => $cacheForm ? $cacheForm->getIdentifier() : null,
                       'rendererForm' => $rendererForm ? $rendererForm->getIdentifier() : null);
         
-        return new TemplateResponse("setup/configDrivers", $data);
+        return $this->_new("Response", "Template", "setup/configDrivers", $this->addSteps($data));
     }
     
     public function runFinished() {
         rename('temp_settings.yml', 'settings.yml');
-        return new TemplateResponse("setup/finished");
+        return $this->_new("Response", "Template", "setup/finished", $this->addSteps());
     }
 }
 
