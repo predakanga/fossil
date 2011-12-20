@@ -53,14 +53,8 @@ class Init extends BaseInit {
         }
         // Look up the chosen drivers for this instance
         $drivers = $this->settings->get("Fossil", "Drivers", array());
-        if(isset($drivers['Database'])) {
-            $this->container->registerType("Database", $drivers['Database']['Class'], true, true);
-        }
-        if(isset($drivers['Cache'])) {
-            $this->container->registerType("Cache", $drivers['Cache']['Class'], true, true);
-        }
-        if(isset($drivers['Renderer'])) {
-            $this->container->registerType("Renderer", $drivers['Renderer']['Class'], true, true);
+        foreach($drivers as $objName => $settings) {
+            $this->container->registerType($objName, $settings['Class'], true, true);
         }
     }
     

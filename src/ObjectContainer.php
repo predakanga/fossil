@@ -241,7 +241,7 @@ class ObjectContainer {
             } else {
                 // If we have multiple providers, check for a default
                 if(isset($providerArray['default'])) {
-                    $this->registerType($providerType, $providerArray['default']);
+                    $this->registerType($providerType, $providerArray['default'], false, true);
                 }
             }
         }
