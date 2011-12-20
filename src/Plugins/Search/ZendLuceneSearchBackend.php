@@ -191,8 +191,8 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
         return $allResults;
     }
     
-    public function paginatedSearch($indexName, $query, $model, $pageSize = 10) {
-        $res = $this->search($indexName, $query, true);
+    public function paginatedSearch($query, $model, $pageSize = 10) {
+        $res = $this->search($model, $query, true);
         $ids = array();
         foreach($res as $r) {
             $ids[] = $r->dbId;
