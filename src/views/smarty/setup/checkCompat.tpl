@@ -1,15 +1,4 @@
 {extends file="setup/base.tpl"}
-{block name=toc}
-<ul class="icon-list">
-    <li class="check">{link}Introduction{/link}</li>
-    <li class="arrow">Check compatibility</li>
-    <li class="bullet">Select drivers</li>
-    <li class="bullet">Configure drivers</li>
-    <li class="bullet">Select plugins (optional)</li>
-    <li class="bullet">Run tests (optional)</li>
-    <li class="bullet">Start coding</li>
-</ul>
-{/block}
 {block name=content}
 <h2>Checking Compatibility</h2>
 <p>Fossil has various dependencies, some required, some optional.<br />
