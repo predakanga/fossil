@@ -340,11 +340,21 @@ class ObjectContainer {
             // Ensure we don't already have an instance by this name for this type
             if(isset($retArray[$name])) {
                 // TODO: Create a hierarchy here of priority
-//                throw new \Exception("Instanced name collision between " . $retArray[$name] .
-//                                     " and " . $implClass . ". Assign one of them a different name with @F:Instanced");
+                // In the meantime, store descendant instances only
+                if(is_a($implClass, $retArray[$name])) {
+                    // Current implClass descends from the stored class - store
+                    $retArray[$name] = $implClass;
+                } elseif(is_a($retArray[$name], $implClass)) {
+                    // Stored class descends from the current implClass - ignore
+                } else {
+                    // Current implClass is not related directly to the stored class
+                    // Most likely an object typed incorrectly, or both descend from a common class
+                    // Throw exception? Most likely log warning
+                }
+            } else {
+                // Otherwise, just store it
+                $retArray[$name] = $implClass;
             }
-            // Otherwise, store it
-            $retArray[$name] = $implClass;
         }
         // And return the list of implementations
         return $retArray;
