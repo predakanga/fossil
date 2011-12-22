@@ -42,7 +42,7 @@ namespace Fossil\Plugins\Users\Models;
  * @author predakanga
  * @Entity
  * @Table(name="FossilPermission")
- * @F:InitialDataset("plugins/users/data/permissions.yml")
+ * @F:InitialDataset("data/permissions.yml")
  */
 class Permission extends \Fossil\Models\Model {
     /**

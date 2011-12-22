@@ -43,7 +43,7 @@ namespace Fossil\Plugins\Users\Models;
  * 
  * @Entity
  * @Table(name="FossilUserClass")
- * @F:InitialDataset("plugins/users/data/userclasses.yml")
+ * @F:InitialDataset("data/userclasses.yml")
  */
 class UserClass extends \Fossil\Models\Model {
     /** @Id @GeneratedValue @Column(type="integer") */

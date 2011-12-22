@@ -51,7 +51,7 @@ class InitialDataset extends Annotation {
         $file = $this->file ?: $this->value;
         
         // It might be in any of the roots, so try each
-        foreach(array_reverse($container->get("Filesystem")->roots(false)) as $root) {
+        foreach(array_reverse($container->get("Filesystem")->roots(true)) as $root) {
             if(file_exists($root . D_S . $file)) {
                 $file = $root . D_S . $file;
                 break;

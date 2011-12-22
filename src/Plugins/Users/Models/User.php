@@ -45,7 +45,7 @@ use \Fossil\OM;
  * @InheritanceType("JOINED")
  * @DiscriminatorColumn(name="inheritedType", type="string")
  * @DiscriminatorMap({"User" = "User"})
- * @F:InitialDataset("plugins/users/data/users.yml")
+ * @F:InitialDataset("data/users.yml")
  */
 class User extends \Fossil\Models\Model {
     const GENDER_UNKNOWN = 0;
