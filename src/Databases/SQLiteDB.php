@@ -59,7 +59,16 @@ class SQLiteDB extends BaseDatabase {
     
     public function getPDO() {
         if(!$this->pdo) {
-            $filename = realpath($this->config['filename']);
+            // No need to ascertain the file path if it's in-memory
+            $filename = $this->config['path'];
+            if($filename != ':memory:') {
+                $filename = realpath($filename);
+                if(!file_exists($filename)) {
+                    // Touch the file before creation - use file_put_contents
+                    // because apparently touch doesn't work with stream wrappers
+                    file_put_contents($filename, '');
+                }
+            }
             $dsn = "sqlite:$filename";
             $this->pdo = new \PDO($dsn);
         }
