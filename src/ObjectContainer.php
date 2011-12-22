@@ -237,11 +237,11 @@ class ObjectContainer {
 
         foreach($providers as $providerType => $providerArray) {
             if(count($providerArray) == 1) {
-                $this->registerType($providerType, reset($providerArray));
+                $this->registerType($providerType, reset($providerArray), false);
             } else {
                 // If we have multiple providers, check for a default
                 if(isset($providerArray['default'])) {
-                    $this->registerType($providerType, $providerArray['default'], false, true);
+                    $this->registerType($providerType, $providerArray['default'], false);
                 }
             }
         }

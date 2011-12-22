@@ -37,6 +37,5 @@
   </filter>
   <php>
     <ini name="memory_limit" value="1000M"/>
-    <env name="phpunit" value="true"/>
   </php>
 </phpunit>
