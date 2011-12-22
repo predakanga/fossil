@@ -60,7 +60,7 @@ class SettingsTest extends \PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @todo Implement testBootstrapped().
+     * @covers Fossil\Settings::isBootstrapped
      */
     public function testIsBootstrapped() {
         // Test that the default settings (non-existant for unit testing) are not bootstrapped

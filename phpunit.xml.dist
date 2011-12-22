@@ -4,11 +4,12 @@
 <phpunit bootstrap="tests/Bootstrap.php"
          backupGlobals="false"
          backupStaticAttributes="false"
+         forceCoversAnnotation="true"
          strict="true"
-         verbose="true"
          timeoutForSmallTests="120"
          timeoutForMediumTests="180"
-         timeoutForLargeTests="240">
+         timeoutForLargeTests="240"
+         verbose="true">
   <testsuites>
     <testsuite name="fossil">
       <directory suffix="Test.php">tests</directory>
