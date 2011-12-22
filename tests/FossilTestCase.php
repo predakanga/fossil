@@ -37,7 +37,7 @@ require_once "mocks/MockContainer.php";
  *
  * @author predakanga
  */
-class FossilTestCase extends \PHPUnit_Framework_TestCase {
+abstract class FossilTestCase extends \PHPUnit_Framework_TestCase {
     /** @var Fossil\ObjectContainer */
     protected static $container;
     /**
