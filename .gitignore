@@ -2,3 +2,6 @@
 /.quickstart.yml
 /docs/
 src/static/css/.sass-cache/
+build/
+src/dicache.yml
+src/settings.yml
