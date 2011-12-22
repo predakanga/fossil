@@ -1,9 +1,12 @@
 <?php
 
-namespace Fossil;
+namespace Fossil\Tests;
 
 require_once 'vfsStream/vfsStream.php';
 require_once 'vfsStreamPermissionsVisitor.php';
+require_once "mocks/MockContainer.php";
+
+use Fossil\Settings;
 
 /**
  * Test class for Settings.
@@ -19,14 +22,23 @@ class SettingsTest extends \PHPUnit_Framework_TestCase {
     /**
      * @var vfsStreamDirectory
      */
-    protected $vfsRoot;
+    protected static $vfsRoot;
 
     public static function setUpBeforeClass() {
-        self::$container = new ObjectContainer();
+        self::$vfsRoot = \vfsStream::setup();
+        self::freshenVirtualFilesystem();
+        self::$container = new Mocks\MockContainer(true);
     }
     
     public static function tearDownAfterClass() {
         self::$container = null;
+    }
+    
+    public static function freshenVirtualFilesystem() {
+        // Copy data in from fixture
+        \vfsStream::copyFromFileSystem(__DIR__ . DIRECTORY_SEPARATOR . "fixtures" . DIRECTORY_SEPARATOR . "SettingsTest", self::$vfsRoot);
+        // And fix broken permissions
+        \vfsStream::inspect(new \vfsStreamPermissionsVisitor());
     }
 
     /**
@@ -34,11 +46,8 @@ class SettingsTest extends \PHPUnit_Framework_TestCase {
      * This method is called before a test is executed.
      */
     protected function setUp() {
-        $this->vfsRoot = \vfsStream::setup();
-        \vfsStream::copyFromFileSystem(__DIR__ . DIRECTORY_SEPARATOR . "fixtures" . DIRECTORY_SEPARATOR . "SettingsTest", $this->vfsRoot);
-        // Fix broken 
-        \vfsStream::inspect(new \vfsStreamPermissionsVisitor());
-//        $this->object = self::$container->get("Settings");
+//        self::freshenVirtualFilesystem();
+        $this->object = self::$container->get("Settings");
     }
 
     /**
@@ -64,7 +73,7 @@ class SettingsTest extends \PHPUnit_Framework_TestCase {
      */
     public function testIsBootstrapped() {
         // Test that the default settings (non-existant for unit testing) are not bootstrapped
-//        $this->assertFalse($this->object->isBootstrapped());
+        $this->assertFalse($this->object->isBootstrapped());
         // Test that the sample settings are bootstrapped
         $sampleSet = new Settings(self::$container, \vfsStream::url("sampleSettings.yml"));
         $this->assertTrue($sampleSet->isBootstrapped());
@@ -75,6 +84,7 @@ class SettingsTest extends \PHPUnit_Framework_TestCase {
 
     /**
      * @todo Implement testGet().
+     * @covers Fossil\Settings::get
      */
     public function testGet() {
         // Remove the following lines when you implement this test.
@@ -85,6 +95,7 @@ class SettingsTest extends \PHPUnit_Framework_TestCase {
 
     /**
      * @todo Implement testSet().
+     * @covers Fossil\Settings::set
      */
     public function testSet() {
         // Remove the following lines when you implement this test.
