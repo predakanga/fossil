@@ -68,8 +68,12 @@ class Settings extends Object {
             $this->backingFile = $this->fs->execDir() . D_S . "settings.yml";
         }
         if(file_exists($this->backingFile)) {
-            $this->store['Fossil'] = yaml_parse_file($this->backingFile);
-            $this->fossilHash = md5(serialize($this->store['Fossil']));
+            // TODO: Switch to sfYaml
+            $storedData = @yaml_parse(file_get_contents($this->backingFile));
+            if($storedData) {
+                $this->store['Fossil'] = $storedData;
+                $this->fossilHash = md5(serialize($this->store['Fossil']));
+            }
         }
     }
     
