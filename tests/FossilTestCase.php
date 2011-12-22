@@ -27,8 +27,38 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require_once dirname(__FILE__) . '/../src/Autoloader.php';
-\Fossil\Autoloader::registerAutoloader();
-require_once "FossilTestCase.php";
+namespace Fossil\Tests;
+
+require_once 'vfsStream/vfsStream.php';
+require_once "mocks/MockContainer.php";
+
+/**
+ * Description of FossilTestCase
+ *
+ * @author predakanga
+ */
+class FossilTestCase extends \PHPUnit_Framework_TestCase {
+    /** @var Fossil\ObjectContainer */
+    protected static $container;
+    /**
+     * @var vfsStreamDirectory
+     */
+    protected static $vfsRoot;
+    
+    public static function setUpBeforeClass() {
+        static::$vfsRoot = \vfsStream::setup();
+        static::freshenVirtualFilesystem();
+        static::$container = new Mocks\MockContainer(true);
+    }
+    
+    public static function tearDownAfterClass() {
+        static::$container = null;
+        static::$vfsRoot = null;
+    }
+    
+    protected static function freshenVirtualFilesystem() {
+        return;
+    }
+}
 
 ?>
