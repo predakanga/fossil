@@ -1,0 +1,15 @@
+---
+title: Your Fossil Site
+plugins: users,forums,schedule
+Drivers:
+  Cache:
+    Class: Fossil\Caches\APC
+  Database:
+    Class: Fossil\Databases\SQLiteDB
+    Config:
+      path: ":memory:"
+  Renderer:
+    Class: Fossil\Renderers\SmartyRenderer
+    Config:
+      useTidy: ~
+...

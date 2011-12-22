@@ -56,14 +56,17 @@ class SettingsTest extends FossilTestCase {
      * @covers Fossil\Settings::isBootstrapped
      */
     public function testIsBootstrapped() {
-        // Test that the default settings (non-existant for unit testing) are not bootstrapped
-        $this->assertFalse($this->object->isBootstrapped());
+        // Test that the default settings (basic, for unit testing) are not bootstrapped
+        $this->assertTrue($this->object->isBootstrapped());
         // Test that the sample settings are bootstrapped
         $sampleSet = new Settings(self::$container, \vfsStream::url("sampleSettings.yml"));
         $this->assertTrue($sampleSet->isBootstrapped());
         // And that the empty settings are not bootstrapped
         $emptySet = new Settings(self::$container, \vfsStream::url("emptySettings.yml"));
         $this->assertFalse($emptySet->isBootstrapped());
+        // And that non-existant settings are not bootstrapped
+        $nonExtSet = new Settings(self::$container, \vfsStream::url("nonExistantSettings.yml"));
+        $this->assertFalse($nonExtSet->isBootstrapped());
     }
 
     /**
