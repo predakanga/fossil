@@ -43,10 +43,10 @@ class SettingsTest extends FossilTestCase {
     }
 
     /**
-     * @todo Implement test__destruct().
+     * @covers Fossil\Settings::__destruct
      */
     public function test__destruct() {
-        // Remove the following lines when you implement this test.
+        // TODO: Test to make sure that the fossil data is dumped to settings.yml
         $this->markTestIncomplete(
                 'This test has not been implemented yet.'
         );
@@ -74,10 +74,24 @@ class SettingsTest extends FossilTestCase {
      * @covers Fossil\Settings::get
      */
     public function testGet() {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        // Test that a newly set value is returned properly
+        $this->object->set("testGet", "get1", "Foobar");
+        $this->assertEquals("Foobar", $this->object->get("testGet", "get1"));
+        // Test that a pre-set value is returned properly
+        $this->assertEquals("users,forums,schedule", $this->object->get("Fossil", "plugins"));
+        // Test that an unset value without default is not returned
+        $this->assertNull($this->object->get("testGet", "get2"));
+        // Test that an unset value with default is returned
+        $this->assertEquals("42", $this->object->get("testGet", "get3", "42"));
+        // Test that complex types (read: arrays/dicts) can be set and retrieved
+        $this->object->set("testGet", "get4", array("Foo" => "Bar"));
+        $this->assertInternalType("array", $this->object->get("testGet", "get4"));
+        // Test that complex types can be retrieved from a backing file
+        $this->assertInternalType("array", $this->object->get("Fossil", "Drivers"));
+        // And that they can be retrieved from the DB
+        $this->object->set("testGet", "get5", array("Foo" => "Bar2"));
+        $newSettings = new Settings(self::$container);
+        $this->assertInternalType("array", $newSettings->get("testGet", "get5"));
     }
 
     /**
