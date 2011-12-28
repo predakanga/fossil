@@ -28,7 +28,8 @@ class DispatcherTest extends FossilTestCase {
     }
 
     /**
-     * @todo Implement testRunRequest().
+     * @covers Fossil\Dispatcher::runRequest
+     * @covers Fossil\Dispatcher::_run
      */
     public function testRunRequest() {
         // First, test that run is called
@@ -39,6 +40,11 @@ class DispatcherTest extends FossilTestCase {
         $this->object->runRequest($runStub, false);
     }
     
+    /**
+     * @covers Fossil\Dispatcher::runRequest
+     * @covers Fossil\Dispatcher::_run
+     * @covers Fossil\Dispatcher::handleRequestException
+     */
     public function testRunRequest404Exception() {
         $exception = new \Fossil\Exceptions\NoSuchControllerException("Test");
         
@@ -52,6 +58,11 @@ class DispatcherTest extends FossilTestCase {
         $this->assertEquals("fossil:error/404", $resp->getTemplateName());
     }
     
+    /**
+     * @covers Fossil\Dispatcher::runRequest
+     * @covers Fossil\Dispatcher::_run
+     * @covers Fossil\Dispatcher::handleRequestException
+     */
     public function testRunRequestDBException() {
         $exception = new \PDOException("Test");
         
@@ -66,6 +77,11 @@ class DispatcherTest extends FossilTestCase {
         
     }
 
+    /**
+     * @covers Fossil\Dispatcher::runRequest
+     * @covers Fossil\Dispatcher::_run
+     * @covers Fossil\Dispatcher::handleRequestException
+     */
     public function testRunRequestGenericException() {
         $exception = new \Exception("Test");
         
@@ -79,6 +95,11 @@ class DispatcherTest extends FossilTestCase {
         $this->assertEquals("fossil:error/generic", $resp->getTemplateName());
     }
     
+    /**
+     * @covers Fossil\Dispatcher::runRequest
+     * @covers Fossil\Dispatcher::_run
+     * @covers Fossil\Dispatcher::handleRequestException
+     */
     public function testRunRequestLogsException() {
         $exception = new \Exception("Test");
         
@@ -87,29 +108,60 @@ class DispatcherTest extends FossilTestCase {
                 ->method('run')
                 ->will($this->throwException($exception));
         
+        $errorMgr = self::$container->get("ErrorManager");
+        $errorLog = $errorMgr->getLog();
+        $errorCount = count($errorLog['exceptions']);
+        // Ensure that the exception count only increases by one
         $resp = $this->object->runRequest($exceptStub, false);
+        $errorLog = $errorMgr->getLog();
+        $this->assertEquals($errorCount+1, count($errorLog['exceptions']));
+    }
+    
+    protected function getMockRequest($payloadCB) {
+        $dispatcher = $this->object;
         
-        // Grab the error logger and check that the exception is there
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $requestCB = function() use($payloadCB) {
+            return $payloadCB();
+        };
+        
+        $requestMock = $this->getMockBuilder('Fossil\Requests\BaseRequest')->disableOriginalConstructor()->getMock();
+        $requestMock->expects($this->any())
+                    ->method('run')
+                    ->will($this->returnCallback($requestCB));
+        return $requestMock;
     }
     
     /**
-     * @todo Implement testGetTopRequest().
+     * @covers Fossil\Dispatcher::runRequest
+     * @covers Fossil\Dispatcher::_run
+     * @covers Fossil\Dispatcher::getTopRequest
      */
     public function testGetTopRequest() {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        // TODO: Add some layers of requests, to actually stress the stack
+        $obj = $this->object;
+        
+        // Use a closure to return the current request during the call
+        $gtrCB = function() use($obj) {
+            return $obj->getTopRequest();
+        };
+        $runStub = $this->getMockBuilder('Fossil\Requests\BaseRequest')->disableOriginalConstructor()->getMock();
+        $runStub->expects($this->any())
+                ->method('run')
+                ->will($this->returnCallback($gtrCB));
+        
+        $result = $this->object->runRequest($runStub, false);
+        $this->assertEquals($runStub, $result);
     }
 
     /**
-     * @todo Implement testGetCurrentRequest().
+     * @covers Fossil\Dispatcher::runRequest
+     * @covers Fossil\Dispatcher::_run
+     * @covers Fossil\Dispatcher::getCurrentRequest
      */
     public function testGetCurrentRequest() {
+        // TODO: Add some layers of requests, to actually stress the stack
         $obj = $this->object;
+        
         // Use a closure to return the current request during the call
         $gcrCB = function() use($obj) {
             return $obj->getCurrentRequest();
@@ -120,10 +172,42 @@ class DispatcherTest extends FossilTestCase {
                 ->will($this->returnCallback($gcrCB));
         
         $result = $this->object->runRequest($runStub, false);
-        
         $this->assertEquals($runStub, $result);
     }
 
+    /**
+     * @covers Fossil\Dispatcher::runRequest
+     * @covers Fossil\Dispatcher::_run
+     */
+    public function testRendersRenderableResponse() {
+        $responseStub = $this->getMockBuilder('Fossil\Responses\RenderableResponse')->disableOriginalConstructor()->getMock();
+        $responseStub->expects($this->once())
+                     ->method('render');
+        
+        $reqStub = $this->getMockBuilder('Fossil\Requests\BaseRequest')->disableOriginalConstructor()->getMock();
+        $reqStub->expects($this->any())
+                ->method('run')
+                ->will($this->returnValue($responseStub));
+        
+        $this->object->runRequest($reqStub);
+    }
+    
+    /**
+     * @covers Fossil\Dispatcher::runRequest
+     * @covers Fossil\Dispatcher::_run
+     */
+    public function testActionsActionableResponse() {
+        $responseStub = $this->getMockBuilder('Fossil\Responses\ActionableResponse')->disableOriginalConstructor()->getMock();
+        $responseStub->expects($this->once())
+                     ->method('runAction');
+        
+        $reqStub = $this->getMockBuilder('Fossil\Requests\BaseRequest')->disableOriginalConstructor()->getMock();
+        $reqStub->expects($this->any())
+                ->method('run')
+                ->will($this->returnValue($responseStub));
+        
+        $this->object->runRequest($reqStub);
+    }
 }
 
 ?>
