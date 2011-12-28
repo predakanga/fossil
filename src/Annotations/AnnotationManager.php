@@ -191,7 +191,7 @@ class AnnotationManager extends Object {
         
             $this->realReader->setIgnoreNotImportedAnnotations(true);
             
-            $this->reader = new CachedReader($this->realReader, new \Doctrine\Common\Cache\ApcCache());
+            $this->reader = new CachedReader($this->realReader, new \Doctrine\Common\Cache\ArrayCache());
             $this->registerNamespaceAlias("\\Fossil\\Annotations\\", "F");
         }
         return $this->reader;
@@ -288,7 +288,7 @@ class AnnotationManager extends Object {
         }
     }
     
-    public function getMethodAnnotations(\ReflectionMethod $reflMethod, $annotation = false) {
+    public function getMethodAnnotations($reflMethod, $annotation = false) {
         $class = $reflMethod->getDeclaringClass()->name;
         $method = $reflMethod->name;
         
@@ -309,6 +309,24 @@ class AnnotationManager extends Object {
     
     public function classHasAnnotation($class, $annotation, $recursive = true) {
         return (count($this->getClassAnnotations($class, $annotation, $recursive)) != 0);
+    }
+    
+    public function classHasMethodAnnotation($class, $annotation = false) {
+        if($annotation) {
+            $annotation = $this->resolveName($annotation);
+        }
+        
+        if(!isset($this->annotations[$class])) {
+            return array();
+        }
+        foreach($this->annotations[$class]['methods'] as $method => $methodAnnos) {
+            foreach($methodAnnos as $anno) {
+                if(!$annotation || is_a($anno, $annotation)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     
     /**

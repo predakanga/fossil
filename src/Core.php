@@ -35,8 +35,6 @@
 
 namespace Fossil;
 
-use Fossil\OM;
-
 /**
  * The core Fossil class, provides lifecycle management
  * 
@@ -98,6 +96,10 @@ class Core extends Object {
     
     public function getOverlayDetails() {
         return $this->overlayDetails;
+    }
+    
+    public function getFossilDetails() {
+        return array('ns' => 'Fossil', 'path' => __DIR__);
     }
     
     public function getInstanceID() {

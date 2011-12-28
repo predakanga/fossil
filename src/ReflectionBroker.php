@@ -81,6 +81,14 @@ class ReflectionBroker extends Object {
     public function getClass($className) {
         return $this->broker->getClass($className);
     }
+    
+    public function getNamespace($namespaceName) {
+        return $this->broker->getNamespace($namespaceName);
+    }
+    
+    public function scanFile($filename) {
+        $this->broker->processFile($filename);
+    }
 }
 
 ?>

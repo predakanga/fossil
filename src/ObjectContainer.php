@@ -79,6 +79,7 @@ class ObjectContainer {
         $this->registerType("Reflection", 'Fossil\ReflectionBroker');
         $this->registerType("Core", 'Fossil\Core');
         $this->registerType("Settings", 'Fossil\Settings');
+        $this->registerType("Compiler", 'Fossil\Compiler');
     }
     
     protected function getCacheFile() {
@@ -206,6 +207,7 @@ class ObjectContainer {
         // After all classes are known, etc, make sure the schemas are updated
         $this->get("ORM")->ensureSchema();
         // TODO: Trigger compilation here
+        $this->get("Compiler")->compileAllClasses();
     }
     
     protected function appSpecificEveryTimeInit() {
@@ -396,6 +398,22 @@ class ObjectContainer {
         return $this->potentialProviders[$type];
     }
     
+    public function getAllKnownClasses() {
+        $toRet = array();
+        foreach($this->instancedTypes as $instType => $instImpls) {
+            foreach($instImpls as $instImpl) {
+                $toRet[] = $instImpl;
+            }
+        }
+        // TODO: Should this only consider in-use providers?
+        foreach($this->potentialProviders as $provType => $provImpls) {
+            foreach($provImpls as $provImpl) {
+                $toRet[] = $provImpl;
+            }
+        }
+        return $toRet;
+    }
+    
     public function get($objectType) {
         $objectType = strtolower($objectType);
         if(!isset($this->instances[$objectType])) {
@@ -477,6 +495,11 @@ class ObjectContainer {
             return new $this->classMap[$fqcn]($this);
         }
         return new $fqcn($this);
+    }
+    
+    public function setClassMap($classMap) {
+        // TODO: Should we just wipe it out instead? Could cause issues with cached class map otherwise
+        $this->classMap += $classMap;
     }
     
     public function __sleep() {

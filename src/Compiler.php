@@ -36,258 +36,251 @@
 namespace Fossil;
 
 /**
- * @F:Object("Compiler")
+ * @F:Provides("Compiler")
+ * @F:DefaultProvider
  */
-class Compiler {
+class Compiler extends Object {
     protected $baseNamespace = "Fossil\\Compiled\\";
     protected $baseDir;
     protected $classMap = array();
     protected $reflClassMap = array();
+    
+    /**
+     * @F:Inject("Reflection")
+     * @var Fossil\ReflectionBroker
+     */
     protected $broker;
-
-    public function __construct() {
-        $this->baseDir = OM::FS()->tempDir() . D_S . "Compiled";
-    }
+    /**
+     * @F:Inject("AnnotationManager")
+     * @var Fossil\Annotations\AnnotationManager
+     */
+    protected $annotations;
+    /**
+     * @F:Inject("Core")
+     * @var Fossil\Core
+     */
+    protected $core;
+    /**
+     * @F:Inject("Filesystem")
+     * @var Fossil\Filesystem
+     */
+    protected $fs;
+    protected $compiled = array();
     
-    public function getAutoloadInfo() {
-        return array(rtrim($this->baseNamespace, "\\"), $this->baseDir);
-    }
-    
-    public function registerAutoloadPath() {
-        Autoloader::addNamespacePath(rtrim($this->baseNamespace, "\\"), $this->baseDir);
-    }
-    
-    protected function getBroker() {
-        if(!$this->broker) {
-            $this->broker = new \TokenReflection\Broker(new \TokenReflection\Broker\Backend\Memory());
+    /**
+     * @F:LogCall()
+     */
+    protected function baseClassName($fqn) {
+        $lastSlash = strrpos($fqn, '\\');
+        if($lastSlash === FALSE) {
+            return $fqn;
         }
-        return $this->broker;
+        return substr($fqn, $lastSlash+1);
     }
     
-    protected function saveClass($fqcn, $source) {
-        // Work out the file path
-        $parts = explode("\\", $fqcn);
-        $real_parts = array_slice($parts, 2);
-        $filename = array_pop($real_parts);
-        $dirpath = $this->baseDir . D_S . implode(D_S, $real_parts);
-
-        if(!is_dir($dirpath))
-            mkdir($dirpath, 0755, true);
-
-        file_put_contents($dirpath . DIRECTORY_SEPARATOR . $filename . ".php", $source);
+    /**
+     * @F:LogCall()
+     */
+    protected function baseNamespaceName($fqn) {
+        $lastSlash = strrpos($fqn, '\\');
+        if($lastSlash === FALSE) {
+            return '';
+        }
+        return substr($fqn, 0, $lastSlash);
     }
-
-    protected function basename($fqcn) {
-        return substr($fqcn, strrpos($fqcn, "\\")+1);
-    }
-    protected function nsname($fqcn) {
-        return substr($fqcn, 0, strrpos($fqcn, "\\"));
-    }
-
-    protected function getAccessStr($access) {
-        return implode(' ', \Reflection::getModifierNames($access));
-    }
-
+    
+    /**
+     * @F:LogCall()
+     */
     protected function transformNamespace($inputNamespace) {
-        if(strpos($inputNamespace, "Fossil\\") === 0) {
-            return $this->baseNamespace .
-                    substr($inputNamespace, strlen("Fossil\\"));
-        } elseif(strpos($inputNamespace, OM::appNamespace()) === 0) {
-            return $this->baseNamespace . "App\\" .
-                    substr($inputNamespace, strlen(OM::appNamespace()) + 1);
-        } elseif(strpos($inputNamespace, OM::overlayNamespace()) === 0) {
-            return $this->baseNamespace . "Overlay\\" .
-                    substr($inputNamespace, strlen(OM::overlayNamespace()) + 1);
-        } else {
-            throw new \Exception("Trying to compile a namespace beyond our scope: $inputNamespace (not in " . OM::appNamespace() . "," . OM::overlayNamespace() . ")");
-        }
-    }
-
-    protected function launchCompile($class) {
-        // If it's already been compiled, just return
-        if(isset($this->classMap[$class]))
-            return $this->classMap[$class];
-
-        // Gather the class tree for this class
-        $classTree = $this->getClassExtensionTree($class);
-        return $this->compileTree($class, $classTree);
-    }
-    
-    public function getClassExtensionTree($class) {
-        if($class[0] == '\\')
-            $class = substr($class, 1);
-        $retArr = array();
-        // First, check if there are any compilation attributes on this class
-        $reflClass = new \ReflectionClass($class);
-        $compileClasses = array();
-        foreach($reflClass->getMethods() as $reflMethod) {
-            if($reflMethod->class != $class)
-                continue;
-            $annotations = OM::Annotations()->getMethodAnnotations($reflMethod, "F:Compilation");
-            foreach($annotations as $annotation) {
-                if(!in_array($annotation, $compileClasses))
-                    $compileClasses[] = $annotation;
-            }
-        }
-        foreach($compileClasses as $compileClass) {
-            $retArr[] = array($class, $compileClass);
-        }
-        // Next, visit all applicable extension classes, but only immediate children
-        foreach(OM::getExtensionClasses() as $extClass) {
-            if(get_parent_class($extClass) == $class) {
-                $retArr[] = $extClass;
-                $retArr = array_merge($retArr, $this->getClassExtensionTree($extClass));
-            }
-        }
-        // Finally, check non-extension classes
-        $nonExtClasses = OM::Annotations()->filterClassesByAnnotation(get_declared_classes(), "F:ExtensionClass", true);
-        foreach($nonExtClasses as $nonExtClass) {
-            if(get_parent_class($nonExtClass) != $class)
-                continue;
-            $subTree = array("*", $nonExtClass);
-            $subTree = array_merge($subTree, $this->getClassExtensionTree($nonExtClass));
-            $retArr[] = $subTree;
-        }
-        return $retArr;
-    }
-
-    protected function compileTree($base, $tree, $followBase = true) {
-        if(count($tree) == 0)
-            return $base;
+        // Determine which namespace we live in - root, app, or overlay
+        $fossilDetails = $this->core->getFossilDetails();
+        $appDetails = $this->core->getAppDetails();
+        $overlayDetails = $this->core->getAppDetails();
         
-        $current_objects = array();
-        if($followBase)
-            $current_objects[] = $base;
-
-        $compilationNeeded = false;
-
-        $new_base = $base;
-        foreach($tree as $leaf) {
-            if(is_array($leaf) && $leaf[0] != "*") {
-                // Compilation leaf
-                $new_base = $this->compileClass($leaf[0], $leaf[1], $new_base);
-                $compilationNeeded = true;
-            } elseif(!is_array($leaf)) {
-                // Reparent leaf
-                $new_base = $this->reparentClass($leaf, $new_base);
-                $compilationNeeded = true;
-                $current_objects[] = $leaf;
-            } else {
-                // Reparent, without affecting the new base
-                if($compilationNeeded)
-                    $this->compileTree($new_base, array_slice($leaf, 1), false);
-                else
-                    $this->compileTree($leaf[1], array_slice($leaf, 2));
-            }
-        }
-        foreach($current_objects as $class)
-            $this->classMap[$class] = $new_base;
-        return $new_base;
-    }
-
-    protected function findClass($filename, $class) {
-        if(isset($this->reflClassMap[$class])) {
-            return $this->reflClassMap[$class];
-        }
-        $fileInfo = $this->getBroker()->processFile($filename, true);
-        foreach($fileInfo->getNamespaces() as $ns) {
-            foreach($ns->getClasses() as $reflClass) {
-                if($reflClass->getName() == $class) {
-                    $this->reflClassMap[$class] = $reflClass;
-                    return $reflClass;
+        $baseNamespace = '';
+        $outputNamespace = $fossilDetails['ns'] . '\\' . 'Compiled' . '\\';
+        
+        if($fossilDetails) {
+            if(strpos($inputNamespace, $fossilDetails['ns']) === 0) {
+                if(strlen($fossilDetails['ns']) > strlen($baseNamespace)) {
+                    $baseNamespace = $fossilDetails['ns'];
+                    $outputNamespace .= 'Fossil';
                 }
             }
         }
+        if($appDetails) {
+            if(strpos($inputNamespace, $appDetails['ns']) === 0) {
+                if(strlen($appDetails['ns']) > strlen($baseNamespace)) {
+                    $baseNamespace = $appDetails['ns'];
+                    $outputNamespace .= 'App';
+                }
+            }
+        }
+        if($overlayDetails) {
+            if(strpos($inputNamespace, $overlayDetails['ns']) === 0) {
+                if(strlen($overlayDetails['ns']) > strlen($baseNamespace)) {
+                    $baseNamespace = $overlayDetails['ns'];
+                    $outputNamespace .= 'Overlay';
+                }
+            }
+        }
+        // Strip baseNamespace off inputNamespace, and replace with outputNamespace
+        return str_replace($baseNamespace, $outputNamespace, $inputNamespace);
     }
     
-    protected function reparentClass($class, $targetParent) {
-        $newName = $this->transformNamespace($class);
-        $newClassName = $this->basename($class);
-        $targetNamespace = $this->transformNamespace($this->nsname($class));
-
-        // Grab the original class's source
-        $reflClass = new \ReflectionClass($class);
-        $fileSource = file($reflClass->getFileName());
-        
-        // Use reflClass to get the FQCN
-        $classInfo = $this->findClass($reflClass->getFileName(), $reflClass->getName());
-        $classSource = $classInfo->getSource();
-        
-        // TODO: Decide whether to bring in the rest of the file too - probably
-        //       safest to, but needs the implementation of a tokenizer first,
-        //       to properly grab the reparented class
-
-        // Use a regex to replace the name and parent
-        $newParent = "\\" . $targetParent;
-        $classSource = preg_replace('/^([^{]+extends\s+)\S+/S', "\\1$newParent", $classSource);
-
-        $pageSource = <<<'EOT'
+    /**
+     * @F:LogCall()
+     */
+    protected function saveClass($className, $namespaceName, $source) {
+        // Save the class to disk
+        // First, determine the path, and ensure it exists
+        $fossilDetails = $this->core->getFossilDetails();
+        $basePath = $this->fs->tempDir() . D_S . 'Compiled' . D_S;
+        $baseNS = $fossilDetails['ns'] . '\\' . 'Compiled' . '\\';
+        // Remove the baseNS from the nsName
+        $trimmedNS = str_replace($baseNS, '', $namespaceName);
+        $middlePath = $basePath . implode(D_S, explode('\\', $trimmedNS));
+        // Make sure that the middle path exists
+        if(!is_dir($middlePath)) {
+            mkdir($middlePath, 0755, true);
+        }
+        // And finally, save the new class
+        $classPath = $middlePath . D_S . $className . ".php";
+        file_put_contents($classPath, $source);
+        // And tell the broker about the new class
+        $this->broker->scanFile($classPath);
+    }
+    
+    /** @F:LogCall() */
+    public function compileAllClasses() {
+        $classList = $this->container->getAllKnownClasses();
+        foreach($classList as $class) {
+            $this->compileClass($class);
+        }
+        // And set the class map
+        $this->container->setClassMap($this->classMap);
+    }
+    
+    protected function compileClass($class) {
+        $reflClass = $this->broker->getClass($class);
+        $workingClass = $class;
+        $parentClass = $reflClass->getParentClassName();
+        if($parentClass != null) {
+            if(empty($this->compiled[$parentClass])) {
+                $this->compileClass($parentClass);
+            }
+        }
+        // If we were picked up in the extension class pass, return
+        if(isset($this->compiled[$class]) && $this->compiled[$class]) {
+            return;
+        }
+        if(isset($this->classMap[$parentClass]) && $this->classMap[$parentClass] != $parentClass) {
+            $workingClass = $this->reparentClass($workingClass, $this->classMap[$parentClass]);
+        }
+        if($this->needsExtension($class)) {
+            $workingClass = $this->compileExtensions($class, $workingClass);
+        }
+        // After compilation, check all direct descendants to see whether they're
+        // extension classes - if so, descend and compile them before returning
+        // to the parent
+        // Behaviour when there are multiple extension classes on a particular
+        // parent is undefined
+        if($this->isExtensionClass($class)) {
+            $this->classMap[$parentClass] = $workingClass;
+        }
+        $this->compiled[$class] = true;
+        $this->classMap[$class] = $workingClass;
+        foreach($reflClass->getDirectSubclassNames() as $subclass) {
+            if($this->isExtensionClass($subclass)) {
+                $this->compileClass($subclass);
+            }
+        }
+    }
+    
+    protected function reparentClass($originalClass, $newParent) {
+        $sourceTpl = <<<'EOT'
 <?php
 
 namespace %s;
 
 %s
+
+%s
 EOT;
-        $this->saveClass($newName, sprintf($pageSource, $targetNamespace, $classSource));
-
-        return $this->transformNamespace($class);
+        $oldReflClass = $this->broker->getClass($originalClass);
+        // First param, new namespace
+        $oldNamespace = $oldReflClass->getNamespaceName();
+        $newNamespace = $this->transformNamespace($oldNamespace);
+        // Second param, use list - contains all existing use declarations, and
+        // extra use declarations for every class in the current namespace
+        $useList = $oldReflClass->getNamespaceAliases();
+        foreach($this->broker->getNamespace($oldNamespace)->getClassNames() as $className) {
+            $useList[$this->baseClassName($className)] = $className;
+        }
+        $useListStr = "";
+        if(count($useList)) {
+            $useListStr = "use ";
+            foreach($useList as $alias => $fqn) {
+                $useListStr .= $fqn . " as " . $alias . ",\n\t";
+            }
+            $useListStr = trim($useListStr, ",\n\t") . ";";
+        }
+        // Third param, the class source, with the "extends" clause rewritten
+        $origSource = $this->broker->getClass($originalClass)->getSource();
+        $baseClassName = $this->baseClassName($originalClass);
+        $origSource = preg_replace("/^(.*?\s+extends\s+)[\S]+?\s*{/s", '\1' . $newParent . ' {', $origSource);
+        
+        // Print the new source
+        $newSource = sprintf($sourceTpl, $newNamespace, $useListStr, $origSource);
+        // And save the new class
+        $this->saveClass($baseClassName, $newNamespace, $newSource);
+        // And return the new class name
+        return $newNamespace . '\\' . $baseClassName;
     }
-
-    protected function compileClass($class, $compileClass, $targetParent) {
-        $newName = $this->transformNamespace($class) . "_" . $this->basename(get_class($compileClass));
-        $newClassName = $this->basename($class) . "_" . $this->basename(get_class($compileClass));
-        $targetNamespace = $this->transformNamespace($this->nsname($class));
-
-        // Grab the source...
-        $compiledMethods = array();
-        $reflClass = new \ReflectionClass($class);
-        $reflMethods = $reflClass->getMethods();
-
-        $reflAnno = new \ReflectionClass($compileClass);
-        $compileClassInfo = $this->findClass($reflAnno->getFileName(), $reflAnno->getName());
+    
+    protected function isExtensionClass($class) {
+        return $this->annotations->classHasAnnotation($class, "F:ExtensionClass", false);
+    }
+    
+    protected function needsExtension($originalClass) {
+        return $this->annotations->classHasMethodAnnotation($originalClass, "F:Compilation");
+    }
+    
+    protected function compileExtensions($originalClass, $currentClass) {
+        $workingClass = $currentClass;
         
-        $classInfo = $this->findClass($reflClass->getFileName(), $reflClass->getName());
-        
-        $nsAliases = $compileClassInfo->getNamespaceAliases();
-        $useText = "";
-        
-        if(count($nsAliases)) {
-            $useText = "use ";
-            foreach($nsAliases as $alias => $ns) {
-                $useText .= "$ns as $alias, ";
-            }
-            $useText = rtrim($useText, ", ") . ";";
-        }
-        
-        foreach($reflMethods as $reflMethod) {
-            // First, make sure it's locally implemented
-            if($reflMethod->class != $class)
+        // Gather the types of extensions that we're going to use, one class per extension
+        $reflClass = $this->broker->getClass($originalClass);
+        $allAnnos = array();
+        foreach($reflClass->getMethods() as $method) {
+            // Ignore inherited methods
+            if($method->getDeclaringClassName() != $originalClass) {
                 continue;
-            // Next, check for our desired annotation
-            if(OM::Annotations()->getMethodAnnotations($reflMethod, get_class($compileClass))) {
-                $newMethod = array();
-                $newMethod['name'] = $reflMethod->name;
-                $newMethod['access'] = $this->getAccessStr($reflMethod->getModifiers());
-                
-                // Simple solution to get the preamble
-                $methodInfo = $classInfo->getMethod($reflMethod->name);
-                $fullMethodSource = $methodInfo->getSource();
-                $methodPreamble = substr($fullMethodSource, 0, strpos($fullMethodSource, "{")-1);
-                
-                $compileMethodInfo = $compileClassInfo->getMethod("call");
-                $fullCompileSource = $compileMethodInfo->getSource();
-                $methodPostamble = substr($fullCompileSource, strpos($fullCompileSource, "{")+1);
-                
-                $newMethod['preamble'] = $methodPreamble;
-                $newMethod['postamble'] = trim($methodPostamble, " \r\n\r\0\x0B}");
-                
-                $compiledMethods[] = $newMethod;
+            }
+            $annos = $this->annotations->getMethodAnnotations($method, "F:Compilation");
+            foreach($annos as $anno) {
+                $allAnnos[get_class($anno)] = $anno;
             }
         }
-
-        // Construct the new class
-        $classText = <<<'EOT'
+        
+        foreach($allAnnos as $compilationAnno) {
+            $workingClass = $this->compileExtension($originalClass, $workingClass, $compilationAnno);
+        }
+        return $workingClass;
+    }
+    
+    protected function compileExtension($originalClass, $currentClass, $compilationAnnotation) {
+        // Determine final class name
+        $newFQN = $this->transformNamespace($originalClass) . "_" . $this->baseClassName(get_class($compilationAnnotation));
+        $newClassName = $this->baseClassName($newFQN);
+        $reflOrigClass = $this->broker->getClass($originalClass);
+        $reflCompileClass = $this->broker->getClass(get_class($compilationAnnotation));
+        $reflCompileMethod = $reflCompileClass->getMEthod('call');
+        
+        $classTpl = <<<'EOC'
 <?php
+
 namespace %s;
 
 %s
@@ -299,8 +292,8 @@ class %s extends \%s {
 
 %s
 }
-EOT;
-    $methodText = <<<'EOT'
+EOC;
+        $methodTpl = <<<'EOM'
     %s {
         $args = func_get_args();
         static $compileArgs = null;
@@ -312,42 +305,46 @@ EOT;
         %s
     }
 
-EOT;
-
-        $compiledMethodText = "";
-        $compiledClassText = "";
-        foreach($compiledMethods as $method) {
-            $compiledMethodText .= sprintf($methodText, $method['preamble'], serialize($compileClass->getArgs()), $method['postamble']);
-        }
-        if($targetParent[0] == '\\')
-            $targetParent = substr($targetParent, 1);
+EOM;
         
-        $compiledClassText = sprintf($classText, $targetNamespace, $useText, $newClassName, $targetParent, $compiledMethodText);
-
-        $this->saveClass($targetNamespace . "\\" . $newClassName, $compiledClassText);
-
-        return $newName;
-    }
-
-    public function compileAll() {
-        // Get a list of all objects for compilation
-        foreach (OM::getObjectsToCompile() as $class) {
-            $this->launchCompile($class);
+        // Figure out our target namespace
+        $newNS = $this->baseNamespaceName($newFQN);
+        // And the namespace aliases
+        $useList = $reflOrigClass->getNamespaceAliases();
+        $useListStr = "";
+        if(count($useList)) {
+            $useListStr = "use ";
+            foreach($useList as $alias => $fqn) {
+                $useListStr .= $alias . " as " . $fqn . ",\n\t";
+            }
+            $useListStr = trim($useListStr, ",\n\t") . ";";
         }
-        return $this->classMap;
-    }
 
-    public function bootstrap() {
-        // The bootstrapping simply compiles itself, so that an enhanced compiler can be used as provided
-        $newTopClass = $this->launchCompile("\\" . __CLASS__);
-        if($newTopClass != get_class($this)) {
-            OM::setSingleton("Compiler", new $newTopClass);
+        // Next, build up the list of methods to extend
+        $overriddenMethodSource = "";
+        $compilationAnnoClass = get_class($compilationAnnotation);
+        foreach($reflOrigClass->getMethods() as $reflMethod) {
+            if($reflMethod->getDeclaringClassName() != $originalClass) {
+                continue;
+            }
+            if(count($this->annotations->getMethodAnnotations($reflMethod, $compilationAnnoClass))) {
+                $anno = reset($this->annotations->getMethodAnnotations($reflMethod, $compilationAnnoClass));
+                // This method needs to be overridden
+                $fullMethodSource = $reflMethod->getSource();
+                $methodPreamble = substr($fullMethodSource, 0, strpos($fullMethodSource, "{")-1);
+                // TODO: Strip annotations from doc-comments
+                
+                $fullCompileSource = $reflCompileMethod->getSource();
+                $methodPostamble = substr($fullCompileSource, strpos($fullCompileSource, "{")+1);
+                $methodPostamble = trim(substr($methodPostamble, 0, strpos($methodPostamble, "}")));
+                
+                $overriddenMethodSource .= sprintf($methodTpl, $methodPreamble, serialize($anno->getArgs()), $methodPostamble);
+            }
         }
-        return $this->classMap;
-    }
-    
-    public function setClassMap($classMap) {
-        $this->classMap = $classMap;
+        $source = sprintf($classTpl, $newNS, $useListStr, $newClassName, $currentClass, $overriddenMethodSource);
+        
+        $this->saveClass($newClassName, $newNS, $source);
+        return $newFQN;
     }
 }
 
