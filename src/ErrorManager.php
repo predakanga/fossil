@@ -46,7 +46,7 @@ class ErrorManager {
     private $logMask = 11; // E_ERROR | E_WARNING | E_NOTICE
     private $showMask = 3; // E_ERROR | E_WARNING
     private $dieMask = 1; // E_ERROR
-    private $log = array();
+    private $log = array('errors' => array(), 'exceptions' => array());
     
     public function __construct() {
         error_reporting(E_ALL | E_STRICT);
@@ -67,7 +67,7 @@ class ErrorManager {
             // TODO: Only store the backtrace on specific occasions
             $bt = debug_backtrace();
             array_shift($bt);
-            $this->log[] = array('errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline, 'backtrace' => $bt);
+            $this->log['errors'][] = array('errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline, 'backtrace' => $bt);
         }
         if($errno & $this->showMask) {
             echo "Encountered an error at $errfile:$errline\n";
@@ -78,8 +78,14 @@ class ErrorManager {
         }
     }
     
-    public function exceptionHandler($exception) {
-        
+    public function exceptionHandler(\Exception $exception) {
+        $exception->handled = false;
+        $this->log['exceptions'][] = $exception;
+    }
+    
+    public function logHandledException(\Exception $exception) {
+        $exception->handled = true;
+        $this->log['exceptions'][] = $exception;
     }
     
     public function getLog() {

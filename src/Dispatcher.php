@@ -56,6 +56,12 @@ class Dispatcher extends Object {
      * @var Fossil\ORM
      */
     protected $orm;
+    /**
+     * @F:Inject(type = "ErrorManager")
+     * @var Fossil\ErrorManager
+     */
+    protected $errors;
+    
     
     protected function createEntryRequest() {
         if(PHP_SAPI == "cli") {
@@ -87,6 +93,7 @@ class Dispatcher extends Object {
     }
     
     protected function handleRequestException(\Exception $e, BaseRequest $req, $react) {
+        $this->errors->logHandledException($e);
         // Handle 404 errors
         if($e instanceof NoSuchTargetException) {
             $fourohfourReq = $this->_new("Request", "Internal", "error", "404");

@@ -112,7 +112,8 @@ class SmartyRenderer extends BaseRenderer {
     }
     
     protected function setDefaultVariables($tpl) {
-        $tpl->assign('errors', $this->errorMgr->getLog());
+        $errorLog = $this->errorMgr->getLog();
+        $tpl->assign('errors', $errorLog['errors']);
         $tpl->assign('now', new \DateTime());
     }
     
