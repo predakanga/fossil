@@ -328,7 +328,8 @@ EOM;
                 continue;
             }
             if(count($this->annotations->getMethodAnnotations($reflMethod, $compilationAnnoClass))) {
-                $anno = reset($this->annotations->getMethodAnnotations($reflMethod, $compilationAnnoClass));
+                $annos = $this->annotations->getMethodAnnotations($reflMethod, $compilationAnnoClass);
+                $anno = reset($annos);
                 // This method needs to be overridden
                 $fullMethodSource = $reflMethod->getSource();
                 $methodPreamble = substr($fullMethodSource, 0, strpos($fullMethodSource, "{")-1);
