@@ -102,7 +102,7 @@ class Settings extends Object {
         if(!isset($this->store[$section]))
             $this->store[$section] = array();
         foreach($settings as $setting) {
-            $this->store[$section][$setting->name] = $setting->value;
+            $this->store[$section][$setting->name] = $this->dbValueToValue($setting->value);
         }
     }
     
@@ -118,6 +118,8 @@ class Settings extends Object {
         if(!isset($this->store[$section]))
             $this->loadSectionSettings($section);
         $this->store[$section][$setting] = $value;
+        // Serialize the setting as appropriate
+        $value = $this->valueToDbValue($value);
         // Persist to the DB as well
         $settingModel = Setting::findOneBy($this->container, array('section' => $section, 'name' => $setting));
         if(!$settingModel) {
@@ -127,6 +129,55 @@ class Settings extends Object {
             $settingModel->save();
         }
         $settingModel->value = $value;
+    }
+    
+    protected function valueToDbValue($value) {
+        // Leave strings and nulls alone
+        if($value === null || is_string($value)) {
+            return $value;
+        }
+        // Convert numerics to string
+        if(is_numeric($value)) {
+            return sprintf("%s", $value); // Use sprintf to avoid (string)0 => ""
+        }
+        // And booleans to textual representations
+        if(is_bool($value)) {
+            if($value) {
+                return "true";
+            } else {
+                return "false";
+            }
+        }
+        // And serialize anything else
+        return serialize($value);
+    }
+    
+    protected function dbValueToValue($dbValue) {
+        if(is_numeric($dbValue)) {
+            $floatValue = floatval($dbValue);
+            $intValue = intval($dbValue);
+            if((string)$intValue == $dbValue) {
+                return $intValue;
+            } elseif((string)$floatValue == $dbValue) {
+                return $floatValue;
+            } else {
+                return $dbValue;
+            }
+        } elseif($dbValue == "true") {
+            return true;
+        } elseif($dbValue == "false") {
+            return false;
+        } else {
+            // Test if it's serialized data by attempting to unserialize
+            // Necessary because PHP has pluggable serialization handlers, for
+            // entirely different formats
+            $data = @unserialize($dbValue);
+            if($data === FALSE) {
+                return $dbValue;
+            } else {
+                return $data;
+            }
+        }
     }
 }
 

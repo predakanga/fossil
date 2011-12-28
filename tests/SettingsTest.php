@@ -17,6 +17,10 @@ class SettingsTest extends FossilTestCase {
      * @var Fossil\Settings
      */
     protected $object;
+    /**
+     * @var Fossil\ORM
+     */
+    protected $orm;
     
     public static function freshenVirtualFilesystem() {
         // Copy data in from fixture
@@ -30,8 +34,9 @@ class SettingsTest extends FossilTestCase {
      * This method is called before a test is executed.
      */
     protected function setUp() {
-//        self::freshenVirtualFilesystem();
+        self::freshenVirtualFilesystem();
         $this->object = self::$container->get("Settings");
+        $this->orm = self::$container->get("ORM");
     }
 
     /**
@@ -46,18 +51,47 @@ class SettingsTest extends FossilTestCase {
      * @covers Fossil\Settings::__destruct
      */
     public function test__destruct() {
-        // TODO: Test to make sure that the fossil data is dumped to settings.yml
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+        $origHash = md5_file(\vfsStream::url("sampleSettings.yml"));
+        // Test destruction with no changes doesn't change mtime
+        $sampleSet = new Settings(self::$container, \vfsStream::url("sampleSettings.yml"));
+        $sampleSet->__destruct();
+        $sampleSet = null;
+        $this->assertEquals($origHash, md5_file(\vfsStream::url("sampleSettings.yml")));
+        // Test destruction with changes to sections other than fossil doesn't change mtime
+        $sampleSet = new Settings(self::$container, \vfsStream::url("sampleSettings.yml"));
+        $sampleSet->set("test__destruct", "someName", "someValue");
+        $sampleSet->__destruct();
+        $sampleSet = null;
+        $this->assertEquals($origHash, md5_file(\vfsStream::url("sampleSettings.yml")));
+        // Test destruction with changes to fossil section does change mtime
+        $sampleSet = new Settings(self::$container, \vfsStream::url("sampleSettings.yml"));
+        $sampleSet->set("Fossil", "someOtherName", "someOtherValue");
+        $sampleSet->__destruct();
+        $sampleSet = null;
+        $this->assertNotEquals($origHash, md5_file(\vfsStream::url("sampleSettings.yml")));
     }
 
     /**
+     * @covers Fossil\Settings::loadCoreSettings
+     */
+    public function testLoadCoreSettings() {
+        $runStub = $this->getMockBuilder('Fossil\Settings')->disableOriginalConstructor()->setMethods(array('loadSectionSettings'))->getMock();
+        $runStub->expects($this->once())
+                ->method('loadSectionSettings')
+                ->with($this->equalTo("Fossil"));
+        $runStub->loadCoreSettings();
+    }
+    
+    /**
+     * @covers Fossil\Settings::__construct
      * @covers Fossil\Settings::isBootstrapped
      */
-    public function testIsBootstrapped() {
+    public function testConstructionAndIsBootstrapped() {
         // Test that the default settings (basic, for unit testing) are not bootstrapped
         $this->assertTrue($this->object->isBootstrapped());
+        // And recreate it, to have code coverage for the default case
+        $defaultSet = new Settings(self::$container);
+        $this->assertTrue($defaultSet->isBootstrapped());
         // Test that the sample settings are bootstrapped
         $sampleSet = new Settings(self::$container, \vfsStream::url("sampleSettings.yml"));
         $this->assertTrue($sampleSet->isBootstrapped());
@@ -70,39 +104,43 @@ class SettingsTest extends FossilTestCase {
     }
 
     /**
-     * @todo Implement testGet().
      * @covers Fossil\Settings::get
      */
-    public function testGet() {
-        // Test that a newly set value is returned properly
-        $this->object->set("testGet", "get1", "Foobar");
-        $this->assertEquals("Foobar", $this->object->get("testGet", "get1"));
-        // Test that a pre-set value is returned properly
-        $this->assertEquals("users,forums,schedule", $this->object->get("Fossil", "plugins"));
-        // Test that an unset value without default is not returned
-        $this->assertNull($this->object->get("testGet", "get2"));
-        // Test that an unset value with default is returned
-        $this->assertEquals("42", $this->object->get("testGet", "get3", "42"));
-        // Test that complex types (read: arrays/dicts) can be set and retrieved
-        $this->object->set("testGet", "get4", array("Foo" => "Bar"));
-        $this->assertInternalType("array", $this->object->get("testGet", "get4"));
-        // Test that complex types can be retrieved from a backing file
-        $this->assertInternalType("array", $this->object->get("Fossil", "Drivers"));
-        // And that they can be retrieved from the DB
-        $this->object->set("testGet", "get5", array("Foo" => "Bar2"));
-        $newSettings = new Settings(self::$container);
-        $this->assertInternalType("array", $newSettings->get("testGet", "get5"));
+    public function testGetReturnsDefault() {
+        $this->object->set("testGet", "hasValue", "something");
+        
+        $this->assertNotEquals("nothing", $this->object->get("testGet", "hasValue", "nothing"));
+        $this->assertEquals("nothing", $this->object->get("testGet", "doesntHaveValue", "nothing"));
     }
 
     /**
-     * @todo Implement testSet().
+     * @dataProvider dataForSetAndGet
+     * @covers Fossil\Settings::get
      * @covers Fossil\Settings::set
+     * @covers Fossil\Settings::dbValueToValue
+     * @covers Fossil\Settings::valueToDbValue
+     * @covers Fossil\Settings::loadSectionSettings
      */
-    public function testSet() {
-        // Remove the following lines when you implement this test.
-        $this->markTestIncomplete(
-                'This test has not been implemented yet.'
-        );
+    public function testSetAndGet($testName, $testVal) {
+        $this->object->set("testSetAndGet", $testName, $testVal);
+        $this->orm->flush();
+
+        $newSettings = new Settings(self::$container);
+        $this->assertEquals($testVal, $this->object->get("testSetAndGet", $testName));
+        $this->assertEquals($testVal, $newSettings->get("testSetAndGet", $testName));
+    }
+    
+    public function dataForSetAndGet() {
+        return array(array("dataset1", "simple string"),
+                     array("dataset2", 43),
+                     array("dataset3", 73.2451),
+                     array("dataset4", true),
+                     array("dataset4", false),
+                     array("dataset4", "overwriting test"),
+                     array("dataset5", array("Complex", 32)),
+                     array("dataset6", array("Simple" => "Dict")),
+                     array("dataset7", new \stdClass()),
+                     array("dataset8", str_repeat("9", 540)));
     }
 
 }
