@@ -33,7 +33,7 @@ namespace Fossil\Util;
  * Description of BBCode
  *
  * @author predakanga
- * @F:Object("BBCode")
+ * @F:Provides("BBCode")
  */
 class BBCode {
     /** @var \HTML_BBCodeParser */

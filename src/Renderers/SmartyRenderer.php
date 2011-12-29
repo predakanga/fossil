@@ -207,7 +207,7 @@ class SmartyRenderer extends BaseRenderer {
     }
     
     function bbdecodeModifier($input) {
-//        return OM::BBCode()->decode($input);
+        return $this->container->get("BBCode")->decode($input);
     }
     
     function dateIntervalFmtModifier(\DateInterval $interval) {
@@ -512,7 +512,7 @@ class SmartyRenderer extends BaseRenderer {
         $suffix = "views" . D_S . "smarty" . D_S . implode(D_S, explode("\\", $name)) . ".tpl";
         
         if($pluginName) {
-            $plugin = OM::Plugins($pluginName);
+            $plugin = $this->container->get("Plugins")->get($pluginName);
             return $plugin['root'] . D_S . $suffix;
         } else {
             // Check real roots first
@@ -521,7 +521,7 @@ class SmartyRenderer extends BaseRenderer {
                     return $root . D_S . $suffix;
             }
             // Then plugin roots as a fallback
-            foreach(OM::FS()->pluginRoots() as $root) {
+            foreach($this->fs->pluginRoots() as $root) {
                 if(file_exists($root . D_S . $suffix))
                     return $root . D_S . $suffix;
             }
