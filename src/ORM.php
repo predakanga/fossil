@@ -196,6 +196,10 @@ class ORM extends Object {
             $this->em->flush();
     }
     
+    public function ensureClassMetadata() {
+        $this->getEM()->getMetadataFactory()->getAllMetadata();
+    }
+    
     public function ensureSchema($coreOnly = false, $retainDeleted = true) {
         $schemaTool = new CustomSchemaTool($this->getEM(), $retainDeleted);
         

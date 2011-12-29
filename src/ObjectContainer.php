@@ -65,9 +65,16 @@ class ObjectContainer {
             $this->get("Core")->setAppDetails($appDetails);
         }
 
+        // Then set up the compiled class autoloader
+        $fossilDetails = $this->get("Core")->getFossilDetails();
+        $basePath = $this->get("Filesystem")->tempDir() . D_S . 'Compiled' . D_S;
+        $baseNamespace = $fossilDetails['ns'] . "\\Compiled";
+        Autoloader::addNamespacePath($baseNamespace, $basePath);
+        
         // Then check for local DI cache
         if(!$this->cachedInit()) {
             $this->uncachedInit();
+            $this->updateCache();
         }
         $this->appSpecificEveryTimeInit();
     }
@@ -95,12 +102,12 @@ class ObjectContainer {
     public function updateCache() {
         $filename = $this->getCacheFile();
         $cacheObj = array('registrations' => $this->registrations,
-                          'instancedTypes' => $this->instancedTypes);
+                          'instancedTypes' => $this->instancedTypes,
+                          'classMap' => $this->classMap);
         file_put_contents($filename, yaml_emit($cacheObj));
     }
     
     protected function cachedInit() {
-        return false;
         $filename = $this->getCacheFile();
         if(!file_exists($filename)) {
             return false;
@@ -108,7 +115,15 @@ class ObjectContainer {
         $cache = yaml_parse_file($filename);
         @$this->registrations = $cache['registrations'];
         @$this->instancedTypes = $cache['instancedTypes'];
-        return ($this->registrations && $this->instancedTypes);
+        @$this->classMap = $cache['classMap'];
+        if($this->registrations && $this->instancedTypes && $this->classMap) {
+            return true;
+        } else {
+            $this->registrations = array();
+            $this->instancedTypes = array();
+            $this->classMap = array();
+            return false;
+        }
     }
     
     protected function uncachedInit() {
@@ -211,11 +226,18 @@ class ObjectContainer {
     }
     
     protected function appSpecificEveryTimeInit() {
-        // Run each layer's initializers$this->ensureFossilInitializer();
+        // Register the compiler's autoload path
+        $this->get("Compiler")->registerAutoloadPath();
+        
+        // Run each layer's initializers
+        $this->ensureFossilInitializer();
         if($this->fossilInit) {
             // Also loads existing plugins
             $this->fossilInit->everyTimeInit();
             $this->fossilInit->setupPlugins();
+            // TODO: Annotations shouldn't need to be explicitly loaded like this
+            $this->get("AnnotationManager")->rescanAnnotations();
+            $this->get("ORM")->ensureClassMetadata();
         }
         
         $this->ensureAppInitializer();
@@ -256,7 +278,6 @@ class ObjectContainer {
         // If a type has multiple providers registered, one can be tagged with
         // @F:DefaultProvider, which will cause it to be used by default
         // Otherwise, an exception will be thrown if the type is asked for
-        $this->updateCache();
     }
     
     protected function discoverProviders($pluginPass = false) {
