@@ -46,6 +46,29 @@ use Fossil\Object;
  */
 abstract class BaseController extends Object {
     public abstract function run(\Fossil\Requests\BaseRequest $req);
+    
+    /**
+     * @param string $target Destination for the redirect, can be relative
+     * @return Fossil\Responses\RedirectResponse
+     */
+    public function redirectResponse($target) {
+        return $this->_new("Response", "Redirect", $target);
+    }
+    
+    protected function defaultTemplateData() {
+        return array();
+    }
+    
+    public function templateResponse($templateName, $templateData = array(), $responseCode = 200) {
+        // Add templateData to defaultTemplateData
+        $fullData = $this->defaultTemplateData();
+        $fullData += $templateData;
+        return $this->_new("Response", "Template", $templateName, $fullData);
+    }
+    
+    public function apiResponse($data) {
+        return $this->_new("Response", "API", $data);
+    }
 }
 
 ?>
