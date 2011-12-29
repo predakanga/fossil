@@ -114,7 +114,7 @@ class Setup extends AutoController {
         return $deps;
     }
     
-    protected function addSteps($args = array()) {
+    protected function defaultTemplateData() {
         $steps = $this->getSteps();
         // Calculate the current step
         $curReq = $this->dispatcher->getCurrentRequest();
@@ -129,11 +129,11 @@ class Setup extends AutoController {
         $tempArr = array('currentStep' => $curStep,
                          'nextStep' => $curStep+1,
                          'steps' => $steps);
-        return $tempArr + $args;
+        return $tempArr;
     }
     
     public function runIndex() {
-        return $this->_new("Response", "Template", "setup/index", $this->addSteps());
+        return $this->templateResponse("setup/index");
     }
     
     public function runCheckCompatibility() {
@@ -154,7 +154,7 @@ class Setup extends AutoController {
         $data = array_merge($data, $deps);
         
         $data['allOK'] = $result;
-        return $this->_new("Response", "Template", "setup/checkCompat", $this->addSteps($data));
+        return $this->templateResponse("setup/checkCompat", $data);
     }
 
     private function getClassDrivers($type) {
@@ -198,7 +198,7 @@ class Setup extends AutoController {
                 }
             }
             // And render
-            return $this->_new("Response", "Template", "setup/selectDrivers", $this->addSteps());
+            return $this->templateResponse("setup/selectDrivers");
         }
         
         // Otherwise, set the drivers in the temp file
@@ -209,7 +209,7 @@ class Setup extends AutoController {
         $sideSet->set('Fossil', 'Drivers', $drivers);
         
         // And forward to configureDrivers
-        return $this->_new("Response", "Redirect", "?controller=setup&action=configureDrivers");
+        return $this->redirectResponse("?controller=setup&action=configureDrivers");
     }
     
     public function runConfigureDrivers() {
@@ -218,7 +218,7 @@ class Setup extends AutoController {
         $drivers = $sideSet->get('Fossil', 'Drivers', array());
         
         if(!isset($drivers['Cache']) || !isset($drivers['Database']) || !isset($drivers['Renderer'])) {
-            return $this->_new("Response", "Redirect", "?controller=setup&action=selectDrivers");
+            return $this->redirectResponse("?ocntroller=setup&action=selectDrivers");
         }
         
         $cacheFormName = $drivers['Cache']['Class']::getFormName();
@@ -251,7 +251,7 @@ class Setup extends AutoController {
             $sideSet->set('Fossil', 'Drivers', $drivers);
             // And push on to the next step
             // TODO: Edit this to automatically jump to the next step
-            return $this->_new("Response", "Redirect", "?controller=setup&action=finished");
+            return $this->redirectResponse("?controller=setup&action=finished");
         }
         
         // Otherwise, render the form
@@ -259,12 +259,12 @@ class Setup extends AutoController {
                       'cacheForm' => $cacheForm ? $cacheForm->getIdentifier() : null,
                       'rendererForm' => $rendererForm ? $rendererForm->getIdentifier() : null);
         
-        return $this->_new("Response", "Template", "setup/configDrivers", $this->addSteps($data));
+        return $this->templateResponse("setup/configDrivers", $data);
     }
     
     public function runFinished() {
         rename('temp_settings.yml', 'settings.yml');
-        return $this->_new("Response", "Template", "setup/finished", $this->addSteps());
+        return $this->templateResponse("setup/finished");
     }
 }
 

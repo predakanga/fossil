@@ -46,29 +46,29 @@ class user extends LoginRequiredController {
         $user = $id;
         
         if(!$user) {
-            $user = UserModel::me();
+            $user = UserModel::me($this->container);
         }
         if(!$user) {
             throw new \Fossil\Exceptions\NoSuchInstanceException("No such user");
         }
-        return OM::obj("Responses", "Template")->create("fossil:users/view", array("user" => $user));
+        return $this->templateResponse("fossil:users/view", array("user" => $user));
     }
     
     public function runEdit() {
-        $user = UserModel::me();
-        return OM::obj("Responses", "Template")->create("fossil:users/edit", array("user" => $user));
+        $user = UserModel::me($this->container);
+        return $this->templateResponse("fossil:users/edit", array("user" => $user));
     }
     
-    public function runStaffEdit($id) {
+    public function runStaffEdit(UserModel $id = null) {
         $user = $id;
         
         if(!$user) {
-            $user = UserModel::me();
+            $user = UserModel::me($this->container);
         }
         if(!$user) {
             throw new \Fossil\Exceptions\NoSuchInstanceException("No such user");
         }
-        return OM::obj("Responses", "Template")->create("fossil:users/staff_edit", array("user" => $user));
+        return $this->templateResponse("fossil:users/staff_edit", array("user" => $user));
     }
 }
 

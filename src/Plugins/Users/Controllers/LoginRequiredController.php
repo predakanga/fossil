@@ -36,7 +36,7 @@ namespace Fossil\Plugins\Users\Controllers;
  */
 class LoginRequiredController extends PrivateController {
     protected function unauthorizedAction(\Fossil\Requests\BaseRequest $req) {
-        return new \Fossil\Responses\RedirectResponse("?controller=login");
+        return $this->redirectResponse("?controller=login");
     }
 }
 

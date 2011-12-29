@@ -38,7 +38,7 @@ use Fossil\OM,
  */
 class Error extends \Fossil\Controllers\Error {
     public function run403() {
-        return OM::obj("Responses", "Template")->create("fossil:error/403", array(), 403);
+        return $this->templateResponse("fossil:error/403", array(), 403);
     }
 }
 
