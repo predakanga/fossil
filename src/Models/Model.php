@@ -156,10 +156,11 @@ abstract class Model extends Object {
         $container = array_shift($arguments);
         assert($container instanceof \Fossil\ObjectContainer);
         $orm = $container->get("ORM");
-        return call_user_func_array(
-            array($orm->getEM()->getRepository(get_called_class()), $method),
-            $arguments
-        );
+        $repo = $orm->getEM()->getRepository(get_called_class());
+        if(property_exists($repo, "container")) {
+            $repo->container = $container;
+        }
+        return call_user_func_array(array($repo, $method), $arguments);
     }
     
     public static function createFromArray($diContainer, $data) {
