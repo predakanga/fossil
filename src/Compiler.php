@@ -311,11 +311,18 @@ EOM;
         $newNS = $this->baseNamespaceName($newFQN);
         // And the namespace aliases
         $useList = $reflOrigClass->getNamespaceAliases();
+        // Use a second list for namespace aliases in the compile class
+        // This will cause alias collisions to cause a PHP error instead of
+        // failing silently
+        $useList2 = $reflCompileClass->getNamespaceAliases();
         $useListStr = "";
         if(count($useList)) {
             $useListStr = "use ";
             foreach($useList as $alias => $fqn) {
-                $useListStr .= $alias . " as " . $fqn . ",\n\t";
+                $useListStr .= $fqn . " as " . $alias . ",\n\t";
+            }
+            foreach($useList2 as $alias => $fqn) {
+                $useListStr .= $fqn . " as " . $alias . ",\n\t";
             }
             $useListStr = trim($useListStr, ",\n\t") . ";";
         }
@@ -337,7 +344,7 @@ EOM;
                 
                 $fullCompileSource = $reflCompileMethod->getSource();
                 $methodPostamble = substr($fullCompileSource, strpos($fullCompileSource, "{")+1);
-                $methodPostamble = trim(substr($methodPostamble, 0, strpos($methodPostamble, "}")));
+                $methodPostamble = trim(substr($methodPostamble, 0, strrpos($methodPostamble, "}")));
                 
                 $overriddenMethodSource .= sprintf($methodTpl, $methodPreamble, serialize($anno->getArgs()), $methodPostamble);
             }
