@@ -39,8 +39,8 @@ namespace Fossil\Plugins\Users\Controllers;
 use \Fossil\OM,
     \Fossil\Plugins\Users\Models\User as UserModel,
     \Fossil\Plugins\Users\Annotations\RequireRole,
-    \Fossil\Plugins\Users\Forms\LoginForm,
-    \Fossil\Plugins\Users\Forms\SignupForm;
+    \Fossil\Plugins\Users\Forms\Login as LoginForm,
+    \Fossil\Plugins\Users\Forms\Signup as SignupForm;
 
 /**
  * Description of login
@@ -48,6 +48,12 @@ use \Fossil\OM,
  * @author predakanga
  */
 class Login extends \Fossil\Controllers\AutoController {
+    /**
+     * @F:Inject(type="Session", lazy=true)
+     * @var Fossil\Session\Session
+     */
+    protected $session;
+    
     public function indexAction() {
         return "login";
     }
@@ -56,21 +62,22 @@ class Login extends \Fossil\Controllers\AutoController {
         if($loginForm->isSubmitted()) {
             $user = UserModel::findOneBy($this->container, array('name' => $loginForm->user));
             if(!$user || !$user->verifyPassword($loginForm->pass)) {
-                return OM::obj("Responses", "Template")->create("fossil:login", array('error' => 'Invalid user/pass'));
+                return $this->templateResponse("fossil:login", array('error' => 'Invalid user/pass'));
             }
-            OM::Session("FossilAuth")->userID = $user->id;
+            
+            $this->session->get("FossilAuth")->userID = $user->id;
             // TODO: Set cookie if staySignedIn
-            return OM::obj("Responses", "Redirect")->create("?");
+            return $this->redirectResponse("?");
         }
         
-        return OM::obj("Responses", "Template")->create("fossil:login", array());
+        return $this->templateResponse("fossil:login", array());
     }
     
     public function runLogout() {
         // TODO: Invalidate the cookie
-        OM::Session("FossilAuth")->wipe();
+        $this->session->get("FossilAuth")->wipe();
         
-        return OM::obj("Responses", "Redirect")->create("?");
+        return $this->redirectResponse("?");
     }
     
     public function runSignup(SignupForm $signupForm) {
@@ -83,14 +90,14 @@ class Login extends \Fossil\Controllers\AutoController {
             $user->password = $signupForm->pass;
             $user->email = $signupForm->email;
             $user->save();
-            return OM::obj("Responses", "Redirect")->create("?controller=login");
+            return $this->redirectResponse("?controller=login");
         } else {
-            return OM::obj("Responses", "Template")->create("fossil:signup", array());
+            return $this->templateResponse("fossil:signup");
         }
     }
     
     protected function createUser() {
-        return new UserModel();
+        return new UserModel($this->container);
     }
 }
 

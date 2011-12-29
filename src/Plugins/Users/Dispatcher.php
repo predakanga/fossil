@@ -42,7 +42,7 @@ class Dispatcher extends \Fossil\Dispatcher {
     protected function handleRequestException(\Exception $e, BaseRequest $req, $react) {
         // If it's one of our own exceptions, display a 403 error
         if($e instanceof AccessDeniedException) {
-            $accessDeniedReq = OM::obj("Requests", "InternalRequest")->create("error", "403");
+            $accessDeniedReq = $this->_new("Request", "Internal", "error", "403");
             ob_clean();
             $this->_run($accessDeniedReq);
         } else {

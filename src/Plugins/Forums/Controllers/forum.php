@@ -46,19 +46,23 @@ use Fossil\OM,
  * @author predakanga
  */
 class Forum extends LoginRequiredController {
+    /**
+     * @F:Inject("ORM")
+     * @var Fossil\ORM
+     */
+    protected $orm;
     public function indexAction() {
         return "list";
     }
     
     public function runList() {
         $data = array('categories' => $this->collectSubforums());
-        return OM::obj("Responses", "Template")->create("fossil:forums/listForums", $data);
+        return $this->templateResponse("fossil:forums/listForums", $data);
     }
     
     public function runViewForum(ForumModel $id) {
         // TODO: Rewrite templates to use forum= in links
-        $forum = $id;
-        return OM::obj("Responses", "Template")->create("fossil:forums/viewForum", array('forum' => $forum));
+        return $this->templateResponse("fossil:forums/viewForum", array('forum' => $id));
     }
     
     public function runViewTopic(ForumTopic $id, NewPost $form) {
@@ -66,7 +70,7 @@ class Forum extends LoginRequiredController {
         $topic = $id;
         $topic->viewCount++;
         $form->tid = $topic->id;
-        return OM::obj("Responses", "Template")->create("fossil:forums/viewTopic", array('topic' => $topic));
+        return $this->templateResponse("fossil:forums/viewTopic", array('topic' => $topic));
     }
     
     public function runNewTopic(NewTopic $form) {
@@ -75,25 +79,25 @@ class Forum extends LoginRequiredController {
             if(!$forum)
                 throw new NoSuchInstanceException("Subforum not found");
             // Create the new topic
-            $topic = new ForumTopic();
-            $topic->author = User::me();
+            $topic = new ForumTopic($this->container);
+            $topic->author = User::me($this->container);
             $topic->forum = $forum;
             $topic->name = $form->title;
             $topic->save();
-            $firstPost = new ForumPost();
+            $firstPost = new ForumPost($this->container);
             $firstPost->postedAt = new \DateTime();
             $firstPost->topic = $topic;
             $firstPost->content = $form->content;
-            $firstPost->author = User::me();
+            $firstPost->author = User::me($this->container);
             $firstPost->save();
             
             // And bounce back to the list page
-            return OM::obj("Responses", "Redirect")->create("?controller=forum&action=viewForum&id={$forum->id}");
+            return $this->redirectResponse("?controller=forums&action=viewForum&id={$forum->id}");
         } else {
             if(!isset($req->args['fid']))
                 throw new NoSuchInstanceException("Subforum not found");
             $form->fid = $req->args['fid'];
-            return OM::obj("Responses", "Template")->create("fossil:forums/newTopic");
+            return $this->templateResponse("fossil:forums/newTopic");
         }
     }
     
@@ -109,26 +113,26 @@ class Forum extends LoginRequiredController {
             throw new NoSuchInstanceException("Topic not found");
         }
         // Create the new post
-        $newPost = new ForumPost();
+        $newPost = new ForumPost($this->container);
         $newPost->postedAt = new \DateTime();
         $newPost->topic = $topic;
         $newPost->content = $form->content;
-        $newPost->author = User::me();
+        $newPost->author = User::me($this->container);
         $newPost->save();
         // And redirect back to the topic
         // TODO: Redirect to the last page
-        return OM::obj("Responses", "Redirect")->create("?controller=forum&action=viewTopic&id={$topic->id}");
+        return $this->redirectResponse("?controller=forum&action=viewTopic&id={$topic->id}");
     }
     
     protected function collectSubforums() {
         $cats = array();
-        $forums = OM::ORM()->getEM()->createQuery("SELECT forum, category
-                                                   FROM Fossil\Plugins\Forums\Models\Forum forum
-                                                   LEFT JOIN forum.category category");
+        $forums = $this->orm->getEM()->createQuery("SELECT forum, category
+                                                    FROM Fossil\Plugins\Forums\Models\Forum forum
+                                                    LEFT JOIN forum.category category");
         $catKeyMap = array();
         foreach($forums->getResult() as $forum) {
             // Check whether user can view forum
-            if($forum->canBeViewedBy(User::me())) {
+            if($forum->canBeViewedBy(User::me($this->container))) {
                 $category = $forum->category;
                 
                 $catInfo = array('name' => "Uncategorized", 'id' => "none");

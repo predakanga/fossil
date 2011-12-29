@@ -181,7 +181,7 @@ class User extends \Fossil\Models\Model {
     }
     
     public function getUnreadConversationCount() {
-        return PrivateMessageConversation::getUnreadCount($this);
+        return PrivateMessageConversation::getUnreadCount($this->container, $this);
     }
     
     public function getAvatarURL($size) {
