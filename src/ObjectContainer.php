@@ -226,9 +226,6 @@ class ObjectContainer {
     }
     
     protected function appSpecificEveryTimeInit() {
-        // Register the compiler's autoload path
-        $this->get("Compiler")->registerAutoloadPath();
-        
         // Run each layer's initializers
         $this->ensureFossilInitializer();
         if($this->fossilInit) {
