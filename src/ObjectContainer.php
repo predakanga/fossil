@@ -461,7 +461,7 @@ class ObjectContainer {
     }
     
     protected function instantiateDependency($type) {
-        if(isset($this->createStack[$type])) {
+        if(in_array($type, $this->createStack)) {
             // TODO: Use a real exception
             throw new \Exception("Circular dependency detected while creating $type");
         }
