@@ -200,6 +200,8 @@ class ObjectContainer {
             // Also loads existing plugins
             $this->fossilInit->registerObjects();
             $this->fossilInit->setupPlugins();
+            // Rescan annotations after setting up plugins
+            $this->get("AnnotationManager")->rescanAnnotations();
         }
         
         $this->ensureAppInitializer();
