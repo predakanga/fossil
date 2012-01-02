@@ -459,7 +459,7 @@ class ObjectContainer {
         }
     }
     
-    protected function getLazyObject($objectType) {
+    public function getLazyObject($objectType) {
         $objectType = strtolower($objectType);
         return new LazyObject($this, $objectType);
     }

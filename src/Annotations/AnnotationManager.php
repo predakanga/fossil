@@ -38,6 +38,7 @@ namespace Fossil\Annotations;
 
 use Fossil\Autoloader,
     Fossil\Object,
+    Fossil\DoctrineExtensions\FossilCache,
     \Doctrine\Common\Annotations\AnnotationReader,
     \Doctrine\Common\Annotations\CachedReader,
     \Doctrine\Common\Annotations\AnnotationRegistry,
@@ -190,7 +191,7 @@ class AnnotationManager extends Object {
         
             $this->realReader->setIgnoreNotImportedAnnotations(true);
             
-            $this->reader = new CachedReader($this->realReader, new \Doctrine\Common\Cache\ArrayCache());
+            $this->reader = new CachedReader($this->realReader, new FossilCache($this->container));
             $this->registerNamespaceAlias("\\Fossil\\Annotations\\", "F");
         }
         return $this->reader;

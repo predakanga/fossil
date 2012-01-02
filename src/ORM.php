@@ -42,6 +42,7 @@ use Fossil\Object,
     Fossil\DoctrineExtensions\DiscriminatorMapGenerator,
     Fossil\DoctrineExtensions\ActiveEntity\ActiveEntityManager,
     Fossil\DoctrineExtensions\QueryLogger,
+    Fossil\DoctrineExtensions\FossilCache,
     Doctrine\DBAL\Types\Type,
     Doctrine\ORM\Tools\SchemaTool,
     Doctrine\ORM\EntityManager,
@@ -113,7 +114,8 @@ class ORM extends Object {
         // Register the Doctrine annotations ourselves, as it's usually done by $config->newDefaultAnnotationDriver()
         AnnotationRegistry::registerFile('Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php');
 
-        $this->driver = CustomAnnotationDriver::create();
+        $backingCache = new FossilCache($this->container);
+        $this->driver = CustomAnnotationDriver::create($backingCache);
         
         foreach($this->fs->roots(false) as $root) {
             if(is_dir($root . D_S . "Models"))

@@ -29,41 +29,42 @@
 
 namespace Fossil\DoctrineExtensions;
 
-use Doctrine\ORM\Mapping\Driver\AnnotationDriver,
-    Doctrine\Common\Annotations\AnnotationReader,
-    Doctrine\Common\Annotations\CachedReader,
-    Doctrine\Common\Cache\ArrayCache;
+use Doctrine\Common\Cache\AbstractCache,
+    Fossil\ObjectContainer;
 
 /**
- * Description of CustomAnnotationDriver
+ * Description of FossilCache
  *
  * @author predakanga
  */
-class CustomAnnotationDriver extends AnnotationDriver {
-    public function addPaths(array $paths)
-    {
-        $this->_paths = array_unique(array_merge($this->_paths, $paths));
-        $this->_classNames = null;
+class FossilCache extends AbstractCache {
+    /**
+     * @var Fossil\Caches\BaseCache
+     */
+    protected $fossilCache;
+    
+    public function __construct(ObjectContainer $container) {
+        $this->fossilCache = $container->getLazyObject("Cache");
     }
     
-    /**
-     * Factory method for the Annotation Driver
-     *
-     * @param array|string $paths
-     * @param AnnotationReader $reader
-     * @return AnnotationDriver
-     * 
-     * @note Have to include this method too, due to no late-static-binding
-     */
-    static public function create($backingCache, $paths = array(), AnnotationReader $reader = null)
-    {
-        if ($reader == null) {
-            $subReader = new AnnotationReader();
-            $subReader->setIgnoreNotImportedAnnotations(true);
-            $subReader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
-            $reader = new CachedReader($subReader, $backingCache);
-        }
-        return new self($reader, $paths);
+    public function getIds() {
+        return array();
+    }
+    
+    protected function _doFetch($id) {
+        return $this->fossilCache->get($id);
+    }
+    
+    protected function _doContains($id) {
+        return $this->fossilCache->has($id);
+    }
+    
+    protected function _doSave($id, $data, $lifetime = 0) {
+        $this->fossilCache->set($id, $data);
+    }
+    
+    protected function _doDelete($id) {
+        
     }
 }
 
