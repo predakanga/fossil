@@ -113,7 +113,7 @@ abstract class AutoController extends BaseController {
             return $value;
         }
         
-        $paramTypeName = $reflParam->getClassName();
+        $paramTypeName = $reflParam->getClass()->name;
         
         // If the type hint is a model...
         if($paramType->isSubclassOf("Fossil\Models\Model")) {
@@ -128,7 +128,7 @@ abstract class AutoController extends BaseController {
     }
     
     protected function resolveForm($reflParam) {
-        return $this->forms->get($reflParam->getClassName());
+        return $this->forms->get($reflParam->getClass()->name);
     }
 }
 
