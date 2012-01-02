@@ -62,7 +62,7 @@ class Forum extends \Fossil\Models\Model implements ITemplated {
     protected $latestPost;
     
     public function getPostCount() {
-        return ForumPost::getCountInForum($this);
+        return ForumPost::getCountInForum($this->container, $this);
     }
     
     public function canBeViewedBy(User $user) {
