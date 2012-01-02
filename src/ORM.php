@@ -125,13 +125,8 @@ class ORM extends Object {
         $config->setMetadataDriverImpl($this->driver);
 
         // Caching Configuration (5)
-        if ($appEnv == "development") {
-            $cache = new \Doctrine\Common\Cache\ArrayCache();
-        } else {
-            $cache = new \Doctrine\Common\Cache\ApcCache();
-        }
-        $config->setMetadataCacheImpl($cache);
-        $config->setQueryCacheImpl($cache);
+        $config->setMetadataCacheImpl($backingCache);
+        $config->setQueryCacheImpl($backingCache);
         $config->setClassMetadataFactoryName("\\Fossil\\DoctrineExtensions\\ActiveClassMetadataFactory");
         $this->logger = new QueryLogger();
         $config->setSQLLogger($this->logger);
