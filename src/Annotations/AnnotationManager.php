@@ -65,7 +65,7 @@ class AnnotationManager extends Object {
      */
     protected $cache;
     /**
-     * @F:Inject("Reflection")
+     * @F:Inject("Reflection", lazy=true)
      * @var Fossil\Reflection
      */
     protected $reflection;
@@ -99,7 +99,7 @@ class AnnotationManager extends Object {
     protected function determineObjects() {
         // As a special case, we don't do auto-discovery on this object
         return array(array('type' => 'Cache', 'destination' => 'cache',
-                           'required' => true, 'lazy' => true),
+                           'required' => true, 'lazy' => false),
                      array('type' => 'Reflection', 'destination' => 'reflection',
                            'required' => true, 'lazy' => true));
     }
@@ -110,9 +110,7 @@ class AnnotationManager extends Object {
         }
         
         // Ask for a copy of the annotations from the cache
-        if($this->cache->_isReady()) {
-            $this->annotations = $this->cache->get("annotations", true);
-        }
+        $this->annotations = $this->cache->get("annotations", true);
         // If there's no cached copy, read the annotations in anew
         if(!$this->annotations) {
             $this->readAnnotations();
@@ -153,6 +151,7 @@ class AnnotationManager extends Object {
         // And store the annotations, both in the cache and locally
         // TODO: Store in cache
         $this->annotations = $culledAnnos;
+        $this->cache->set("annotations", $this->annotations, true);
     }
     
     protected function readClassAnnotations($reflClass) {

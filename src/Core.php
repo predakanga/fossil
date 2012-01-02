@@ -64,6 +64,14 @@ class Core extends Object {
         parent::__construct($container);
     }
     
+    protected function determineObjects() {
+        // As a special case, we don't do auto-discovery on this object
+        return array(array('type' => 'Dispatcher', 'destination' => 'dispatcher',
+                           'required' => true, 'lazy' => true),
+                     array('type' => 'ORM', 'destination' => 'orm',
+                           'required' => true, 'lazy' => true));
+    }
+    
 	public function run() {
         // Main loop process:
         $this->dispatcher->run();

@@ -59,6 +59,14 @@ abstract class BaseCache extends BaseDriver {
         $this->prefix = $this->core->getInstanceID();
     }
     
+    protected function determineObjects() {
+        // As a special case, we don't do auto-discovery on this object
+        return array(array('type' => 'Core', 'destination' => 'core',
+                           'required' => true, 'lazy' => false),
+                     array('type' => 'Settings', 'destination' => 'settings',
+                           'required' => true, 'lazy' => true));
+    }
+    
     protected function versionKey($key) {
         return $key . "_" . $this->core->getInstanceHash();
     }

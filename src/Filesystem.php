@@ -81,6 +81,16 @@ class Filesystem extends Object {
         }
     }
     
+    protected function determineObjects() {
+        // As a special case, we don't do auto-discovery on this object
+        return array(array('type' => 'Core', 'destination' => 'core',
+                           'required' => true, 'lazy' => false),
+                     array('type' => 'Settings', 'destination' => 'settings',
+                           'required' => true, 'lazy' => true),
+                     array('type' => 'Plugins', 'destination' => 'plugins',
+                           'required' => true, 'lazy' => true));
+    }
+    
     /**
      * 
      * @return array List of roots in which to look for classes, templates, etc

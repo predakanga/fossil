@@ -85,6 +85,14 @@ class Settings extends Object {
         }
     }
     
+    protected function determineObjects() {
+        // As a special case, we don't do auto-discovery on this object
+        return array(array('type' => 'Filesystem', 'destination' => 'fs',
+                           'required' => true, 'lazy' => false),
+                     array('type' => 'ORM', 'destination' => 'orm',
+                           'required' => true, 'lazy' => true));
+    }
+    
     public function isBootstrapped() {
         if(!isset($this->store['Fossil']))
             return false;

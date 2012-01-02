@@ -233,7 +233,6 @@ class ObjectContainer {
             $this->fossilInit->everyTimeInit();
             $this->fossilInit->setupPlugins();
             // TODO: Annotations shouldn't need to be explicitly loaded like this
-            $this->get("AnnotationManager")->rescanAnnotations();
             $this->get("ORM")->ensureClassMetadata();
         }
         
