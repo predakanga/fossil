@@ -30,7 +30,8 @@
 namespace Fossil\DoctrineExtensions;
 
 use Doctrine\Common\Cache\AbstractCache,
-    Fossil\ObjectContainer;
+    Fossil\ObjectContainer,
+    Fossil\Caches\BaseCache;
 
 /**
  * Description of FossilCache
@@ -43,8 +44,8 @@ class FossilCache extends AbstractCache {
      */
     protected $fossilCache;
     
-    public function __construct(ObjectContainer $container) {
-        $this->fossilCache = $container->getLazyObject("Cache");
+    protected function __construct(BaseCache $cache) {
+        $this->fossilCache = $cache;
     }
     
     public function getIds() {
@@ -52,19 +53,30 @@ class FossilCache extends AbstractCache {
     }
     
     protected function _doFetch($id) {
-        return $this->fossilCache->get($id);
+        return $this->fossilCache->get($id, true);
     }
     
     protected function _doContains($id) {
-        return $this->fossilCache->has($id);
+        return $this->fossilCache->has($id, true);
     }
     
     protected function _doSave($id, $data, $lifetime = 0) {
-        $this->fossilCache->set($id, $data);
+        $this->fossilCache->set($id, $data, true);
     }
     
     protected function _doDelete($id) {
-        
+        $this->fossilCache->delete($id, true);
+    }
+    
+    public static function create(ObjectContainer $container) {
+        // Because NoCache breaks Doctrine components somehow, return an ArrayCache
+        // when we're using that
+        $cache = $container->get("Cache");
+        if($cache->getName() == "None") {
+            return new \Doctrine\Common\Cache\ArrayCache();
+        } else {
+            return new self($cache);
+        }
     }
 }
 

@@ -114,7 +114,7 @@ class ORM extends Object {
         // Register the Doctrine annotations ourselves, as it's usually done by $config->newDefaultAnnotationDriver()
         AnnotationRegistry::registerFile('Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php');
 
-        $backingCache = new FossilCache($this->container);
+        $backingCache = FossilCache::create($this->container);
         $this->driver = CustomAnnotationDriver::create($backingCache);
         
         foreach($this->fs->roots(false) as $root) {

@@ -191,7 +191,7 @@ class AnnotationManager extends Object {
         
             $this->realReader->setIgnoreNotImportedAnnotations(true);
             
-            $this->reader = new CachedReader($this->realReader, new FossilCache($this->container));
+            $this->reader = new CachedReader($this->realReader, FossilCache::create($this->container));
             $this->registerNamespaceAlias("\\Fossil\\Annotations\\", "F");
         }
         return $this->reader;
