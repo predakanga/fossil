@@ -85,7 +85,10 @@ abstract class Model extends Object {
         return $this->orm->getEM()->getUnitOfWork()->getEntityIdentifier($this);
     }
     
-    public function get($key) {
+    public function get($key, $direct = false) {
+        if($direct) {
+            return $this->$key;
+        }
         $methodName = "get" . ucfirst($key);
         if(method_exists($this, $methodName))
             return $this->$methodName();
@@ -93,7 +96,11 @@ abstract class Model extends Object {
         return $this->$key;
     }
     
-    public function set($key, $value) {
+    public function set($key, $value, $direct = false) {
+        if($direct) {
+            $this->$key = $value;
+            return;
+        }
         // First, validate the value
         if(!$this->validate($key, $value))
             throw new ValidationFailedException($this, $key, $value);

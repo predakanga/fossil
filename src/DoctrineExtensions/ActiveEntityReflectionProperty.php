@@ -23,6 +23,7 @@ class ActiveEntityReflectionProperty
 {
     public $name = null;
     public $class = null;
+    private $reflProp = null;
 
     public function __construct($class, $name)
     {
@@ -34,13 +35,13 @@ class ActiveEntityReflectionProperty
 
     public function setValue($entity = null, $value = null)
     {
-        $entity->set($this->name, $value);
+        $entity->set($this->name, $value, true);
     }
 
     public function getValue($entity = null)
     {
         if(!$entity->has($this->name))
             return null;
-        return $entity->get($this->name);
+        return $entity->get($this->name, true);
     }
 }
