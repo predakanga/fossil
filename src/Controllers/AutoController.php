@@ -74,11 +74,13 @@ abstract class AutoController extends BaseController {
     }
     
     protected function resolveArguments($method, $args) {
+        // TODO: Cache param info
         $args = array_change_key_case($args, CASE_LOWER);
         $outputArgs = array();
         
         // For each of the method's arguments, grab the input from the args
-        $reflClass = $this->reflections->getClass(get_class($this));
+        $reflClass = new \ReflectionClass(get_class($this));
+//        $reflClass = $this->reflections->getClass(get_class($this));
         $reflMethod = $reflClass->getMethod($method);
         foreach($reflMethod->getParameters() as $reflParam) {
             $paramType = $reflParam->getClass();

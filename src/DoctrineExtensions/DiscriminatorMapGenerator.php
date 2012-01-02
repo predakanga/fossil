@@ -49,6 +49,7 @@ class DiscriminatorMapGenerator extends BaseMetadataListener {
     protected $annotationMgr;
     
     public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs) {
+        $em = $eventArgs->getEntityManager();
         $classMetadata = $eventArgs->getClassMetadata();
         $ourClass = $classMetadata->getReflectionClass()->getName();
         $secondRun = false;
@@ -63,18 +64,24 @@ class DiscriminatorMapGenerator extends BaseMetadataListener {
         if($classMetadata->discriminatorColumn['type'] != "string")
             return;
         
-        // And that it's the root entity
-        if($classMetadata->rootEntityName != $classMetadata->name)
-            return;
-
         $discriminatorMap = $classMetadata->discriminatorMap;
 
         if($classMetadata->isInheritanceTypeJoined() || $classMetadata->isInheritanceTypeSingleTable()) {
-            // Grab the list of extension entities that are subclasses
-            $allEntities = $this->annotationMgr->getClassesWithAnnotation('F:ExtendsDiscriminatorMap');
-            foreach($allEntities as $ent) {
-                if(is_subclass_of($ent, $ourClass)) {
-                    $discriminatorMap[$ent] = $ent;
+            // If we're a child entity, just make sure it's in the root discriminator map
+            if($classMetadata->rootEntityName != $classMetadata->name) {
+                $rootEntity = $em->getClassMetadata($classMetadata->rootEntityName);
+                $discriminatorMap = $rootEntity->discriminatorMap;
+                if(!isset($discriminatorMap[$classMetadata->name])) {
+                    $rootEntity->setDiscriminatorMap(array($classMetadata->name => $classMetadata->name));
+                }
+                return;
+            } else {
+                // Grab the list of extension entities that are subclasses
+                $allEntities = $this->annotationMgr->getClassesWithAnnotation('F:ExtendsDiscriminatorMap');
+                foreach($allEntities as $ent) {
+                    if(is_subclass_of($ent, $ourClass)) {
+                        $discriminatorMap[$ent] = $ent;
+                    }
                 }
             }
         }

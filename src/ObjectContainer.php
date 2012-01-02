@@ -113,15 +113,18 @@ class ObjectContainer {
             return false;
         }
         $cache = yaml_parse_file($filename);
+        $origReg = $this->registrations;
+        $origInstTypes = $this->instancedTypes;
+        $origClassMap = $this->classMap;
         @$this->registrations = $cache['registrations'];
         @$this->instancedTypes = $cache['instancedTypes'];
         @$this->classMap = $cache['classMap'];
         if($this->registrations && $this->instancedTypes && $this->classMap) {
             return true;
         } else {
-            $this->registrations = array();
-            $this->instancedTypes = array();
-            $this->classMap = array();
+            $this->registrations = $origReg;
+            $this->instancedTypes = $origInstTypes;
+            $this->classMap = $origClassMap;
             return false;
         }
     }
