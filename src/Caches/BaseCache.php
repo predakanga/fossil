@@ -91,11 +91,17 @@ abstract class BaseCache extends BaseDriver {
             $key = $this->versionKey($key);
         $this->_update($this->prefix . $key, $update_cb);
     }
+    public function delete($key, $versioned_key = false) {
+        if($versioned_key)
+            $key = $this->versionKey($key);
+        $this->_delete($key);
+    }
     
     abstract protected function _has($key);
     abstract protected function _get($key);
     abstract protected function _set($key, $value);
     abstract protected function _update($key, $update_cb);
+    abstract protected function _delete($key);
 }
 
 ?>

@@ -81,6 +81,10 @@ class APC extends BaseCache {
             $success = apc_cas($key, $value, $update_cb($value));
         } while(!$success);
     }
+    
+    protected function _delete($key) {
+        apc_delete($key);
+    }
 }
 
 ?>

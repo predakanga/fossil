@@ -112,6 +112,10 @@ class Memcached extends BaseCache {
             $success = $this->mc->cas($cas, $key, $update_cb($value));
         } while(!$success);
     }
+    
+    protected function _delete($key) {
+        $this->mc->delete($key);
+    }
 }
 
 ?>

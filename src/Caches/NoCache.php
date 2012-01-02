@@ -72,6 +72,10 @@ class NoCache extends BaseCache {
     protected function _update($key, $update_cb) {
         return;
     }
+    
+    protected function _delete($key) {
+        return;
+    }
 }
 
 ?>
