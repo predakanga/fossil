@@ -38,10 +38,8 @@ class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
         $this->table['name'] = $this->reflClass->getShortName();
     }
 
-    public function __sleep() {
-        $toRet = parent::__sleep();
-        $toRet[] = "diContainer";
-        return $toRet;
+    public function setDIContainer($container) {
+        $this->diContainer = $container;
     }
     
     /**
@@ -62,16 +60,17 @@ class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
             } else {
                 $reflField = $this->reflClass->getProperty($field);
             }
+            $reflField->setAccessible(true);
             $this->reflFields[$field] = $reflField;
         }
-
+        
         foreach ($this->associationMappings as $field => $mapping) {
-            if ($mapping->declared) {
-                $reflField = new ActiveEntityReflectionProperty($mapping->declared, $field);
+            if (isset($mapping['declared'])) {
+                $reflField = new ActiveEntityReflectionProperty($mapping['declared'], $field);
             } else {
                 $reflField = $this->reflClass->getProperty($field);
             }
-
+            $reflField->setAccessible(true);
             $this->reflFields[$field] = $reflField;
         }
     }

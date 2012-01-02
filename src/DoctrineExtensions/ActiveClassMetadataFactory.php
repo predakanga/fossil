@@ -23,6 +23,14 @@ class ActiveClassMetadataFactory extends \Doctrine\ORM\Mapping\ClassMetadataFact
 {
     private $diContainer = null;
     
+    public function getMetadataFor($className) {
+        $retval = parent::getMetadataFor($className);
+        if($retval instanceof ActiveClassMetadata) {
+            $retval->setDIContainer($this->diContainer);
+        }
+        return $retval;
+    }
+    
     public function setDIContainer($diContainer) {
         $this->diContainer = $diContainer;
     }
