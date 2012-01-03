@@ -402,6 +402,9 @@ class ObjectContainer {
     
     public function registerType($type, $fqcn, $overwrite = true, $noConflict = false) {
         $type = strtolower($type);
+        if(isset($this->registrations[$type]) && $this->registrations[$type] == $fqcn) {
+            return;
+        }
         if(isset($this->registrations[$type]) && !$overwrite) {
             return;
         }
