@@ -48,19 +48,6 @@ class Object {
         $this->setupObjects();
     }
     
-    public function __sleep() {
-        // TODO: Check whether we even need a __sleep
-        // Pre-sleep, discard all the objects managed by the ObjectContainer
-        foreach($this->determineObjects() as $obj) {
-            $this->unstoreObject($location);
-        }
-    }
-    
-    public function __wakeup() {
-        // After wakeup, set up the object again
-//        $this->setupObjects();
-    }
-    
     protected function determineObjects() {
         $classname = get_class($this);
         if(!isset($this->container->dependencies[$classname])) {
