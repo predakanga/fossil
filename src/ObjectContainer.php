@@ -103,7 +103,8 @@ class ObjectContainer {
         $filename = $this->getCacheFile();
         $cacheObj = array('registrations' => $this->registrations,
                           'instancedTypes' => $this->instancedTypes,
-                          'classMap' => $this->classMap);
+                          'classMap' => $this->classMap,
+                          'mtime' => $this->get("Core")->getMtime());
         file_put_contents($filename, yaml_emit($cacheObj));
     }
     
@@ -119,7 +120,22 @@ class ObjectContainer {
         @$this->registrations = $cache['registrations'];
         @$this->instancedTypes = $cache['instancedTypes'];
         @$this->classMap = $cache['classMap'];
-        if($this->registrations && $this->instancedTypes && $this->classMap) {
+        @$mtime = $cache['mtime'];
+        if(!$mtime) {
+            $mtime = 0;
+        }
+        
+        $cacheSucceeded = true;
+        if(!$this->registrations || !$this->instancedTypes || !$this->classMap) {
+            $cacheSucceeded = false;
+        } else {
+            // TODO: Add setting to only check mtimes sometimes
+            if($this->get("Core")->getIsModified($mtime)) {
+                $cacheSucceeded = false;
+            }
+        }
+        
+        if($cacheSucceeded) {
             return true;
         } else {
             $this->registrations = $origReg;

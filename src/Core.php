@@ -125,12 +125,48 @@ class Core extends Object {
     
     public function getInstanceHash() {
         // If in dev mode, return a random hash per boot
-        static $devHash;
+        static $hash;
         
-        if(!$devHash) {
-            $devHash = md5(uniqid());
+        if(!$hash) {
+            $hash = md5($this->getMtime());
         }
-        return $devHash;
+        return $hash;
+    }
+    
+    public function getMtime() {
+        static $finalTime;
+        
+        if($finalTime) {
+            return $finalTime;
+        }
+        
+        $fs = $this->container->get("Filesystem");
+        
+        $maxMtimes = array();
+        $maxMtimes[] = $fs->getRecursiveMtime($fs->fossilRoot());
+        if($this->appDetails) {
+            $maxMtimes[] = $fs->getRecursiveMtime($fs->appRoot());
+        }
+        if($this->overlayDetails) {
+            $maxMtimes[] = $fs->getRecursiveMtime($fs->overlayRoot());
+        }
+        $finalTime = max($maxMtimes);
+        return $finalTime;
+    }
+    
+    public function getIsModified($oldMtime) {
+        $fs = $this->container->get("Filesystem");
+        
+        if($fs->getRecursiveMtimeGreaterThan($fs->fossilRoot(), $oldMtime)) {
+            return true;
+        }
+        if($this->appDetails && $fs->getRecursiveMtimeGreaterThan($fs->appRoot(), $oldMtime)) {
+            return true;
+        }
+        if($this->overlayDetails && $fs->getRecursiveMtimeGreaterThan($fs->overlayRoot(), $oldMtime)) {
+            return true;
+        }
+        return false;
     }
     
     public static function create($appNS = null, $appPath = null) {
