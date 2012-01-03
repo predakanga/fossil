@@ -55,13 +55,14 @@ class CustomAnnotationDriver extends AnnotationDriver {
      * 
      * @note Have to include this method too, due to no late-static-binding
      */
-    static public function create($backingCache, $paths = array(), AnnotationReader $reader = null)
+    static public function create($paths = array(), AnnotationReader $reader = null)
     {
         if ($reader == null) {
+            $annoCache = new ArrayCache();
             $subReader = new AnnotationReader();
             $subReader->setIgnoreNotImportedAnnotations(true);
             $subReader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
-            $reader = new CachedReader($subReader, $backingCache);
+            $reader = new CachedReader($subReader, $annoCache);
         }
         return new self($reader, $paths);
     }

@@ -114,8 +114,7 @@ class ORM extends Object {
         // Register the Doctrine annotations ourselves, as it's usually done by $config->newDefaultAnnotationDriver()
         AnnotationRegistry::registerFile('Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php');
 
-        $backingCache = FossilCache::create($this->container);
-        $this->driver = CustomAnnotationDriver::create($backingCache);
+        $this->driver = CustomAnnotationDriver::create();
         
         foreach($this->fs->roots(false) as $root) {
             if(is_dir($root . D_S . "Models"))
@@ -125,6 +124,7 @@ class ORM extends Object {
         $config->setMetadataDriverImpl($this->driver);
 
         // Caching Configuration (5)
+        $backingCache = FossilCache::create($this->container);
         $config->setMetadataCacheImpl($backingCache);
         $config->setQueryCacheImpl($backingCache);
         $config->setClassMetadataFactoryName("\\Fossil\\DoctrineExtensions\\ActiveClassMetadataFactory");

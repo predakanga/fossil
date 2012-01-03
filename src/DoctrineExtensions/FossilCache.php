@@ -53,19 +53,19 @@ class FossilCache extends AbstractCache {
     }
     
     protected function _doFetch($id) {
-        return $this->fossilCache->get($id);
+        return $this->fossilCache->get($id, true);
     }
     
     protected function _doContains($id) {
-        return $this->fossilCache->has($id);
+        return $this->fossilCache->has($id, true);
     }
     
     protected function _doSave($id, $data, $lifetime = 0) {
-        $this->fossilCache->set($id, $data);
+        $this->fossilCache->set($id, $data, true);
     }
     
     protected function _doDelete($id) {
-        $this->fossilCache->delete($id);
+        $this->fossilCache->delete($id, true);
     }
     
     public static function create(ObjectContainer $container) {

@@ -111,7 +111,7 @@ class AnnotationManager extends Object {
         }
         
         // Ask for a copy of the annotations from the cache
-        $this->annotations = $this->cache->get("annotations");
+        $this->annotations = $this->cache->get("annotations", true);
         // If there's no cached copy, read the annotations in anew
         if(!$this->annotations) {
             $this->readAnnotations();
@@ -152,7 +152,7 @@ class AnnotationManager extends Object {
         // And store the annotations, both in the cache and locally
         // TODO: Store in cache
         $this->annotations = $culledAnnos;
-        $this->cache->set("annotations", $this->annotations);
+        $this->cache->set("annotations", $this->annotations, true);
     }
     
     protected function readClassAnnotations($reflClass) {

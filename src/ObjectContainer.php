@@ -148,6 +148,12 @@ class ObjectContainer {
     protected function uncachedInit() {
         $this->annotationMgr = $this->getLazyObject("AnnotationManager");
         // Create the Filesystem object and rescan annotations, to pick up overlay objects
+        // Before anything else, make sure our drivers are loaded
+        $this->ensureFossilInitializer();
+        if($this->fossilInit) {
+            // Also loads existing plugins
+            $this->fossilInit->registerObjects();
+        }
         $this->get("Filesystem");
         $this->annotationMgr->rescanAnnotations();
         $this->discoverTypes();
@@ -214,10 +220,10 @@ class ObjectContainer {
         $this->ensureFossilInitializer();
         if($this->fossilInit) {
             // Also loads existing plugins
-            $this->fossilInit->registerObjects();
+            $this->fossilInit->oneTimeInit();
             $this->fossilInit->setupPlugins();
             // Rescan annotations after setting up plugins
-            $this->get("AnnotationManager")->rescanAnnotations();
+            $this->annotationMgr->rescanAnnotations();
         }
         
         $this->ensureAppInitializer();
@@ -253,8 +259,6 @@ class ObjectContainer {
             // Also loads existing plugins
             $this->fossilInit->everyTimeInit();
             $this->fossilInit->setupPlugins();
-            // TODO: Annotations shouldn't need to be explicitly loaded like this
-            $this->get("ORM")->ensureClassMetadata();
         }
         
         $this->ensureAppInitializer();
@@ -416,6 +420,10 @@ class ObjectContainer {
             $this->overwritten[$type] = true;
         }
         $this->registrations[$type] = $fqcn;
+        if(isset($this->instances[$type])) {
+            unset($this->instances[$type]);
+            trigger_error("Registering already instantiated type $type", E_USER_WARNING);
+        }
     }
     
     public function has($objectType) {
