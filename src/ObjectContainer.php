@@ -136,6 +136,8 @@ class ObjectContainer {
         }
         
         if($cacheSucceeded) {
+            // Set the current hash on the Core
+            $this->get("Core")->setInstanceHash(md5($mtime));
             return true;
         } else {
             $this->registrations = $origReg;

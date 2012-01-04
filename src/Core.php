@@ -123,14 +123,17 @@ class Core extends Object {
         return $this->instanceName;
     }
     
+    protected $hash;
+    
     public function getInstanceHash() {
-        // If in dev mode, return a random hash per boot
-        static $hash;
-        
-        if(!$hash) {
-            $hash = md5($this->getMtime());
+        if(!$this->hash) {
+            $this->hash = md5($this->getMtime());
         }
-        return $hash;
+        return $this->hash;
+    }
+    
+    public function setInstanceHash($hash) {
+        $this->hash = $hash;
     }
     
     public function getMtime() {
