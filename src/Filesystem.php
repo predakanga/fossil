@@ -184,13 +184,13 @@ class Filesystem extends Object {
     }
     
     public function getRecursiveMtime($root) {
-        $files = FilesystemScanner::sourceFiles($root);
+        $files = FilesystemScanner::sourceFiles($root, true);
         $fileMtimes = array_map("filemtime", $files);
         return max($fileMtimes);
     }
     
     public function getRecursiveMtimeGreaterThan($root, $limit) {
-        $files = FilesystemScanner::sourceFiles($root);
+        $files = FilesystemScanner::sourceFiles($root, true);
         foreach($files as $file) {
             if(filemtime($file) > $limit) {
                 return true;

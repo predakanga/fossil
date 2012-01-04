@@ -35,9 +35,9 @@ namespace Fossil\Util;
  * @author predakanga
  */
 class FilesystemScanner {
-    public static function sourceFiles($root) {
+    public static function sourceFiles($root, $includePlugins = false) {
         $dirIter = new \RecursiveDirectoryIterator($root);
-        $filterIter = new SourceDirectoryFilter($dirIter, array($root));
+        $filterIter = new SourceDirectoryFilter($dirIter, array($root), $includePlugins);
         $iterIter = new \RecursiveIteratorIterator($filterIter);
         $regexIter = new \RegexIterator($iterIter, '/\\.php$/');
         
@@ -50,7 +50,6 @@ class FilesystemScanner {
 class SourceDirectoryFilter extends \RecursiveFilterIterator {
 	public static $DIR_FILTERS = array('.git',
                                        'libs',
-                                       'Plugins',
                                        'Compiled',
                                        'templates_c',
                                        'tests',
@@ -62,16 +61,21 @@ class SourceDirectoryFilter extends \RecursiveFilterIterator {
                                              'quickstart.php');
     
     protected $roots;
+    protected $usedDirFilters = array();
     
-    public function __construct($iter, $roots = array()) {
+    public function __construct($iter, $roots = array(), $includePlugins = false) {
         $this->roots = $roots;
+        $this->usedDirFilters = self::$DIR_FILTERS;
+        if(!$includePlugins) {
+            $usedDirFilters[] = "Plugins";
+        }
         parent::__construct($iter);
     }
     
 	public function accept() {
 		if($this->current()->isDir())
             return !in_array($this->current()->getFilename(),
-                             self::$DIR_FILTERS,
+                             $this->usedDirFilters,
                              true);
         else {
             if(in_array($this->current()->getFilename(),
