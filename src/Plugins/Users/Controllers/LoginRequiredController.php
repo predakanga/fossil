@@ -29,6 +29,8 @@
 
 namespace Fossil\Plugins\Users\Controllers;
 
+use Fossil\Plugins\Users\Models\User;
+
 /**
  * Description of LoginRequiredController
  *
@@ -36,7 +38,12 @@ namespace Fossil\Plugins\Users\Controllers;
  */
 class LoginRequiredController extends PrivateController {
     protected function unauthorizedAction(\Fossil\Requests\BaseRequest $req) {
-        return $this->redirectResponse("?controller=login");
+        // Only redirect to login page if we're not already logged in
+        if(User::me($this->container)) {
+            throw new \Fossil\Plugins\Users\Exceptions\AccessDeniedException();
+        } else {
+            return $this->redirectResponse("?controller=login");
+        }
     }
 }
 
