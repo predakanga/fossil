@@ -73,6 +73,20 @@ abstract class AutoController extends BaseController {
         return "index";
     }
     
+    protected function getArguments() {
+        $dispatcher = $this->container->get("Dispatcher");
+        $req = $dispatcher->getCurrentRequest();
+        return $req->args;
+    }
+    
+    protected function getArgument($argName) {
+        $args = $this->getArguments();
+        if(isset($args[$argName])) {
+            return $args[$argName];
+        }
+        return null;
+    }
+    
     protected function resolveArguments($method, $args) {
         // TODO: Cache param info
         $args = array_change_key_case($args, CASE_LOWER);
