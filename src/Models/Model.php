@@ -124,6 +124,12 @@ abstract class Model extends Object {
             return true;
     }
     
+    public static function find($container, $id) {
+        $args = func_get_args();
+        
+        return self::__callStatic("find", $args);
+    }
+    
     public function __call($method, $arguments)
     {
         $func = substr($method, 0, 3);
