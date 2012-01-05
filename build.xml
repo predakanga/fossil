@@ -73,6 +73,7 @@
               --report-file=${basedir}/build/logs/checkstyle.xml
               --standard=${basedir}/CodingStandard/FossilCodingStandard
               --ignore=*/libs/*
+              --extensions=php
               ${source}" />
   </exec>
  </target>
