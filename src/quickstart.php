@@ -35,7 +35,7 @@
 
 use Fossil\Core;
 
-require_once(__DIR__."/Fossil.php");
+require_once __DIR__."/Fossil.php";
 
 $core = Core::create();
 $core->run();

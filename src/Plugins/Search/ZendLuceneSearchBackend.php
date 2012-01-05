@@ -46,7 +46,7 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
     protected $batchMode = false;
     
     static function usable() {
-        require_once("Zend/Search/Lucene.php");
+        require_once "Zend/Search/Lucene.php";
         return class_exists("Zend_Search_Lucene");
     }
     static function getName() {
@@ -65,8 +65,8 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
     public function __construct($container) {
         parent::__construct($container);
         
-        require_once("Zend/Search/Lucene.php");
-        require_once("StandardAnalyzer/Analyzer/Standard/English.php");
+        require_once "Zend/Search/Lucene.php";
+        require_once "StandardAnalyzer/Analyzer/Standard/English.php";
         // Set the default analyzer to the stemming, english stop-words analyzer
         // http://codefury.net/projects/StandardAnalyzer/
         \Zend_Search_Lucene_Analysis_Analyzer::setDefault(new \StandardAnalyzer_Analyzer_Standard_English());
@@ -82,7 +82,7 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
         $idx = $this->getIndex($indexName);
         
         // Load dictionary index structures
-        require_once("Zend/Search/Lucene/Index/Term.php");
+        require_once "Zend/Search/Lucene/Index/Term.php";
         $idx->hasTerm(new \Zend_Search_Lucene_Index_Term('dummy_data', 'dummy_fieldname'));
     }
     /**

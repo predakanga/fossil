@@ -102,7 +102,7 @@ class ORM extends Object {
         // Load up custom types
         $types = array();
         foreach(glob($this->fs->fossilRoot() . D_S . "DoctrineExtensions" . D_S . "Types" . D_S . "*.php") as $type) {
-            require_once($type);
+            require_once $type;
         }
         
         // Grab the list of custom types

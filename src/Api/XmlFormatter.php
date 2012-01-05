@@ -43,7 +43,7 @@ class XmlFormatter implements IApiFormatter {
     }
     
     public function getContentData($data) {
-        require_once("XML/Serializer.php");
+        require_once "XML/Serializer.php";
         $serializer = new \XML_Serializer(array("addDecl" => true, "scalarAsAttributes" => true));
         $res = $serializer->serialize($data);
         if(\PEAR::isError($res)) {

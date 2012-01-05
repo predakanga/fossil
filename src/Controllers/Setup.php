@@ -91,7 +91,7 @@ class Setup extends AutoController {
                 if(!file_exists($fs->fossilRoot() . D_S . 'libs/smarty/distribution/libs/Smarty.class.php')) {
                     return false;
                 }
-                require_once($fs->fossilRoot() . D_S . 'libs/smarty/distribution/libs/Smarty.class.php');
+                require_once $fs->fossilRoot() . D_S . 'libs/smarty/distribution/libs/Smarty.class.php';
                 
                 if(!defined('\Smarty::SMARTY_VERSION')) {
                     return false;
@@ -109,7 +109,7 @@ class Setup extends AutoController {
                 if(!file_exists(stream_resolve_include_path('PHPUnit/Autoload.php'))) {
                     return false;
                 }
-                require_once('PHPUnit/Autoload.php');
+                require_once 'PHPUnit/Autoload.php';
                 $version = \PHPUnit_Runner_Version::id();
                 $version_comp = explode(".", $version);
                 if($version_comp[0] == 3 && $version_comp[1] >= 5) {

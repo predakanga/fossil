@@ -88,7 +88,7 @@ class SmartyRenderer extends BaseRenderer {
     public function __construct($container) {
         parent::__construct($container);
         
-        require_once($this->fs->fossilRoot() . D_S . "libs/smarty/distribution/libs/Smarty.class.php");
+        require_once $this->fs->fossilRoot() . D_S . "libs/smarty/distribution/libs/Smarty.class.php";
         $this->smarty = new \Smarty();
         foreach($this->fs->roots() as $root) {
             $this->smarty->addTemplateDir($root . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "smarty");

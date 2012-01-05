@@ -40,7 +40,7 @@ class BBCode {
     protected $parser;
     
     public function __construct() {
-        require_once("HTML/BBCodeParser.php");
+        require_once "HTML/BBCodeParser.php";
         $this->parser = new \HTML_BBCodeParser(array('filters' => ''));
         $this->parser->addFilters("Basic,Email,Extended,Images,Links,Lists");
     }

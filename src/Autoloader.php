@@ -135,7 +135,7 @@ class Autoloader {
         $fullClassPath = self::$classPaths[$namespace] . DIRECTORY_SEPARATOR . $class . ".php";
         // And require it
         if(file_exists($fullClassPath)) {
-            include_once($fullClassPath);
+            include_once $fullClassPath;
         }
     }
 }
