@@ -40,7 +40,7 @@ use Fossil\Object,
     Fossil\DoctrineExtensions\CustomAnnotationDriver,
     Fossil\DoctrineExtensions\ReverseMappingGenerator,
     Fossil\DoctrineExtensions\DiscriminatorMapGenerator,
-    Fossil\DoctrineExtensions\ActiveEntity\ActiveEntityManager,
+    Fossil\DoctrineExtensions\ActiveProxyFactory,
     Fossil\DoctrineExtensions\QueryLogger,
     Fossil\DoctrineExtensions\FossilCache,
     Doctrine\DBAL\Types\Type,
@@ -57,10 +57,25 @@ use Fossil\Object,
  * @F:DefaultProvider()
  */
 class ORM extends Object {
+    /**
+     * @var ActiveEntityManager
+     */
     protected $em;
+    /**
+     * @var Doctrine\Common\EventManager
+     */
     protected $evm;
+    /**
+     * @var Doctrine\ORM\Configuration
+     */
     protected $config;
+    /**
+     * @var CustomAnnotationDriver
+     */
     protected $driver;
+    /**
+     * @var QueryLogger
+     */
     protected $logger;
     protected $mappingModifiers = array();
     /**
@@ -147,6 +162,8 @@ class ORM extends Object {
         
         $this->em = EntityManager::create($conn, $this->config, $this->evm);
         $this->em->getMetadataFactory()->setDIContainer($this->container);
+        // Replace the EM's proxy factory with our own
+        $this->setupProxyFactory();
         
         $realConn = $this->em->getConnection();
         $platform = $realConn->getDatabasePlatform();
@@ -158,6 +175,16 @@ class ORM extends Object {
         }
     }
     
+    protected function setupProxyFactory() {
+        // Unfortunately, this requires changing a private property on the EM
+        $origProxyFactory = $this->em->getProxyFactory();
+        $newProxyFactory = new DoctrineExtensions\ActiveProxyFactory($this->container, $origProxyFactory);
+        
+        $reflClass = new \ReflectionClass($this->em);
+        $reflProp = $reflClass->getProperty("proxyFactory");
+        $reflProp->setAccessible(true);
+        $reflProp->setValue($this->em, $newProxyFactory);
+    }
     public function registerPluginPaths() {
         $pluginsWithModels = array_filter($this->fs->pluginRoots(), function($root) {
             return is_dir($root . D_S . "Models");
@@ -189,8 +216,9 @@ class ORM extends Object {
     }
     
     public function flush() {
-        if($this->em)
+        if($this->em) {
             $this->em->flush();
+        }
     }
     
     public function ensureClassMetadata() {

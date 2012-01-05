@@ -69,6 +69,11 @@ abstract class Model extends Object {
         }
     }
     
+    public function restoreObjects($container) {
+        $this->container = $container;
+        $this->setupObjects();
+    }
+    
     public function save() {
         $this->orm->getEM()->persist($this);
     }
