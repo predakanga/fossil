@@ -40,19 +40,17 @@ use Doctrine\ORM\Query\TreeWalkerAdapter,
  *
  * @author predakanga
  */
-class CountSqlWalker extends TreeWalkerAdapter
-{
+class CountSqlWalker extends TreeWalkerAdapter {
     /**
      * Walks down a SelectStatement AST node, thereby generating the appropriate SQL.
      *
      * @return string The SQL.
      */
-    public function walkSelectStatement(SelectStatement $AST)
-    {
+    public function walkSelectStatement(SelectStatement $AST) {
         $parent = null;
         $parentName = null;
-        foreach ($this->_getQueryComponents() AS $dqlAlias => $qComp) {
-            if ($qComp['parent'] === null && $qComp['nestingLevel'] == 0) {
+        foreach($this->_getQueryComponents() AS $dqlAlias => $qComp) {
+            if($qComp['parent'] === null && $qComp['nestingLevel'] == 0) {
                 $parent = $qComp;
                 $parentName = $dqlAlias;
                 break;

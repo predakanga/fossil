@@ -40,38 +40,34 @@ use Doctrine\DBAL\Types\Type,
 class BlobType extends Type {
     const BLOB = 'blob';
     
-    public function getSqlDeclaration(array $fieldDeclaration, AbstractPlatform $platform)
-    {
+    public function getSqlDeclaration(array $fieldDeclaration, AbstractPlatform $platform) {
         // Special case for PgSQL
         if($platform instanceof \Doctrine\DBAL\Platforms\PostgreSqlPlatform) {
             return "BYTEA";
         }
         
-        if ( ! empty($field['length']) && is_numeric($field['length'])) {
+        if(!empty($field['length']) && is_numeric($field['length'])) {
             $length = $field['length'];
-            if ($length <= 255) {
+            if($length <= 255) {
                 return 'TINYBLOB';
-            } else if ($length <= 65532) {
+            } else if($length <= 65532) {
                 return 'BLOB';
-            } else if ($length <= 16777215) {
+            } else if($length <= 16777215) {
                 return 'MEDIUMBLOB';
             }
         }
         return 'LONGBLOB';
     }
 
-    public function convertToPHPValue($value, AbstractPlatform $platform)
-    {
+    public function convertToPHPValue($value, AbstractPlatform $platform) {
         return $value;
     }
 
-    public function convertToDatabaseValue($value, AbstractPlatform $platform)
-    {
+    public function convertToDatabaseValue($value, AbstractPlatform $platform) {
         return $value;
     }
 
-    public function getName()
-    {
+    public function getName() {
         return self::BLOB;
     }
     

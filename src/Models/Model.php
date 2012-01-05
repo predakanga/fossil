@@ -139,17 +139,16 @@ abstract class Model extends Object {
         return self::__callStatic("find", $args);
     }
     
-    public function __call($method, $arguments)
-    {
+    public function __call($method, $arguments) {
         $func = substr($method, 0, 3);
         $fieldName = substr($method, 3);
         $fieldName = lcfirst($fieldName);
 
-        if ($func == 'get') {
+        if($func == 'get') {
             return $this->get($fieldName);
-        } else if ($func == 'set') {
+        } else if($func == 'set') {
             $this->set($fieldName, $arguments[0]);
-        } else if ($func == 'has') {
+        } else if($func == 'has') {
             return $this->has($fieldName);
         } else {
             throw new \BadMethodCallException('Method ' . $method . ' does not exist on model ' . get_class($this));
@@ -172,8 +171,7 @@ abstract class Model extends Object {
         unset($this->$key);
     }
     
-    public static function __callStatic($method, $arguments)
-    {
+    public static function __callStatic($method, $arguments) {
         // First argument must be container
         $container = array_shift($arguments);
         assert($container instanceof \Fossil\ObjectContainer);

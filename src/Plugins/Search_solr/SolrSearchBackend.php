@@ -475,10 +475,14 @@ XML;
                 // Append index/storage strings
                 if($type & ISearchable::SEARCH_FIELD_INDEXED) {
                     $iStr = "true";
-                } else { $iStr = "false"; }
+                } else {
+                    $iStr = "false";
+                }
                 if($type & ISearchable::SEARCH_FIELD_STORED) {
                     $sStr = "true";
-                } else { $sStr = "false"; }
+                } else {
+                    $sStr = "false";
+                }
                 
                 if($type & ISearchable::SEARCH_FIELD_DEFAULT_SEARCH) {
                     $copyFields .= "  <copyField source=\"$fieldName\" dest=\"text\" />\n";
@@ -492,8 +496,16 @@ XML;
                 foreach(array(true, false) as $stored) {
                     if($indexed||$stored) {
                         $nameStr = "*_" . $type[0] . "_";
-                        if($indexed) { $nameStr .= "i"; $iStr = "true"; } else { $iStr = "false"; }
-                        if($stored) { $nameStr .= "s"; $sStr = "true"; } else { $sStr = "false"; }
+                        if($indexed) {
+                            $nameStr .= "i"; $iStr = "true";
+                        } else {
+                            $iStr = "false";
+                        }
+                        if($stored) {
+                            $nameStr .= "s"; $sStr = "true";
+                        } else {
+                            $sStr = "false";
+                        }
                         $dynFields .= "    <dynamicField name=\"$nameStr\" type=\"$type\" indexed=\"$iStr\" stored=\"$sStr\" />\n";
                     }
                 }

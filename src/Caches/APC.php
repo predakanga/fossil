@@ -75,8 +75,7 @@ class APC extends BaseCache {
         $success = false;
         
         // TODO: Add extra checking, so that on other error conditions, it ends
-        do
-        {
+        do {
             $value = apc_fetch($key);
             $success = apc_cas($key, $value, $update_cb($value));
         } while(!$success);

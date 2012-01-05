@@ -82,8 +82,7 @@ class CustomSchemaTool extends SchemaTool {
         parent::__construct($em);
     }
     
-    public function getCreateSchemaSql(array $classes)
-    {
+    public function getCreateSchemaSql(array $classes) {
         $schema = $this->getSchemaFromMetadata($classes);
         
         $newModels = array();
@@ -95,8 +94,7 @@ class CustomSchemaTool extends SchemaTool {
         return $schema->toSql($this->__platform);
     }
     
-    public function getUpdateSchemaSql(array $classes, $saveMode=false)
-    {
+    public function getUpdateSchemaSql(array $classes, $saveMode=false) {
         $sm = $this->__em->getConnection()->getSchemaManager();
 
         $fromSchema = $sm->createSchema();
@@ -106,7 +104,7 @@ class CustomSchemaTool extends SchemaTool {
         $schemaDiff = $comparator->compare($fromSchema, $toSchema);
         $this->newModels = $comparator->newModels;
 
-        if ($saveMode) {
+        if($saveMode) {
             return $schemaDiff->toSaveSql($this->__platform);
         } else {
             return $schemaDiff->toSql($this->__platform);

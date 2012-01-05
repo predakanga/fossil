@@ -108,8 +108,7 @@ class Memcached extends BaseCache {
         $success = false;
         
         // TODO: Add extra checking, so that on other error conditions, it ends
-        do
-        {
+        do {
             $value = $this->mc->get($key, NULL, $cas);
             $success = $this->mc->cas($cas, $key, $update_cb($value));
         } while(!$success);

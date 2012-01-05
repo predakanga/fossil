@@ -40,8 +40,7 @@ use Doctrine\ORM\Mapping\Driver\AnnotationDriver,
  * @author predakanga
  */
 class CustomAnnotationDriver extends AnnotationDriver {
-    public function addPaths(array $paths)
-    {
+    public function addPaths(array $paths) {
         $this->_paths = array_unique(array_merge($this->_paths, $paths));
         $this->_classNames = null;
     }
@@ -55,9 +54,8 @@ class CustomAnnotationDriver extends AnnotationDriver {
      * 
      * @note Have to include this method too, due to no late-static-binding
      */
-    static public function create($paths = array(), AnnotationReader $reader = null)
-    {
-        if ($reader == null) {
+    static public function create($paths = array(), AnnotationReader $reader = null) {
+        if($reader == null) {
             $annoCache = new ArrayCache();
             $subReader = new AnnotationReader();
             $subReader->setIgnoreNotImportedAnnotations(true);

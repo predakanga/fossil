@@ -107,8 +107,7 @@ class Autoloader {
         $resolvePath = array();
         $actualClass = array_pop($classPaths);
         // Then, check each successive part of the namespace for a path
-        do
-        {
+        do {
             $classPath = implode("\\", $classPaths);
             if(array_key_exists($classPath, self::$classPaths)) {
                     if(self::$classPaths[$classPath]) {

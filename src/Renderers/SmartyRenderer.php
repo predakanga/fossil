@@ -496,10 +496,8 @@ class SmartyRenderer extends BaseRenderer {
         return $content;
     }
     
-    function smarty_outputfilter_tidyrepairhtml ($source, $smarty)
-    {
-        if(extension_loaded('tidy'))
-        {
+    function smarty_outputfilter_tidyrepairhtml ($source, $smarty) {
+        if(extension_loaded('tidy')) {
             /*
             $tidyoptions = array("indent-spaces" => 4, 
                                  "wrap" => 120, 

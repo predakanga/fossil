@@ -41,8 +41,7 @@ use Fossil\OM,
  * @author predakanga
  */
 class SearchSubscriber implements EventSubscriber {
-    public function getSubscribedEvents()
-    {
+    public function getSubscribedEvents() {
         return array(Events::onFlush,
                      Events::postPersist);
     }
@@ -52,14 +51,14 @@ class SearchSubscriber implements EventSubscriber {
         $uow = $em->getUnitOfWork();
         $needsFlush = false;
 
-        foreach ($uow->getScheduledEntityUpdates() AS $entity) {
+        foreach($uow->getScheduledEntityUpdates() AS $entity) {
             if($entity instanceof ISearchable) {
                 OM::Search()->updateEntity($entity);
                 $needsFlush = true;
             }
         }
 
-        foreach ($uow->getScheduledEntityDeletions() AS $entity) {
+        foreach($uow->getScheduledEntityDeletions() AS $entity) {
             if($entity instanceof ISearchable) {
                 OM::Search()->removeEntity($entity);
                 $needsFlush = true;

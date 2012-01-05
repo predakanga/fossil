@@ -19,27 +19,23 @@
 
 namespace Fossil\DoctrineExtensions;
 
-class ActiveEntityReflectionProperty
-{
+class ActiveEntityReflectionProperty {
     public $name = null;
     public $class = null;
     private $reflProp = null;
 
-    public function __construct($class, $name)
-    {
+    public function __construct($class, $name) {
         $this->class = $class;
         $this->name = $name;
     }
 
     public function setAccessible($flag) {}
 
-    public function setValue($entity = null, $value = null)
-    {
+    public function setValue($entity = null, $value = null) {
         $entity->set($this->name, $value, true);
     }
 
-    public function getValue($entity = null)
-    {
+    public function getValue($entity = null) {
         if(!$entity->has($this->name)) {
             return null;
         }

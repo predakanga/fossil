@@ -22,13 +22,11 @@ namespace Fossil\DoctrineExtensions;
 
 use Fossil\Models\Model;
 
-class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
-{
+class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata {
     // As with parent class, this will be serialized, so leave it's scope public
     public $diContainer = null;
     
-    public function __construct($entityName, $diContainer)
-    {
+    public function __construct($entityName, $diContainer) {
         $this->diContainer = $diContainer;
         parent::__construct($entityName);
         $this->reflClass = new ActiveEntityReflectionClass($entityName);
@@ -46,13 +44,12 @@ class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
      *
      * @return void
      */
-    public function __wakeup()
-    {
+    public function __wakeup() {
         // Restore ReflectionClass and properties
         $this->reflClass = new ActiveEntityReflectionClass($this->name);
 
-        foreach ($this->fieldMappings as $field => $mapping) {
-            if (isset($mapping['declared'])) {
+        foreach($this->fieldMappings as $field => $mapping) {
+            if(isset($mapping['declared'])) {
                 $reflField = new ActiveEntityReflectionProperty($mapping['declared'], $field);
             } else {
                 $reflField = $this->reflClass->getProperty($field);
@@ -61,8 +58,8 @@ class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
             $this->reflFields[$field] = $reflField;
         }
         
-        foreach ($this->associationMappings as $field => $mapping) {
-            if (isset($mapping['declared'])) {
+        foreach($this->associationMappings as $field => $mapping) {
+            if(isset($mapping['declared'])) {
                 $reflField = new ActiveEntityReflectionProperty($mapping['declared'], $field);
             } else {
                 $reflField = $this->reflClass->getProperty($field);

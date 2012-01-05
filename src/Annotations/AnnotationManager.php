@@ -156,30 +156,30 @@ class AnnotationManager extends Object {
     }
     
     protected function readClassAnnotations($reflClass) {
-            $classData = array();
-            $classData['methods'] = array();
-            $classData['properties'] = array();
-            
-            if($reflClass->getParentClass()) {
-                $classData['parent'] = $reflClass->getParentClass()->getName();
+        $classData = array();
+        $classData['methods'] = array();
+        $classData['properties'] = array();
+
+        if($reflClass->getParentClass()) {
+            $classData['parent'] = $reflClass->getParentClass()->getName();
+        }
+        $classData['annos'] = $this->getReader()->getClassAnnotations($reflClass);
+
+        foreach($reflClass->getMethods() as $method) {
+            $methodAnnos = $this->getReader()->getMethodAnnotations($method);
+
+            if(count($methodAnnos)) {
+                $classData['methods'][$method->name] = $methodAnnos;
             }
-            $classData['annos'] = $this->getReader()->getClassAnnotations($reflClass);
-            
-            foreach($reflClass->getMethods() as $method) {
-                $methodAnnos = $this->getReader()->getMethodAnnotations($method);
-                
-                if(count($methodAnnos)) {
-                    $classData['methods'][$method->name] = $methodAnnos;
-                }
+        }
+        foreach($reflClass->getProperties() as $prop) {
+            $propAnnos = $this->getReader()->getPropertyAnnotations($prop);
+
+            if(count($propAnnos)) {
+                $classData['properties'][$prop->name] = $propAnnos;
             }
-            foreach($reflClass->getProperties() as $prop) {
-                $propAnnos = $this->getReader()->getPropertyAnnotations($prop);
-                
-                if(count($propAnnos)) {
-                    $classData['properties'][$prop->name] = $propAnnos;
-                }
-            }
-            $this->annotations[$reflClass->getName()] = $classData;
+        }
+        $this->annotations[$reflClass->getName()] = $classData;
     }
     
     private function getReader() {

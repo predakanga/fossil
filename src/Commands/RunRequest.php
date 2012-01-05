@@ -57,7 +57,8 @@ class RunRequest extends BaseCommand {
         $action = $input->getArgument("action");
         $args_raw = $input->getArgument("argument");
         $args = array();
-        for($i = 0; $i < count($args_raw); $i++) {
+        $argc = count($args_raw);
+        for($i = 0; $i < $argc; $i++) {
             $args[$args_raw[$i]] = $args_raw[$i+1];
         }
         

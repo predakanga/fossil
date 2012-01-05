@@ -20,10 +20,8 @@
 
 namespace Fossil\DoctrineExtensions;
 
-class ActiveEntityReflectionClass extends \ReflectionClass
-{
-    public function getProperty($name)
-    {
+class ActiveEntityReflectionClass extends \ReflectionClass {
+    public function getProperty($name) {
         if(property_exists($this->name, $name)) {
             return new \ReflectionProperty($this->name, $name);
         } else {
