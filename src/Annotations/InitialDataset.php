@@ -50,17 +50,24 @@ class InitialDataset extends Annotation {
     public function getData($container) {
         $file = $this->file ?: $this->value;
         
+        $fullDataset = array();
+        
         // It might be in any of the roots, so try each
-        foreach(array_reverse($container->get("Filesystem")->roots(true)) as $root) {
+        foreach($container->get("Filesystem")->roots(true) as $root) {
             if(file_exists($root . D_S . $file)) {
-                $file = $root . D_S . $file;
-                break;
+                $dataset = $this->readData($root . D_S . $file);
+                $fullDataset += $dataset;
             }
         }
         
+        return $fullDataset;
+    }
+    
+    protected function readData($file) {
         if($this->format == "yml") {
             return yaml_parse_file($file);
         }
+        return array();
     }
 }
 
