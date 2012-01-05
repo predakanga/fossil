@@ -28,7 +28,7 @@
 				<li><a>About</a></li>
 			</ul>
 			<div class="box-16-contract">
-				<div class="box">
+				<div class="box cf">
 					Focus item
 				</div>
 			</div>
