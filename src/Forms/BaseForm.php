@@ -118,6 +118,8 @@ abstract class BaseForm extends Object {
     }
     
     public function getFields() { return $this->form_fields; }
+    public function getFieldType($field) { return $this->form_fields[$field]['type']; }
+    public function setFieldType($field, $type) { $this->form_fields[$field]['type'] = $type; if($type == "select") { $this->form_fields[$field]['options'] = array(); } }
     public function getFieldOptions($field) { return $this->form_fields[$field]['options']; }
     public function setFieldOptions($field, $options) { $this->form_fields[$field]['options'] = $options; }
     public function getIdentifier() { return $this->form_identifier; }
