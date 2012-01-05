@@ -68,5 +68,3 @@ abstract class BaseDriver extends Object implements Interfaces\IDriver {
         return $this->config;
     }
 }
-
-?>

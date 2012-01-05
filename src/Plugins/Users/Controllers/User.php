@@ -71,5 +71,3 @@ class user extends LoginRequiredController {
         return $this->templateResponse("fossil:users/staff_edit", array("user" => $user));
     }
 }
-
-?>

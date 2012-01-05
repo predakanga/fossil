@@ -50,5 +50,3 @@ class Dispatcher extends \Fossil\Dispatcher {
         }
     }
 }
-
-?>

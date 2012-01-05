@@ -44,5 +44,3 @@ abstract class Compilation extends Annotation {
         return get_object_vars($this);
     }
 }
-
-?>

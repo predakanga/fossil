@@ -111,6 +111,3 @@ class CustomSchemaTool extends SchemaTool {
         }
     }
 }
-
-
-?>

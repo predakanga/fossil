@@ -209,5 +209,3 @@ class DispatcherTest extends FossilTestCase {
         $this->object->runRequest($reqStub);
     }
 }
-
-?>

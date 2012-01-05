@@ -54,5 +54,3 @@ class UserForumSettings extends Model {
     /** @Column(type="integer") */
     protected $threadsPerPage;
 }
-
-?>

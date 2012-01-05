@@ -49,5 +49,3 @@ class BBCode {
         return $this->parser->qparse($str);
     }
 }
-
-?>

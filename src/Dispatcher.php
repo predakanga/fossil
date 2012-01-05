@@ -139,5 +139,3 @@ class Dispatcher extends Object {
         return $this->reqStack[count($this->reqStack)-1];
     }
 }
-
-?>

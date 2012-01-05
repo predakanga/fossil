@@ -46,5 +46,3 @@ class NoSuchClassException extends \Exception {
         parent::__construct("Instanced class {$name} does not exist in {$type}");
     }
 }
-
-?>

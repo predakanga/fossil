@@ -59,5 +59,3 @@ class Setting extends Model {
     /** @Column(type="string") */
     protected $value;
 }
-
-?>

@@ -145,5 +145,3 @@ abstract class AutoController extends BaseController {
         return $this->forms->get($reflParam->getClass()->name);
     }
 }
-
-?>

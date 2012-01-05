@@ -11,5 +11,3 @@ namespace Fossil\Plugins\Regression;
 class SimpleCompiler extends \Fossil\Compiler {
     //put your code here
 }
-
-?>

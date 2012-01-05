@@ -65,5 +65,3 @@ class RequireRole extends \Fossil\Annotations\Compilation {
         return $this->completeCall($funcname, $args);
     }
 }
-
-?>

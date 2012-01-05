@@ -380,5 +380,3 @@ class AnnotationManager extends Object {
         return array_unique($toRet);
     }
 }
-
-?>

@@ -58,5 +58,3 @@ class MemcachedConfig extends BaseDriverForm {
         return $toRet;
     }
 }
-
-?>

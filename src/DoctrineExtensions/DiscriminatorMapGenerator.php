@@ -95,5 +95,3 @@ class DiscriminatorMapGenerator extends BaseMetadataListener {
         $classMetadata->setDiscriminatorMap($discriminatorMap);
     }
 }
-
-?>

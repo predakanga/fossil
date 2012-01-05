@@ -45,5 +45,3 @@ class NewTopic extends BaseForm {
     /** @F:FormField(type="textarea") */
     public $content;
 }
-
-?>

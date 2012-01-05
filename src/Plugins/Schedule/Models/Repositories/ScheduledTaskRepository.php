@@ -45,5 +45,3 @@ class ScheduledTaskRepository extends EntityRepository {
         return $q->getResult();
     }
 }
-
-?>

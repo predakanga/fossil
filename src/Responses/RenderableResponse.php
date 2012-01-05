@@ -51,5 +51,3 @@ abstract class RenderableResponse extends BaseResponse {
         header("Content-Type: {$this->outputType}", true, $this->responseCode);
     }
 }
-
-?>

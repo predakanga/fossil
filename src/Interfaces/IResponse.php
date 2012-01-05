@@ -43,5 +43,3 @@ namespace Fossil\Interfaces;
  */
 interface IResponse {
 }
-
-?>

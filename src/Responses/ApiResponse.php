@@ -94,5 +94,3 @@ class ApiResponse extends RenderableResponse {
     }
     //put your code here
 }
-
-?>

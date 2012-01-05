@@ -204,5 +204,3 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
         return new PaginationProxy($builder->getQuery(), $pageSize);
     }
 }
-
-?>

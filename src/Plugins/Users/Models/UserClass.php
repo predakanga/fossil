@@ -55,5 +55,3 @@ class UserClass extends \Fossil\Models\Model {
     /** @OneToMany(targetEntity="User", mappedBy="userClass") */
     protected $members;
 }
-
-?>

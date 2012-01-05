@@ -43,5 +43,3 @@ namespace Fossil\Annotations;
  */
 class Instanced extends Annotation {
 }
-
-?>

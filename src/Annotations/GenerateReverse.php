@@ -36,5 +36,3 @@ namespace Fossil\Annotations;
  */
 class GenerateReverse extends Annotation {
 }
-
-?>

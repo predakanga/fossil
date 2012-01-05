@@ -46,5 +46,3 @@ abstract class StreamingTask extends BaseTask {
             ;
     }
 }
-
-?>

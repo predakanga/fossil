@@ -60,5 +60,3 @@ class Permission extends \Fossil\Models\Model {
     /** @ManyToMany(targetEntity="Role", mappedBy="permissions") */
     protected $roles;
 }
-
-?>

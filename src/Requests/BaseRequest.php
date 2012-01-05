@@ -57,5 +57,3 @@ abstract class BaseRequest extends Object {
         return $controllerObj->run($this);
     }
 }
-
-?>

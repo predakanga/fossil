@@ -84,5 +84,3 @@ class ForumTopic extends Model implements ITemplated {
         return "fossil:forums/row_topic";
     }
 }
-
-?>

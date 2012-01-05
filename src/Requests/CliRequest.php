@@ -101,5 +101,3 @@ class CliRequest extends BaseRequest {
         $this->app->run();
     }
 }
-
-?>

@@ -75,5 +75,3 @@ class ClearOldScheduleResults extends BaseTask {
         $this->result = BaseTask::RESULT_SUCCEEDED;
     }
 }
-
-?>

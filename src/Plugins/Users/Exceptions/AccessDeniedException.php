@@ -39,5 +39,3 @@ class AccessDeniedException extends \Exception {
         parent::__construct("Access denied");
     }
 }
-
-?>

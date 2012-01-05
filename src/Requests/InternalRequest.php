@@ -50,5 +50,3 @@ class InternalRequest extends BaseRequest {
         $this->args = $args;
     }
 }
-
-?>

@@ -59,5 +59,3 @@ class EditWiki extends BaseForm {
      */
     public $summary;
 }
-
-?>

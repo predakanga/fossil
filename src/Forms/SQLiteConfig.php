@@ -46,5 +46,3 @@ class SQLiteConfig extends BaseDriverForm {
     /** @F:FormField(label = "Filename", fieldName = "sqlite_filename") */
     public $path;
 }
-
-?>

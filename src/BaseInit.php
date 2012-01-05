@@ -55,5 +55,3 @@ abstract class BaseInit extends Object {
     protected function registerEventSubscribers(EventManager $evm) {}
     public function registerObjects() {}
 }
-
-?>

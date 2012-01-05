@@ -238,5 +238,3 @@ abstract class Model extends Object {
         return $toRet;
     }
 }
-
-?>

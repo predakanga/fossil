@@ -188,5 +188,3 @@ class Settings extends Object {
         }
     }
 }
-
-?>

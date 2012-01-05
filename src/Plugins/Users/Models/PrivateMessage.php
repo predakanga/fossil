@@ -49,5 +49,3 @@ class PrivateMessage extends Model {
     /** @Column(type="text") */
     protected $content;
 }
-
-?>

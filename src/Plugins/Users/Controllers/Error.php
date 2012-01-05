@@ -41,5 +41,3 @@ class Error extends \Fossil\Controllers\Error {
         return $this->templateResponse("fossil:error/403", array(), 403);
     }
 }
-
-?>

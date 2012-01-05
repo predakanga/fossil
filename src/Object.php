@@ -117,5 +117,3 @@ class Object {
         return $this->container->createObject($type, $name, $argList);
     }
 }
-
-?>

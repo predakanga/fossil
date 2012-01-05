@@ -355,5 +355,3 @@ EOM;
         return $newFQN;
     }
 }
-
-?>

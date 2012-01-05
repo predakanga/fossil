@@ -77,5 +77,3 @@ class NoCache extends BaseCache {
         return;
     }
 }
-
-?>

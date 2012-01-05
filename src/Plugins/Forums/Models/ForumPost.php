@@ -75,5 +75,3 @@ class ForumPost extends Model implements ITemplated {
         $this->topic->forum->latestPost = $this;
     }
 }
-
-?>

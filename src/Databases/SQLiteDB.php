@@ -84,5 +84,3 @@ class SQLiteDB extends BaseDatabase {
         return array_merge(array('driver' => 'pdo_sqlite'), parent::getConnectionConfig());
     }
 }
-
-?>

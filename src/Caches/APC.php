@@ -86,5 +86,3 @@ class APC extends BaseCache {
         apc_delete($key);
     }
 }
-
-?>

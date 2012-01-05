@@ -68,5 +68,3 @@ class SessionNamespace {
         unset($_SESSION[$this->namespace]);
     }
 }
-
-?>

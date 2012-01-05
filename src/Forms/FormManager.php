@@ -95,5 +95,3 @@ class FormManager extends Object {
         return FALSE;
     }
 }
-
-?>

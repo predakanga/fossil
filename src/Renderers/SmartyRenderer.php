@@ -557,5 +557,3 @@ class SmartyRenderer extends BaseRenderer {
         return;
     }
 }
-
-?>

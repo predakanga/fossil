@@ -39,5 +39,3 @@ class Inject extends Annotation {
     public $lazy = false;
     public $required = false;
 }
-
-?>

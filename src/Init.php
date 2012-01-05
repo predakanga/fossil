@@ -77,5 +77,3 @@ class Init extends BaseInit {
         $this->pluginsSetup = true;
     }
 }
-
-?>

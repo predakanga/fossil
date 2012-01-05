@@ -39,5 +39,3 @@ namespace Fossil\Exceptions;
 abstract class NoSuchTargetException extends \Exception {
     //put your code here
 }
-
-?>

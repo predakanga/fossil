@@ -67,5 +67,3 @@ class CustomAnnotationDriver extends AnnotationDriver {
         return new self($reader, $paths);
     }
 }
-
-?>

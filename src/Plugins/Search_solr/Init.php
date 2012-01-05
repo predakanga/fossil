@@ -44,5 +44,3 @@ class Init extends BaseInit {
         $this->container->registerType("Search", "Fossil\Plugins\Search_solr\SolrSearchBackend");
     }
 }
-
-?>

@@ -117,5 +117,3 @@ class Memcached extends BaseCache {
         $this->mc->delete($key);
     }
 }
-
-?>

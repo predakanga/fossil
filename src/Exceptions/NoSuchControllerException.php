@@ -46,5 +46,3 @@ class NoSuchControllerException extends NoSuchTargetException {
         parent::__construct("The controller {$name} does not exist.");
     }
 }
-
-?>

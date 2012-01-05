@@ -315,5 +315,3 @@ class ORM extends Object {
         }
     }
 }
-
-?>

@@ -40,5 +40,3 @@ use Fossil\Interfaces\IResponse,
  */
 class BaseResponse extends Object implements IResponse {
 }
-
-?>

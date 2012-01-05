@@ -70,5 +70,3 @@ abstract class BaseController extends Object {
         return $this->_new("Response", "API", $data);
     }
 }
-
-?>

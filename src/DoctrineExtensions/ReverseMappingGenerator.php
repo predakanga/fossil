@@ -144,5 +144,3 @@ class ReverseMappingGenerator extends BaseMetadataListener {
         return $newMapping;
     }
 }
-
-?>

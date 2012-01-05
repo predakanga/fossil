@@ -70,5 +70,3 @@ class InitialDataset extends Annotation {
         return array();
     }
 }
-
-?>

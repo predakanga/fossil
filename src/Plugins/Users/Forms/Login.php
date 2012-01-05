@@ -50,5 +50,3 @@ class Login extends \Fossil\Forms\BaseForm {
     /** @F:FormField(type = "checkbox", label = "Stay signed in") */
     public $staySignedIn;
 }
-
-?>

@@ -45,5 +45,3 @@ class Object extends Annotation {
     public $type;
     public $name = "default";
 }
-
-?>

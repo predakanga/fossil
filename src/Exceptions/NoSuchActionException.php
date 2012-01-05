@@ -46,5 +46,3 @@ class NoSuchActionException extends NoSuchTargetException {
         parent::__construct("Action {$action} does not exist on controller {$controller}");
     }
 }
-
-?>

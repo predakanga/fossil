@@ -10,5 +10,3 @@ namespace Fossil\Plugins\Regression;
 class AsideCompiler extends \Fossil\Compiler {
     //put your code here
 }
-
-?>

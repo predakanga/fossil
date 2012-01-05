@@ -82,5 +82,3 @@ class WikiPageRevision extends Model {
         $this->authoredAt = new \DateTime();
     }
 }
-
-?>

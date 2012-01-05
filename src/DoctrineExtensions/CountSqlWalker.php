@@ -72,5 +72,3 @@ class CountSqlWalker extends TreeWalkerAdapter
         );
     }
 }
-
-?>

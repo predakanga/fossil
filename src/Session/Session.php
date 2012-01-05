@@ -64,5 +64,3 @@ class Session extends Object {
         return $this->namespaces[$namespace];
     }
 }
-
-?>

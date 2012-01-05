@@ -91,5 +91,3 @@ class SourceDirectoryFilter extends \RecursiveFilterIterator {
         return true;
     }
 }
-
-?>

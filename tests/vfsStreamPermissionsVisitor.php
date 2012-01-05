@@ -64,5 +64,3 @@ class vfsStreamPermissionsVisitor extends vfsStreamAbstractVisitor {
         return $this;
     }
 }
-
-?>

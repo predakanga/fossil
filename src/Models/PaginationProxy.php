@@ -87,5 +87,3 @@ class PaginationProxy {
         return ceil(((float)$this->getItemCount())/$this->pageSize);
     }
 }
-
-?>

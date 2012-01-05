@@ -48,5 +48,3 @@ class FormField extends Annotation {
     public $label = null;
     public $default = null;
 }
-
-?>

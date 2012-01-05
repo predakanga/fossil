@@ -45,5 +45,3 @@ class PrivateMessageConversationRepository extends EntityRepository {
         return $q->getSingleScalarResult();
     }
 }
-
-?>

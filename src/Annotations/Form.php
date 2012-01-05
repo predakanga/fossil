@@ -45,5 +45,3 @@ class Form extends Annotation {
     public $name;
     public $template = "default";
 }
-
-?>

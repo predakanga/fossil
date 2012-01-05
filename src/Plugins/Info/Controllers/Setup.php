@@ -39,5 +39,3 @@ class Setup extends \Fossil\Controllers\Setup {
         phpinfo();
     }
 }
-
-?>

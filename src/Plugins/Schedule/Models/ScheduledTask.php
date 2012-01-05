@@ -52,5 +52,3 @@ class ScheduledTask extends Model {
     /** @OneToMany(targetEntity="ScheduledTaskResult", mappedBy="scheduledItem") */
     protected $results;
 }
-
-?>

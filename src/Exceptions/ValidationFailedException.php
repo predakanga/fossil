@@ -46,5 +46,3 @@ class ValidationFailedException extends \Exception {
         parent::__construct("Validation failed, setting $property to '$value' on $class");
     }
 }
-
-?>

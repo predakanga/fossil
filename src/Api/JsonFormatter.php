@@ -46,5 +46,3 @@ class JsonFormatter implements IApiFormatter {
         return json_encode($data);
     }
 }
-
-?>

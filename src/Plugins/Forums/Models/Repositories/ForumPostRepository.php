@@ -48,5 +48,3 @@ class ForumPostRepository extends EntityRepository {
         return $q->getSingleScalarResult();
     }
 }
-
-?>

@@ -63,5 +63,3 @@ class Error extends AutoController {
         return $this->templateResponse("fossil:error/db", array('e' => $e, 'query' => $this->orm->getLogger()->getQuery()), 503);
     }
 }
-
-?>

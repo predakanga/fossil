@@ -62,4 +62,3 @@ class Index extends AutoController {
         }
     }
 }
-?>

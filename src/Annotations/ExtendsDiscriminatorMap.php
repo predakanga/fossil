@@ -37,5 +37,3 @@ namespace Fossil\Annotations;
 class ExtendsDiscriminatorMap extends Annotation {
     //put your code here
 }
-
-?>

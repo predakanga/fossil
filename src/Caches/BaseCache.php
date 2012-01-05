@@ -103,5 +103,3 @@ abstract class BaseCache extends BaseDriver {
     abstract protected function _update($key, $update_cb);
     abstract protected function _delete($key);
 }
-
-?>

@@ -195,5 +195,3 @@ class User extends \Fossil\Models\Model {
         return "http://www.gravatar.com/avatar/" . md5(trim(strtolower($this->email))) . "?s=$size&amp;d=retro&amp;pg=r";
     }
 }
-
-?>

@@ -37,5 +37,3 @@ namespace Fossil\Exceptions;
 class NoSuchInstanceException extends NoSuchTargetException {
     //put your code here
 }
-
-?>

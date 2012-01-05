@@ -117,5 +117,3 @@ class WikiPage extends Model {
         }
     }
 }
-
-?>

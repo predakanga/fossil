@@ -41,5 +41,3 @@ class MockFilesystem extends \Fossil\Filesystem {
         return \vfsStream::url("root");
     }
 }
-
-?>

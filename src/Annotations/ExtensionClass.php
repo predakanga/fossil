@@ -44,5 +44,3 @@ namespace Fossil\Annotations;
 class ExtensionClass extends Annotation {
     //put your code here
 }
-
-?>

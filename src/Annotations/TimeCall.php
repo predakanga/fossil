@@ -46,5 +46,3 @@ class TimeCall extends Compilation {
         return $retval;
     }
 }
-
-?>

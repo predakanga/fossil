@@ -55,5 +55,3 @@ class HTTP {
         return file_get_contents(self::url($url));
     }
 }
-
-?>

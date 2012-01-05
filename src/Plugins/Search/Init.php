@@ -43,5 +43,3 @@ class Init extends BaseInit {
         $evm->addEventSubscriber(new Subscribers\SearchSubscriber());
     }
 }
-
-?>

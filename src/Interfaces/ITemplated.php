@@ -36,5 +36,3 @@ namespace Fossil\Interfaces;
 interface ITemplated {
     function getTemplateName($mode);
 }
-
-?>

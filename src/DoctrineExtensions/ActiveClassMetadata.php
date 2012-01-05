@@ -81,5 +81,3 @@ class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata
         return $newInst;
     }
 }
-
-?>

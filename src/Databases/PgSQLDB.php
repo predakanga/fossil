@@ -67,5 +67,3 @@ class PgSQLDB extends BaseDatabase {
         return array_merge(array('driver' => 'pdo_pgsql'), parent::getConnectionConfig());
     }
 }
-
-?>

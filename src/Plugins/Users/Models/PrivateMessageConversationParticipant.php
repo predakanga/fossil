@@ -51,5 +51,3 @@ class PrivateMessageConversationParticipant extends Model {
     /** @ManyToOne(targetEntity="PrivateMessage") */
     protected $latestRead;
 }
-
-?>

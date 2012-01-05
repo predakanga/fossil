@@ -103,5 +103,3 @@ class InitSearchIndexes extends StreamingTask {
         $this->result = self::RESULT_SUCCEEDED;
     }
 }
-
-?>

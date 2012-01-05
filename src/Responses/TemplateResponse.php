@@ -69,5 +69,3 @@ class TemplateResponse extends RenderableResponse {
         $this->renderer->render($this->templateName, $this->templateData);
     }
 }
-
-?>

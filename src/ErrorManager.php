@@ -92,5 +92,3 @@ class ErrorManager {
         return $this->log;
     }
 }
-
-?>

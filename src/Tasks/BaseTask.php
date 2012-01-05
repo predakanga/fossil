@@ -51,5 +51,3 @@ abstract class BaseTask {
     abstract public function run(OutputInterface $out);
     //put your code here
 }
-
-?>

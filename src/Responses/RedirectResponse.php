@@ -53,5 +53,3 @@ class RedirectResponse extends ActionableResponse {
         header("Location: " . $this->url);
     }
 }
-
-?>

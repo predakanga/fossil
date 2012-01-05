@@ -57,5 +57,3 @@ abstract class BaseDatabase extends BaseDriver {
         return $this->getConfig();
     }
 }
-
-?>

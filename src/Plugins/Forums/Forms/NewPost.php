@@ -43,5 +43,3 @@ class NewPost extends BaseForm {
     /** @F:FormField(type="textarea") */
     public $content;
 }
-
-?>

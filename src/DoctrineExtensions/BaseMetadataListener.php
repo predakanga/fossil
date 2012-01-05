@@ -41,5 +41,3 @@ use Doctrine\ORM\Event\LoadClassMetadataEventArgs,
 abstract class BaseMetadataListener extends Object {
     abstract public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs);
 }
-
-?>

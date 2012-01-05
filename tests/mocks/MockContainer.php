@@ -51,5 +51,3 @@ class MockContainer extends \Fossil\ObjectContainer {
         }
     }
 }
-
-?>

@@ -594,5 +594,3 @@ XML;
         return new PaginationProxy($builder->getQuery(), $pageSize);
     }
 }
-
-?>

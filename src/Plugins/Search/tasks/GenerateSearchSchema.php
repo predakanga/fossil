@@ -60,5 +60,3 @@ class GenerateSearchSchema extends BaseTask {
         $this->result = self::RESULT_SUCCEEDED;
     }
 }
-
-?>

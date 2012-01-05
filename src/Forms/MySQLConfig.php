@@ -54,5 +54,3 @@ class MySQLConfig extends BaseDriverForm {
     /** @F:FormField(fieldName = "mysql_password", type = "password", label = "Password") */
     public $password;
 }
-
-?>

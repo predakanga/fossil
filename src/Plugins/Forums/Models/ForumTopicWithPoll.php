@@ -41,5 +41,3 @@ class ForumTopicWithPoll extends ForumTopic {
     /** @OneToOne(targetEntity="ForumPoll", mappedBy="topic") */
     protected $poll;
 }
-
-?>

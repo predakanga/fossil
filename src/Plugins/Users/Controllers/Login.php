@@ -100,5 +100,3 @@ class Login extends \Fossil\Controllers\AutoController {
         return new UserModel($this->container);
     }
 }
-
-?>

@@ -49,5 +49,3 @@ class ItemStorage extends BaseForm {
      */
     public $item;
 }
-
-?>

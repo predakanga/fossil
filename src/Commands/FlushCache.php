@@ -57,5 +57,3 @@ class FlushCache extends BaseCommand {
         $output->writeln("Memory used: " . memory_get_peak_usage());
     }
 }
-
-?>

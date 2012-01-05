@@ -49,5 +49,3 @@ interface IDriver {
     function getConfig();
     function __construct($container);
 }
-
-?>

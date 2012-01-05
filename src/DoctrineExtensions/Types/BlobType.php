@@ -80,5 +80,3 @@ class BlobType extends Type {
                      'bytea' => "Fossil\\DoctrineExtensions\\Types\\BlobType");
     }
 }
-
-?>

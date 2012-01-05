@@ -66,5 +66,3 @@ class ForumCategory extends Model {
      */
     protected $announcements;
 }
-
-?>

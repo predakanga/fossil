@@ -67,5 +67,3 @@ class MySQLDB extends BaseDatabase {
         return array_merge(array('driver' => 'pdo_mysql'), parent::getConnectionConfig());
     }
 }
-
-?>

@@ -46,5 +46,3 @@ class SmartyConfig extends BaseDriverForm {
     /** @F:FormField(label="Tidy output", type="checkbox", fieldName="smarty_useTidy") */
     public $useTidy;
 }
-
-?>

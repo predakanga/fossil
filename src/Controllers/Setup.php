@@ -267,5 +267,3 @@ class Setup extends AutoController {
         return $this->templateResponse("setup/finished");
     }
 }
-
-?>

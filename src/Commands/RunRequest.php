@@ -72,5 +72,3 @@ class RunRequest extends BaseCommand {
         \Doctrine\Common\Util\Debug::dump($response, 3);
     }
 }
-
-?>

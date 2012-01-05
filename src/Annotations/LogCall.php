@@ -43,5 +43,3 @@ class LogCall extends Compilation {
         return $this->completeCall($funcname, $args);
     }
 }
-
-?>

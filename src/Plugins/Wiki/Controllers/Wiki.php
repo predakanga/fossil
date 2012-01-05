@@ -156,5 +156,3 @@ class Wiki extends LoginRequiredController {
         return $this->templateResponse("fossil:wiki/history", array("page" => $page));
     }
 }
-
-?>

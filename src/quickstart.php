@@ -39,9 +39,3 @@ require_once(__DIR__."/Fossil.php");
 
 $core = Core::create();
 $core->run();
-/*
-$core = Fossil::bootstrap(Fossil::TESTING);
-$core->run();
-*/
-
-?>

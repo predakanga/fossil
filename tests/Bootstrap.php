@@ -30,5 +30,3 @@
 require_once dirname(__FILE__) . '/../src/Autoloader.php';
 \Fossil\Autoloader::registerAutoloader();
 require_once "FossilTestCase.php";
-
-?>

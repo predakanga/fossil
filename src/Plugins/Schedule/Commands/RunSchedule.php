@@ -140,5 +140,3 @@ class RunSchedule extends BaseCommand {
         $output->writeln("Ran all scheduled tasks. Took " . $time_passed . " seconds");
     }
 }
-
-?>

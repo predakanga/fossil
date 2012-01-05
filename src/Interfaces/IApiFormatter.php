@@ -38,5 +38,3 @@ interface IApiFormatter {
     function getContentType();
     function getContentData($data);
 }
-
-?>

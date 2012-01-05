@@ -42,5 +42,3 @@ class TokenizedPhpParser {
         return array_change_key_case($class->getNamespaceAliases(), CASE_LOWER);
     }
 }
-
-?>

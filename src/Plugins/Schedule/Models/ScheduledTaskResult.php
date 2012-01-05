@@ -52,5 +52,3 @@ class ScheduledTaskResult extends Model {
     /** @ManyToOne(targetEntity="ScheduledTask", inversedBy="results") */
     protected $scheduledItem;
 }
-
-?>

@@ -51,5 +51,3 @@ abstract class PrivateController extends \Fossil\Controllers\AutoController {
         return parent::run($req);
     }
 }
-
-?>

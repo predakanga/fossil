@@ -43,5 +43,3 @@ class Signup extends \Fossil\Forms\BaseForm {
     /** @F:FormField() */
     public $email;
 }
-
-?>

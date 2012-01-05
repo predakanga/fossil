@@ -49,5 +49,3 @@ class PrivateMessageConversation extends Model {
     /** @OneToMany(targetEntity="PrivateMessageConversationParticipant", mappedBy="conversation") */
     protected $participants;
 }
-
-?>

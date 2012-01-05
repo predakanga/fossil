@@ -46,5 +46,3 @@ class SerializedPhpFormatter implements IApiFormatter {
         return serialize($data);
     }
 }
-
-?>

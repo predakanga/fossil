@@ -155,5 +155,3 @@ class Forum extends LoginRequiredController {
         return $cats;
     }
 }
-
-?>

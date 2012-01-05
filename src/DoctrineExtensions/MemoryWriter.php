@@ -57,5 +57,3 @@ class MemoryWriter extends Output {
         $this->backingStore = "";
     }
 }
-
-?>

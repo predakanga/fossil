@@ -54,5 +54,3 @@ class DevelRenderer extends BaseRenderer {
         var_dump($templateData);
     }
 }
-
-?>

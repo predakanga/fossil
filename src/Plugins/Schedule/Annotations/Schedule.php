@@ -40,5 +40,3 @@ class Schedule extends Annotation {
     public $desc = "";
     public $period;
 }
-
-?>

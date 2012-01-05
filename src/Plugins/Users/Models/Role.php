@@ -58,4 +58,3 @@ class Role extends \Fossil\Models\Model {
      */
     protected $classes;
 }
-?>

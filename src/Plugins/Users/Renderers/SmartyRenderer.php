@@ -43,5 +43,3 @@ class SmartyRenderer extends \Fossil\Renderers\SmartyRenderer {
         $tpl->assign('me', User::me($this->container));
     }
 }
-
-?>

@@ -90,5 +90,3 @@ class ReflectionBroker extends Object {
         $this->broker->processFile($filename);
     }
 }
-
-?>

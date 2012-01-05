@@ -44,5 +44,3 @@ namespace Fossil\Responses;
 abstract class ActionableResponse extends BaseResponse {
     abstract public function runAction();
 }
-
-?>

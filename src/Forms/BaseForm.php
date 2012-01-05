@@ -142,5 +142,3 @@ abstract class BaseForm extends Object {
         return true;
     }
 }
-
-?>

@@ -62,5 +62,3 @@ class RunTask extends BaseCommand {
         $output->writeln("Ran the task. Took " . $time_passed . " seconds");
     }
 }
-
-?>

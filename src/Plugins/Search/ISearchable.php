@@ -48,5 +48,3 @@ interface ISearchable {
     const SEARCH_FIELD_DEFAULT_SEARCH = 128;
     const BOOST_FIELD = 256;
 }
-
-?>

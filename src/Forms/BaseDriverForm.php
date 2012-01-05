@@ -52,5 +52,3 @@ class BaseDriverForm extends BaseForm implements IDriverForm {
         return $toRet;
     }
 }
-
-?>

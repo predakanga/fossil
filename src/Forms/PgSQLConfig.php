@@ -54,5 +54,3 @@ class PgSQLConfig extends BaseDriverForm {
     /** @F:FormField(fieldName = "pgsql_password", type = "password", label = "Password") */
     public $password;
 }
-
-?>

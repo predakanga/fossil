@@ -67,5 +67,3 @@ class ActiveProxyFactory extends ProxyFactory {
         return $this->factory->generateProxyClasses($classes, $toDir);
     }
 }
-
-?>

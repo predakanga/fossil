@@ -41,5 +41,3 @@ class ForumPoll extends \Fossil\Models\Model {
     /** @OneToOne(targetEntity="ForumTopicWithPoll", inversedBy="poll") */
     protected $topic;
 }
-
-?>

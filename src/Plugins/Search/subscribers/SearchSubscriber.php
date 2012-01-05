@@ -76,5 +76,3 @@ class SearchSubscriber implements EventSubscriber {
         }
     }
 }
-
-?>

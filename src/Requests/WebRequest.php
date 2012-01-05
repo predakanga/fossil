@@ -57,5 +57,3 @@ class WebRequest extends BaseRequest {
         }
     }
 }
-
-?>

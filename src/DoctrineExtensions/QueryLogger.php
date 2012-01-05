@@ -53,5 +53,3 @@ class QueryLogger implements SQLLogger {
         
     }
 }
-
-?>

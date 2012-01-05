@@ -19,5 +19,3 @@ class EnhancedCompiler extends SimpleCompiler {
         return parent::compileAll();
     }
 }
-
-?>

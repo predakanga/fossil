@@ -73,5 +73,3 @@ class Forum extends \Fossil\Models\Model implements ITemplated {
         return "fossil:forums/row_forum";
     }
 }
-
-?>

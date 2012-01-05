@@ -557,5 +557,3 @@ class ObjectContainer {
         return array('registrations', 'instancedTypes', 'classmap');
     }
 }
-
-?>

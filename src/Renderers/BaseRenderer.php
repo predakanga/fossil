@@ -54,5 +54,3 @@ abstract class BaseRenderer extends BaseDriver {
     
     abstract public function render($templateName, $templateData);
 }
-
-?>

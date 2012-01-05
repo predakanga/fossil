@@ -100,5 +100,3 @@ abstract class BaseSearchBackend extends BaseDriver {
         }
     }
 }
-
-?>

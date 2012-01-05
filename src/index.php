@@ -34,5 +34,3 @@
  */
 
 require_once('quickstart.php');
-
-?>

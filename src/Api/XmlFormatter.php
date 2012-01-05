@@ -53,5 +53,3 @@ class XmlFormatter implements IApiFormatter {
         }
     }
 }
-
-?>
