@@ -54,13 +54,15 @@ class ReverseMappingGenerator extends BaseMetadataListener {
         $classes = $this->annotationMgr->getClassesWithPropertyAnnotation("F:GenerateReverse");
         foreach($classes as $class) {
             // Don't check our own class for annotations
-            if($classMetadata->getName() == $class)
+            if($classMetadata->getName() == $class) {
                 continue;
+            }
             $reflClass = new \ReflectionClass($class);
             foreach($reflClass->getProperties() as $property) {
                 // Skip over inherited properties
-                if($property->class != $class)
+                if($property->class != $class) {
                     continue;
+                }
                 $annos = $this->annotationMgr->getPropertyAnnotations($property, "F:GenerateReverse");
                 if(count($annos)) {
                     // Identified a reverse association
@@ -84,12 +86,14 @@ class ReverseMappingGenerator extends BaseMetadataListener {
                        $md->getAssociationTargetClass($property->name) == $classMetadata->getName()) {
                         // Generate the reverse and add it in
                         $mapping = $md->getAssociationMapping($property->name);
-                        if((!$mapping['isOwningSide']) && ($mapping['type'] != ClassMetadataInfo::ONE_TO_MANY))
+                        if((!$mapping['isOwningSide']) && ($mapping['type'] != ClassMetadataInfo::ONE_TO_MANY)) {
                             throw new \Exception("@F:GenerateReverse may only be used on the owning side of associations");
+                        }
                         $reverseMapping = $this->invertMapping($mapping);
                         // Skip out early if we've already mapped this association
-                        if($classMetadata->hasAssociation($reverseMapping['fieldName']))
+                        if($classMetadata->hasAssociation($reverseMapping['fieldName'])) {
                             continue;
+                        }
                         switch($reverseMapping['type']) {
                             case ClassMetadataInfo::MANY_TO_MANY:
                                 $classMetadata->mapManyToMany($reverseMapping);

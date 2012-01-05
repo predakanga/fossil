@@ -160,21 +160,24 @@ class AnnotationManager extends Object {
             $classData['methods'] = array();
             $classData['properties'] = array();
             
-            if($reflClass->getParentClass())
+            if($reflClass->getParentClass()) {
                 $classData['parent'] = $reflClass->getParentClass()->getName();
+            }
             $classData['annos'] = $this->getReader()->getClassAnnotations($reflClass);
             
             foreach($reflClass->getMethods() as $method) {
                 $methodAnnos = $this->getReader()->getMethodAnnotations($method);
                 
-                if(count($methodAnnos))
+                if(count($methodAnnos)) {
                     $classData['methods'][$method->name] = $methodAnnos;
+                }
             }
             foreach($reflClass->getProperties() as $prop) {
                 $propAnnos = $this->getReader()->getPropertyAnnotations($prop);
                 
-                if(count($propAnnos))
+                if(count($propAnnos)) {
                     $classData['properties'][$prop->name] = $propAnnos;
+                }
             }
             $this->annotations[$reflClass->getName()] = $classData;
     }
@@ -202,20 +205,24 @@ class AnnotationManager extends Object {
                 return true;
         }
         // Otherwise, pass on to our old error handler, or the PHP error handler as appropriate
-        if(is_callable($this->origErrorHandler))
+        if(is_callable($this->origErrorHandler)) {
             return call_user_func_array($this->origErrorHandler, func_get_args());
+        }
         return false;
     }
     
     private function hasAnnotations($class) {
-        if(!isset($this->annotations[$class]))
+        if(!isset($this->annotations[$class])) {
             return false;
+        }
         $classData = $this->annotations[$class];
         
-        if(count($classData['annos']) || count($classData['methods']) || count($classData['properties']))
+        if(count($classData['annos']) || count($classData['methods']) || count($classData['properties'])) {
             return true;
-        if(isset($classData['parent']))
+        }
+        if(isset($classData['parent'])) {
             return $this->hasAnnotations($classData['parent']);
+        }
         return false;
     }
     
@@ -227,19 +234,22 @@ class AnnotationManager extends Object {
     public function getClassAnnotations($class, $annotation = false, $recursive = true) {
         $startAnnos = array();
         
-        if($class[0] == '\\')
+        if($class[0] == '\\') {
             $class = substr($class, 1);
+        }
         
-        if(!isset($this->annotations[$class]))
+        if(!isset($this->annotations[$class])) {
             return array();
+        }
         
         $classData = $this->annotations[$class];
         if(isset($classData['parent']) && $recursive) {
             $startAnnos = $this->getClassAnnotations($classData['parent'], $annotation, $recursive);
         }
         
-        if(!$annotation)
+        if(!$annotation) {
             return array_merge($startAnnos, $classData['annos']);
+        }
         
         $annotation = $this->resolveName($annotation);
         return array_merge($startAnnos,
@@ -263,13 +273,16 @@ class AnnotationManager extends Object {
         $class = $reflProp->getDeclaringClass()->name;
         $prop = $reflProp->name;
         
-        if(!isset($this->annotations[$class]))
+        if(!isset($this->annotations[$class])) {
             return array();
-        if(!isset($this->annotations[$class]['properties'][$prop]))
+        }
+        if(!isset($this->annotations[$class]['properties'][$prop])) {
             return array();
+        }
         
-        if(!$annotation)
+        if(!$annotation) {
             return $this->annotations[$class]['properties'][$prop];
+        }
         
         $annotation = $this->resolveName($annotation);
         return array_filter($this->annotations[$class]['properties'][$prop], function($thisAnno) use($annotation) {
@@ -292,13 +305,16 @@ class AnnotationManager extends Object {
         $class = $reflMethod->getDeclaringClass()->name;
         $method = $reflMethod->name;
         
-        if(!isset($this->annotations[$class]))
+        if(!isset($this->annotations[$class])) {
             return array();
-        if(!isset($this->annotations[$class]['methods'][$method]))
+        }
+        if(!isset($this->annotations[$class]['methods'][$method])) {
             return array();
+        }
         
-        if(!$annotation)
+        if(!$annotation) {
             return $this->annotations[$class]['methods'][$method];
+        }
         
         $annotation = $this->resolveName($annotation);
         return array_filter($this->annotations[$class]['methods'][$method], function ($thisAnno) use ($annotation) {
@@ -338,10 +354,11 @@ class AnnotationManager extends Object {
         $annotation = $this->resolveName($annotation);
         $self = $this;
         return array_filter($classes, function($class) use($annotation, $negativeFilter, $recursive, $self) {
-            if($negativeFilter)
+            if($negativeFilter) {
                 return !$self->classHasAnnotation($class, $annotation, $recursive);
-            else
+            } else {
                 return $self->classHasAnnotation($class, $annotation, $recursive);
+            }
         });
     }
     
@@ -357,8 +374,9 @@ class AnnotationManager extends Object {
         foreach($this->annotations as $class => $key) {
             foreach($key['properties'] as $method => $annos) {
                 foreach($annos as $anno) {
-                    if(is_a($anno, $annotation))
+                    if(is_a($anno, $annotation)) {
                         $toRet[] = $class;
+                    }
                 }
             }
         }
@@ -372,8 +390,9 @@ class AnnotationManager extends Object {
         foreach($this->annotations as $class => $key) {
             foreach($key['methods'] as $method => $annos) {
                 foreach($annos as $anno) {
-                    if(is_a($anno, $annotation))
+                    if(is_a($anno, $annotation)) {
                         $toRet[] = $class;
+                    }
                 }
             }
         }

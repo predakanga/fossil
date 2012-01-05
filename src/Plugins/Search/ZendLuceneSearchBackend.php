@@ -73,8 +73,9 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
     }
     protected function getIndexDir($indexName) {
         $dir = OM::FS()->tempDir() . D_S . "search" . D_S . "lucene" . D_S . $indexName;
-        if(!file_exists($dir))
+        if(!file_exists($dir)) {
             mkdir($dir, 0755, true);
+        }
         return $dir;
     }
     public function loadIndex($indexName) {
@@ -118,8 +119,9 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
     public function flush($clear = false) {
         foreach($this->indexes as $idxName => $idx) {
             $idx->commit();
-            if($clear)
+            if($clear) {
                 $this->indexes[$idxName] = null;
+            }
         }
     }
     public function getSchemas($entities) {
@@ -135,8 +137,9 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
         // Then add each regular field
         foreach(call_user_func(array($model, "getSearchFields")) as $field => $type) {
             $accessor = $field;
-            if(isset($type['accessor']))
+            if(isset($type['accessor'])) {
                 $accessor = $type['accessor'];
+            }
             $type = $type['options'];
             $value = $this->getDataFromModel($entity, $accessor);
             $fieldObj = null;
@@ -166,8 +169,9 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
         
         $docs = $idx->termDocs($term);
         
-        if(count($docs) > 0)
+        if(count($docs) > 0) {
             return array($docs[0], $idx->getDocument($docs[0]));
+        }
         return null;
     }
     

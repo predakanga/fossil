@@ -60,8 +60,9 @@ class InitSearchIndexes extends StreamingTask {
         foreach(OM::ORM()->getEM()->getMetadataFactory()->getAllMetadata() as $md) {
             $class = $md->getName();
             $reflClass = $md->getReflectionClass();
-            if($reflClass->implementsInterface('Fossil\Plugins\Search\ISearchable'))
+            if($reflClass->implementsInterface('Fossil\Plugins\Search\ISearchable')) {
                 $toSearch[] = $class;
+            }
         }
         // Then get the counts of each
         $searchData = array();

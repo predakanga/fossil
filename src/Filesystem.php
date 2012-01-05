@@ -97,12 +97,15 @@ class Filesystem extends Object {
      */
     public function roots($includePlugins = true) {
         $roots = array($this->fossilRoot());
-        if($this->appRoot())
+        if($this->appRoot()) {
             $roots[] = $this->appRoot();
-        if($includePlugins)
+        }
+        if($includePlugins) {
             $roots = array_merge($roots, $this->pluginRoots());
-        if($this->overlayRoot())
+        }
+        if($this->overlayRoot()) {
             $roots[] = $this->overlayRoot();
+        }
         
         return $roots;
     }
@@ -126,10 +129,11 @@ class Filesystem extends Object {
     public function overlayRoot() {
         if(!$this->overlayRoot === false) {
             $overlayRoot = $this->execDir();
-            if($overlayRoot == $this->fossilRoot() || $overlayRoot == $this->appRoot())
+            if($overlayRoot == $this->fossilRoot() || $overlayRoot == $this->appRoot()) {
                 $this->overlayRoot = false;
-            else
+            } else {
                 $this->overlayRoot = $overlayRoot;
+            }
         }
         return $this->overlayRoot;
     }

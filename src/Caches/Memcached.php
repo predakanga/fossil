@@ -80,14 +80,16 @@ class Memcached extends BaseCache {
             $this->mc = new \Memcached();
         }
         // And if we don't have any servers (i.e. not persistent), add them
-        if(!count($this->mc->getServerList()))
+        if(!count($this->mc->getServerList())) {
             $this->mc->addServers($this->config['servers']);
+        }
     }
     
     protected function _has($key) {
         if(!$this->mc->get($key)) {
-            if($this->mc->getResultCode() != Memcached::RES_NOT_FOUND)
+            if($this->mc->getResultCode() != Memcached::RES_NOT_FOUND) {
                 return true;
+            }
             return false;
         }
         return true;

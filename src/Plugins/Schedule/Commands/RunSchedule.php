@@ -66,12 +66,13 @@ class RunSchedule extends BaseCommand {
                     throw new \Exception("$taskClass has a Schedule annotation, but is not an instanced class");
                 }
                 $taskName = "";
-                if(isset($taskNameAnno[0]->name))
+                if(isset($taskNameAnno[0]->name)) {
                     $taskName = $taskNameAnno[0]->name;
-                elseif(isset($taskNameAnno[0]->value))
+                } elseif(isset($taskNameAnno[0]->value)) {
                     $taskName = $taskNameAnno[0]->value;
-                else
+                } else {
                     $taskName = substr($taskClass, strrpos($taskClass, "\\")+1);
+                }
 
                 // Make sure that the model is up to date
                 $taskModel = ScheduledTask::findOneByTask($taskName);

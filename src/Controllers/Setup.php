@@ -77,36 +77,43 @@ class Setup extends AutoController {
         
         $deps['Required'] = array(
             'PHP' => array('Version' => '>= 5.3', 'URL' => 'http://www.php.net', 'Type' => 'Runtime', 'Test' => function() {
-                if(!defined('PHP_VERSION_ID'))
+                if(!defined('PHP_VERSION_ID')) {
                     return false;
-                if(PHP_VERSION_ID < 50300)
+                }
+                if(PHP_VERSION_ID < 50300) {
                     return false;
+                }
                 return true;
             }),
             'Smarty' => array('Version' => '>= 3', 'URL' => 'http://www.smarty.net', 'Type' => 'Templating Engine', 'Test' => function() use($fs) {
                 // TODO: Looser coupling for Smarty
-                if(!file_exists($fs->fossilRoot() . D_S . 'libs/smarty/distribution/libs/Smarty.class.php'))
+                if(!file_exists($fs->fossilRoot() . D_S . 'libs/smarty/distribution/libs/Smarty.class.php')) {
                     return false;
+                }
                 require_once($fs->fossilRoot() . D_S . 'libs/smarty/distribution/libs/Smarty.class.php');
                 
-                if(!defined('\Smarty::SMARTY_VERSION'))
+                if(!defined('\Smarty::SMARTY_VERSION')) {
                     return false;
+                }
                 // Use this test to account for SVN versions of Smarty using Smarty3 as opposed to Smarty-3
                 $placement = strpos(\Smarty::SMARTY_VERSION, '3');
-                if($placement && $placement <= 8)
+                if($placement && $placement <= 8) {
                         return true;
+                }
                 return false;
             })
         );
         $deps['Optional'] = array(
             'PHPUnit' => array('Version' => '>= 3.5', 'URL' => 'http://www.phpunit.de', 'Type' => 'Testing', 'Test' => function() {
-                if(!file_exists(stream_resolve_include_path('PHPUnit/Autoload.php')))
+                if(!file_exists(stream_resolve_include_path('PHPUnit/Autoload.php'))) {
                     return false;
+                }
                 require_once('PHPUnit/Autoload.php');
                 $version = \PHPUnit_Runner_Version::id();
                 $version_comp = explode(".", $version);
-                if($version_comp[0] == 3 && $version_comp[1] >= 5)
+                if($version_comp[0] == 3 && $version_comp[1] >= 5) {
                     return true;
+                }
                 return false;
             })
         );
@@ -147,8 +154,9 @@ class Setup extends AutoController {
         foreach($deps as $typeKey => &$typeArr) {
             foreach($typeArr as &$dep) {
                 $dep['Result'] = $dep['Test']();
-                if($typeKey == 'Required' && !$dep['Result'])
+                if($typeKey == 'Required' && !$dep['Result']) {
                     $result = false;
+                }
             }
         }
         $data = array_merge($data, $deps);
@@ -162,8 +170,9 @@ class Setup extends AutoController {
         
         $typeProviders = $this->container->getAllSingleton($type);
         foreach($typeProviders as $class) {
-            if(!$class::usable())
+            if(!$class::usable()) {
                 continue;
+            }
             $name = $class::getName();
             if(!array_search($name, $toRet)) {
                 $toRet[$class] = $name;
@@ -230,12 +239,15 @@ class Setup extends AutoController {
         $rendererForm = $rendererFormName ? $this->forms->get($rendererFormName) : null;
         
         $submitted = true;
-        if($dbForm && !$dbForm->isSubmitted())
+        if($dbForm && !$dbForm->isSubmitted()) {
             $submitted = false;
-        if($cacheForm && !$cacheForm->isSubmitted())
+        }
+        if($cacheForm && !$cacheForm->isSubmitted()) {
             $submitted = false;
-        if($rendererForm && !$rendererForm->isSubmitted())
+        }
+        if($rendererForm && !$rendererForm->isSubmitted()) {
             $submitted = false;
+        }
         
         if($submitted) {
             // Save settings

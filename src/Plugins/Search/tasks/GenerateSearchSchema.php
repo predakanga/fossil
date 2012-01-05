@@ -44,8 +44,9 @@ class GenerateSearchSchema extends BaseTask {
         foreach(OM::ORM()->getEM()->getMetadataFactory()->getAllMetadata() as $md) {
             $class = $md->getName();
             $reflClass = $md->getReflectionClass();
-            if($reflClass->implementsInterface('Fossil\Plugins\Search\ISearchable'))
+            if($reflClass->implementsInterface('Fossil\Plugins\Search\ISearchable')) {
                 $toSearch[] = $class;
+            }
         }
         $out->writeln("Generating schema to encompass the following models:");
         foreach($toSearch as $model) {

@@ -54,12 +54,14 @@ class ApiResponse extends RenderableResponse {
     }
     
     public function apiValueAdapter($datum) {
-        if($datum instanceof Model)
+        if($datum instanceof Model) {
             $datum = $datum->toArray();
-        if($datum instanceof \DateTime)
+        } elseif($datum instanceof \DateTime) {
             return $datum->getTimestamp();
-        if(is_array($datum))
+        }
+        if(is_array($datum)) {
             return $this->apiAdapter($datum);
+        }
         return $datum;
     }
     
@@ -80,17 +82,18 @@ class ApiResponse extends RenderableResponse {
         // Decide the API format
         $mode = $this->settings->get("Fossil", "DefaultAPI", "json");
         $req = $this->dispatcher->getCurrentRequest();
-        if(isset($req->args['format']))
+        if(isset($req->args['format'])) {
             $mode = $req->args['format'];
+        }
         // And fetch the renderer
         $formatter = $this->_new("Api", $mode);
-        if(!$formatter)
+        if(!$formatter) {
             die("Unknown formatter specified");
+        }
         $this->outputType = $formatter->getContentType();
         $this->outputType = "text/plain";
         
         parent::render();
         echo $formatter->getContentData($this->apiAdapter($this->data));
     }
-    //put your code here
 }

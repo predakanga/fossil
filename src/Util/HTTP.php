@@ -46,8 +46,9 @@ class HTTP {
         self::$contextSet = true;
     }
     public static function url($url) {
-        if(!self::$contextSet)
+        if(!self::$contextSet) {
             self::setDefaultContext();
+        }
         return "compress.zlib://" . $url;
     }
     

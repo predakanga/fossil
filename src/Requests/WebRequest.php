@@ -45,14 +45,17 @@ namespace Fossil\Requests;
 class WebRequest extends BaseRequest {
     public function __construct($container) {
         parent::__construct($container);
-        if(isset($_REQUEST['controller']))
+        if(isset($_REQUEST['controller'])) {
             $this->controller = $_REQUEST['controller'];
-        if(isset($_REQUEST['action']))
+        }
+        if(isset($_REQUEST['action'])) {
             $this->action = $_REQUEST['action'];
+        }
         $this->args = array();
         foreach($_REQUEST as $key => $value) {
-            if($key == 'controller' || $key == 'action')
+            if($key == 'controller' || $key == 'action') {
                 continue;
+            }
             $this->args[$key] = $value;
         }
     }

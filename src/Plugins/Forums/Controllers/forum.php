@@ -73,11 +73,12 @@ class Forum extends LoginRequiredController {
         return $this->templateResponse("fossil:forums/viewTopic", array('topic' => $topic));
     }
     
-    public function runNewTopic(NewTopic $form) {
+    public function runNewTopic(NewTopic $form, ForumModel $fid = null) {
         if($form->isSubmitted() && $form->isValid()) {
             $forum = ForumModel::find($this->container, $form->fid);
-            if(!$forum)
+            if(!$forum) {
                 throw new NoSuchInstanceException("Subforum not found");
+            }
             // Create the new topic
             $topic = new ForumTopic($this->container);
             $topic->author = User::me($this->container);
@@ -94,9 +95,10 @@ class Forum extends LoginRequiredController {
             // And bounce back to the list page
             return $this->redirectResponse("?controller=forums&action=viewForum&id={$forum->id}");
         } else {
-            if(!isset($req->args['fid']))
+            if(!$fid) {
                 throw new NoSuchInstanceException("Subforum not found");
-            $form->fid = $req->args['fid'];
+            }
+            $form->fid = $fid->id;
             return $this->templateResponse("fossil:forums/newTopic");
         }
     }
@@ -141,13 +143,15 @@ class Forum extends LoginRequiredController {
                     $catInfo['id'] = $category->id;
                 }
                 $key = count($cats);
-                if(isset($catKeyMap[$catInfo['id']]))
+                if(isset($catKeyMap[$catInfo['id']])) {
                     $key = $catKeyMap[$catInfo['id']];
-                else
+                } else {
                     $catKeyMap[$catInfo['id']] = $key;
+                }
                 
-                if(!isset($cats[$key]))
+                if(!isset($cats[$key])) {
                     $cats[$key] = array('info' => $catInfo, 'forums' => array());
+                }
                 $cats[$key]['forums'][] = $forum;
             }
         }

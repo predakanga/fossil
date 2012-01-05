@@ -57,8 +57,9 @@ class Session extends Object {
         if(isset($this->namespaces[$namespace])) {
             return $this->namespaces[$namespace];
         }
-        if(!isset($_SESSION[$namespace]))
+        if(!isset($_SESSION[$namespace])) {
             $_SESSION[$namespace] = array();
+        }
         
         $this->namespaces[$namespace] = new SessionNamespace($namespace);
         return $this->namespaces[$namespace];

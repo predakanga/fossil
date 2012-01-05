@@ -61,8 +61,9 @@ abstract class AutoController extends BaseController {
         // Compute the method name
         $actionMethod = "run" . ucfirst($action);
         
-        if(!method_exists($this, $actionMethod))
+        if(!method_exists($this, $actionMethod)) {
             throw new NoSuchActionException($req->controller, $action);
+        }
         
         // And try to call it on ourselves
         $realArgs = $this->resolveArguments($actionMethod, $req->args);
@@ -94,7 +95,6 @@ abstract class AutoController extends BaseController {
         
         // For each of the method's arguments, grab the input from the args
         $reflClass = new \ReflectionClass(get_class($this));
-//        $reflClass = $this->reflections->getClass(get_class($this));
         $reflMethod = $reflClass->getMethod($method);
         foreach($reflMethod->getParameters() as $reflParam) {
             $paramType = $reflParam->getClass();

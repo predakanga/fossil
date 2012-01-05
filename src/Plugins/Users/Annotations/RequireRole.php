@@ -50,16 +50,18 @@ class RequireRole extends \Fossil\Annotations\Compilation {
         $found = false;
         if(User::me($this->container)) {
             foreach(User::me($this->container)->getRoles() as $role) {
-                if($role->name == $compileArgs['value'])
+                if($role->name == $compileArgs['value']) {
                     $found = true;
+                }
                 break;
             }
         }
         if(!$found) {
-            if(method_exists($this, "unauthorizedAction"))
+            if(method_exists($this, "unauthorizedAction")) {
                 return $this->unauthorizedAction($args[0]);
-            else
+            } else {
                 throw new AccessDeniedException();
+            }
         }
         
         return $this->completeCall($funcname, $args);

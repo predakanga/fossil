@@ -118,8 +118,9 @@ class ORM extends Object {
         // Proxy Configuration (3)
         $tempDir = $this->fs->tempDir() . D_S . "proxies";
         // TODO: Only run this when the cache isn't primed
-        if(!file_exists($tempDir))
+        if(!file_exists($tempDir)) {
             mkdir($tempDir);
+        }
         
         $config->setProxyDir($tempDir);
         $config->setProxyNamespace('Fossil\\Proxies');
@@ -132,8 +133,9 @@ class ORM extends Object {
         $this->driver = CustomAnnotationDriver::create();
         
         foreach($this->fs->roots(false) as $root) {
-            if(is_dir($root . D_S . "Models"))
+            if(is_dir($root . D_S . "Models")) {
                 $this->driver->addPaths((array)($root . D_S . "Models"));
+            }
         }
         
         $config->setMetadataDriverImpl($this->driver);
@@ -151,8 +153,9 @@ class ORM extends Object {
         $this->evm = new \Doctrine\Common\EventManager();
         $this->mappingModifiers[] = $this->_new("MetadataListener", "ReverseMappingGenerator");
         $this->mappingModifiers[] = $this->_new("MetadataListener", "DiscriminatorMapGenerator");
-        foreach($this->mappingModifiers as $gen)
+        foreach($this->mappingModifiers as $gen) {
             $this->evm->addEventListener(\Doctrine\ORM\Events::loadClassMetadata, $gen);
+        }
         
         if(!$this->db->getConnectionConfig()) {
             $conn = array('pdo' => $this->db->getPDO(), 'dbname' => null);
@@ -168,8 +171,9 @@ class ORM extends Object {
         $realConn = $this->em->getConnection();
         $platform = $realConn->getDatabasePlatform();
         foreach($types as $typeName => $typeClass) {
-            if(!Type::hasType($typeName))
+            if(!Type::hasType($typeName)) {
                 Type::addType($typeName, $typeClass);
+            }
             // Convention - our Doctrine type names must map directly to DB type names
             $platform->registerDoctrineTypeMapping($typeName, $typeName);
         }
@@ -232,15 +236,17 @@ class ORM extends Object {
             // For all already loaded metadata, run them through the reverse mapping generator again
             foreach($this->getEM()->getMetadataFactory()->getLoadedMetadata() as $md) {
                 $args = new \Doctrine\ORM\Event\LoadClassMetadataEventArgs($md, $this->em);
-                foreach($this->mappingModifiers as $gen)
+                foreach($this->mappingModifiers as $gen) {
                     $gen->loadClassMetadata($args);
+                }
             }
             $allMD = $this->getEM()->getMetadataFactory()->getAllMetadata();
         } else {
             $allMD = array();
             foreach($this->getEM()->getMetadataFactory()->getAllMetadata() as $md) {
-                if($md->getReflectionClass()->getNamespaceName() == "Fossil\\Models")
+                if($md->getReflectionClass()->getNamespaceName() == "Fossil\\Models") {
                     $allMD[] = $md;
+                }
             }
         }
         
@@ -308,8 +314,9 @@ class ORM extends Object {
         // Naive approach to autofilling data in order
         foreach(array_keys($modelData) as $name) {
             // If we've already added this data, skip
-            if(!isset($modelData[$name]))
+            if(!isset($modelData[$name])) {
                 continue;
+            }
             
             $modelData = $this->ensureDataset($name, $modelData);
         }

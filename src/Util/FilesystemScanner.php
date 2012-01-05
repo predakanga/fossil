@@ -73,20 +73,21 @@ class SourceDirectoryFilter extends \RecursiveFilterIterator {
     }
     
     public function accept() {
-        if($this->current()->isDir())
+        if($this->current()->isDir()) {
             return !in_array($this->current()->getFilename(),
                              $this->usedDirFilters,
                              true);
-        else {
+        } else {
             if(in_array($this->current()->getFilename(),
                         self::$FILE_FILTERS,
-                        true))
+                        true)) {
                 return false;
-            elseif(in_array($this->current()->getFilename(),
+            } elseif(in_array($this->current()->getFilename(),
                             self::$ROOT_FILE_FILTERS, true)
                     && in_array($this->current()->getPath(),
-                            $this->roots, true))
+                            $this->roots, true)) {
                 return false;
+            }
         }
         return true;
     }

@@ -49,8 +49,9 @@ abstract class BaseSearchBackend extends BaseDriver {
     abstract public function findEntity(ISearchable $entity);
     public function updateEntity(ISearchable $entity) {
         $entityTuple = $this->findEntity($entity);
-        if($entityTuple)
+        if($entityTuple) {
             $this->removeEntity($entity);
+        }
         $this->indexEntity($entity);
     }
     

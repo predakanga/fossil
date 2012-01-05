@@ -116,8 +116,9 @@ class SolrSearchBackend extends BaseSearchBackend {
         $doc->addField("id", $this->getID($entity));
         foreach($types as $field => $type) {
             $typeAccessor = $field;
-            if(isset($type['accessor']))
+            if(isset($type['accessor'])) {
                 $typeAccessor = $type['accessor'];
+            }
             if($type['options'] & ISearchable::BOOST_FIELD) {
                 $doc->setBoost($this->getDataFromModel($entity, $typeAccessor));
                 continue;
@@ -142,8 +143,9 @@ class SolrSearchBackend extends BaseSearchBackend {
         $query->setQuery("id:$id");
         $query->addField("id")->addField("type")->addField("*");
         $queryResponse = $this->solr->query($query);
-        if(!$queryResponse->success())
+        if(!$queryResponse->success()) {
             return null;
+        }
         $response = $queryResponse->getResponse();
         $response = $response->response;
         if($response->numFound >= 1) {
@@ -519,8 +521,9 @@ $copyFields
 </schema>
 XML;
         $schemaDir = OM::FS()->tempDir() . D_S . "search" . D_S . "solr" . D_S . "conf";
-        if(!file_exists($schemaDir))
+        if(!file_exists($schemaDir)) {
             mkdir($schemaDir, 0755, true);
+        }
         $schemaFilename = $schemaDir . D_S . "schema.xml";
         file_put_contents($schemaFilename, $xml);
         return array($schemaFilename);
@@ -538,8 +541,9 @@ XML;
         $query->addField("id")->addField("type");
         foreach($types as $field => $type) {
             $fieldName = $this->getFieldName($idxName, $field, $type['options']);
-            if(!($type['options'] & ISearchable::SEARCH_FIELD_STORED))
+            if(!($type['options'] & ISearchable::SEARCH_FIELD_STORED)) {
                 continue;
+            }
             $fieldMappings[$field] = $fieldName;
             $query->addField($fieldName);
         }
@@ -557,15 +561,18 @@ XML;
         }
         
         $queryResponse = $this->solr->query($query);
-        if(!$queryResponse->success())
+        if(!$queryResponse->success()) {
             return null;
+        }
         $response = $queryResponse->getResponse();
         $response = $response->response;
-        if($returnRaw)
+        if($returnRaw) {
             return $response->docs;
+        }
         $toRet = array();
-        if(!$response->docs)
+        if(!$response->docs) {
             return $toRet;
+        }
         foreach($response->docs as $doc) {
             $data = array();
             $idParts = explode("_", $doc->id);
@@ -580,8 +587,9 @@ XML;
     
     public function paginatedSearch($model, $query, $pageSize = 10) {
         $docs = $this->search($model, $query, true);
-        if(!$docs)
+        if(!$docs) {
             return null;
+        }
         $ids = array();
         foreach($docs as $doc) {
             $idParts = explode("_", $doc->id);

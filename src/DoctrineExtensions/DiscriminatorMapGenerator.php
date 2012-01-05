@@ -53,16 +53,18 @@ class DiscriminatorMapGenerator extends BaseMetadataListener {
         $classMetadata = $eventArgs->getClassMetadata();
         $ourClass = $classMetadata->getReflectionClass()->getName();
         $secondRun = false;
-        if(isset($this->loadedClasses[$ourClass]))
+        if(isset($this->loadedClasses[$ourClass])) {
             $secondRun = true;
-        else
+        } else {
             $this->loadedClasses[$ourClass] = true;
+        }
         
         $em = $eventArgs->getEntityManager();
 
         // Ensure that it uses a string discriminator column
-        if($classMetadata->discriminatorColumn['type'] != "string")
+        if($classMetadata->discriminatorColumn['type'] != "string") {
             return;
+        }
         
         $discriminatorMap = $classMetadata->discriminatorMap;
 

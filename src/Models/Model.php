@@ -95,8 +95,9 @@ abstract class Model extends Object {
             return $this->$key;
         }
         $methodName = "get" . ucfirst($key);
-        if(method_exists($this, $methodName))
+        if(method_exists($this, $methodName)) {
             return $this->$methodName();
+        }
         
         return $this->$key;
     }
@@ -107,14 +108,16 @@ abstract class Model extends Object {
             return;
         }
         // First, validate the value
-        if(!$this->validate($key, $value))
+        if(!$this->validate($key, $value)) {
             throw new ValidationFailedException($this, $key, $value);
+        }
         
         $methodName = "set" . ucfirst($key);
-        if(method_exists($this, $methodName))
+        if(method_exists($this, $methodName)) {
             $this->$methodName($value);
-        else
+        } else {
             $this->$key = $value;
+        }
     }
     
     public function has($key) {
@@ -123,10 +126,11 @@ abstract class Model extends Object {
     
     public function validate($key, $newValue) {
         $methodName = "validate" . ucfirst($key);
-        if(method_exists($this, $methodName))
+        if(method_exists($this, $methodName)) {
             return $this->$methodName($newValue);
-        else
+        } else {
             return true;
+        }
     }
     
     public static function find($container, $id) {
@@ -224,8 +228,9 @@ abstract class Model extends Object {
      * @return PaginationProxy
      */
     public function paginate($field, $fieldsPerPage = 10) {
-        if(!$this->getMetadata()->isCollectionValuedAssociation($field))
+        if(!$this->getMetadata()->isCollectionValuedAssociation($field)) {
             throw new \Exception("Attempted to paginate a single entity");
+        }
         return new PaginationProxy($this->get($field), $fieldsPerPage);
     }
     

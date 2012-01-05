@@ -65,8 +65,9 @@ class SearchSubscriber implements EventSubscriber {
                 $needsFlush = true;
             }
         }
-        if($needsFlush)
+        if($needsFlush) {
             OM::Search()->commit();
+        }
     }
     
     public function postPersist(LifecycleEventArgs $eventArgs) {

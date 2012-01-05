@@ -103,8 +103,9 @@ class SmartyRenderer extends BaseRenderer {
         $this->smarty->registerPlugin('block', 'link', array($this, 'linkFunction'));
         $this->smarty->registerPlugin('block', 'link_page', array($this, 'linkPageFunction'));
         $this->smarty->registerPlugin('block', 'multiform', array($this, 'multiformFunction'));
-        if($this->config['useTidy'])
+        if($this->config['useTidy']) {
             $this->smarty->registerFilter('output', array($this, "smarty_outputfilter_tidyrepairhtml"));
+        }
         $this->smarty->registerResource("fossil", array(array($this, "smarty_resource_get_template"),
                                                         array($this, "smarty_resource_get_timestamp"),
                                                         array($this, "smarty_resource_get_secure"),
@@ -118,8 +119,9 @@ class SmartyRenderer extends BaseRenderer {
     }
     
     public function render($templateName, $templateData) {
-        if(strpos($templateName, "fossil:") !== 0)
+        if(strpos($templateName, "fossil:") !== 0) {
             $templateName = $templateName . ".tpl";
+        }
         
         $tpl = $this->smarty->createTemplate($templateName);
         $tpl->assign('title', $templateName);
@@ -131,10 +133,12 @@ class SmartyRenderer extends BaseRenderer {
     }
     
     function useFunction($params, $smarty) {
-        if(!isset($params['fqcn']))
+        if(!isset($params['fqcn'])) {
             throw new \Exception("{use} requires a model");
-        if(!isset($params['as']))
+        }
+        if(!isset($params['as'])) {
             throw new \Exception("{use} requires an 'as'");
+        }
         
         $params['fqcn'] = trim($params['fqcn'], "'\"");
         $params['as'] = trim($params['as'], "'\"");
@@ -150,14 +154,16 @@ class SmartyRenderer extends BaseRenderer {
         // Check whether we're in a multiform tag
         $data['multiform'] = false;
         foreach($smarty->_tag_stack as $tag) {
-            if($tag[0] == "multiform")
+            if($tag[0] == "multiform") {
                 $data['multiform'] = true;
+            }
         }
         $form = $this->forms->get($params['name']);
         
         $data['method'] = "post";
-        if(isset($params['method']))
+        if(isset($params['method'])) {
             $data['method'] = $params['method'];
+        }
         
         $data['action'] = htmlentities($_SERVER['REQUEST_URI']);
         if(isset($params['action'])) {
@@ -170,13 +176,15 @@ class SmartyRenderer extends BaseRenderer {
                 $controller = $params['fossil_controller'];
                 $f_action = NULL;
             }
-            if(isset($params['fossil_action']))
+            if(isset($params['fossil_action'])) {
                 $f_action = $params['fossil_action'];
+            }
             
             // Build the query string
             $action = "?controller=" . $controller;
-            if($f_action)
+            if($f_action) {
                 $action .= "&amp;action=" . $f_action;
+            }
             $data['action'] = $action;
         }
         
@@ -192,13 +200,15 @@ class SmartyRenderer extends BaseRenderer {
             }
             $fieldData['name'] = $settings['fieldName'];
             $fieldData['label'] = $settings['label'];
-            if(isset($form->$name))
+            if(isset($form->$name)) {
                 $fieldData['value'] = $form->$name;
+            }
             $fieldData['options'] = array();
-            if($settings['type'] == 'select')
+            if($settings['type'] == 'select') {
                 foreach($settings['options'] as $value => $label) {
                     $fieldData['options'][] = array('value' => $value, 'label' => $label);
                 }
+            }
             $data['fields'][] = $fieldData;
         }
         
@@ -264,11 +274,13 @@ class SmartyRenderer extends BaseRenderer {
     
     function multiformFunction($params, $content, $smarty, &$repeat) {
         // Only process on the closing tag
-        if($repeat)
+        if($repeat) {
             return;
+        }
         $method = "post";
-        if(isset($params['method']))
+        if(isset($params['method'])) {
             $method = $params['method'];
+        }
         
         $action = htmlentities($_SERVER['REQUEST_URI']);
         if(isset($params['action'])) {
@@ -281,23 +293,27 @@ class SmartyRenderer extends BaseRenderer {
                 $controller = $params['fossil_controller'];
                 $f_action = NULL;
             }
-            if(isset($params['fossil_action']))
+            if(isset($params['fossil_action'])) {
                 $f_action = $params['fossil_action'];
+            }
             
             // Build the query string
             $action = "?controller=" . $controller;
-            if($f_action)
+            if($f_action) {
                 $action .= "&amp;action=" . $f_action;
+            }
         }
         
         $has_file = false;
-        if(strstr($content, "type=\"file\""))
+        if(strstr($content, "type=\"file\"")) {
             $has_file = true;
+        }
         
-        if(!$has_file)
+        if(!$has_file) {
             $preamble = "<form method=\"$method\" action=\"$action\">";
-        else
+        } else {
             $preamble = "<form method=\"$method\" action=\"$action\" enctype=\"multipart/form-data\">";
+        }
         
         $postamble = "<input type=\"submit\" value=\"Submit\" />\n</form>";
         return $preamble . "\n" .
@@ -346,17 +362,20 @@ class SmartyRenderer extends BaseRenderer {
     function linkPageFunction($params, $content, $smarty, &$repeat) {
         // Generate our current arguments
         $req = $this->dispatcher->getCurrentRequest();
-        if($req->controller)
+        if($req->controller) {
             $toAdd['controller'] = $req->controller;
-        if($req->action)
+        }
+        if($req->action) {
             $toAdd['action'] = $req->action;
+        }
         $toAdd += $req->args;
         
         // Add the page parameter
-        if(isset($params['page']))
+        if(isset($params['page'])) {
             $toAdd['page'] = $params['page'];
-        else
+        } else {
             $toAdd['page'] = 1;
+        }
         
         // And call the normal link function
         return $this->linkFunction($toAdd, $content, $smarty, $repeat);
@@ -366,11 +385,13 @@ class SmartyRenderer extends BaseRenderer {
         assert(isset($params['source']));
         $content = "";
         $mode = "default";
-        if(isset($params['mode']))
+        if(isset($params['mode'])) {
             $mode = $params['mode'];
+        }
         $index = 0;
-        if(isset($params['indexFrom']))
+        if(isset($params['indexFrom'])) {
             $index = $params['indexFrom'];
+        }
         
         if(isset($params['header'])) {
             $tpl = $smarty->createTemplate($params['header'], array());
@@ -381,8 +402,7 @@ class SmartyRenderer extends BaseRenderer {
         $source = null;
         if($params['source'] instanceof Model) {
             $source = array($params['source']);
-        }
-        elseif(is_array($params['source']) || $params['source'] instanceof Collection) {
+        } elseif(is_array($params['source']) || $params['source'] instanceof Collection) {
             $source = $params['source'];
         }
         
@@ -392,10 +412,12 @@ class SmartyRenderer extends BaseRenderer {
         foreach($source as $item) {
             $index++;
             $tplName = null;
-            if($item instanceof ITemplated)
+            if($item instanceof ITemplated) {
                 $tplName = $item->getTemplateName($mode);
-            if(!$tplName)
+            }
+            if(!$tplName) {
                 $tplName = $params['template'];
+            }
             if(!$tplName) {
                 throw new \Exception("Display called with no template on an object of type " . get_class($item) . ", which doesn't implement ITemplated");
             }
@@ -420,24 +442,30 @@ class SmartyRenderer extends BaseRenderer {
     
     function paginateFunction($params, $smarty) {
         $pageSize = 10;
-        if(isset($params['pageSize']))
+        if(isset($params['pageSize'])) {
             $pageSize = $params['pageSize'];
+        }
         $page = 1;
         // Get the page from the request by default
         $req = $this->dispatcher->getCurrentRequest();
-        if(isset($req->args['page']))
+        if(isset($req->args['page'])) {
             $page = $req->args['page'];
-        if(isset($params['page']))
+        }
+        if(isset($params['page'])) {
             $page = $params['page'];
+        }
         $showPageList = true;
-        if(isset($params['pageList']))
+        if(isset($params['pageList'])) {
             $showPageList = $params['pageList'];
+        }
         $pageListTpl = "fossil:pagination/pageList";
-        if(isset($params['pageListTpl']))
+        if(isset($params['pageListTpl'])) {
             $pageListTpl = $params['pageListTpl'];
+        }
         $template = null;
-        if(isset($params['template']))
+        if(isset($params['template'])) {
             $template = $params['template'];
+        }
         $src = $params['source'];
         
         if($src instanceof Model) {
@@ -517,13 +545,15 @@ class SmartyRenderer extends BaseRenderer {
         } else {
             // Check real roots first
             foreach(array_reverse($this->fs->roots(false)) as $root) {
-                if(file_exists($root . D_S . $suffix))
+                if(file_exists($root . D_S . $suffix)) {
                     return $root . D_S . $suffix;
+                }
             }
             // Then plugin roots as a fallback
             foreach($this->fs->pluginRoots() as $root) {
-                if(file_exists($root . D_S . $suffix))
+                if(file_exists($root . D_S . $suffix)) {
                     return $root . D_S . $suffix;
+                }
             }
         }
         // TODO: Throw exception
@@ -532,8 +562,9 @@ class SmartyRenderer extends BaseRenderer {
     function smarty_resource_get_template($tpl_name, &$tpl_source, $smarty) {
         $filePath = $this->resolve_template_name($tpl_name);
         
-        if(!file_exists($filePath))
+        if(!file_exists($filePath)) {
             return false;
+        }
         
         $tpl_source = file_get_contents($filePath);
         return true;
@@ -542,8 +573,9 @@ class SmartyRenderer extends BaseRenderer {
     function smarty_resource_get_timestamp($tpl_name, &$tpl_timestamp, $smarty) {
         $filePath = $this->resolve_template_name($tpl_name);
         
-        if(!file_exists($filePath))
+        if(!file_exists($filePath)) {
             return false;
+        }
         
         $tpl_timestamp = filemtime($filePath);
         return true;

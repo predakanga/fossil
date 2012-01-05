@@ -51,8 +51,9 @@ class CustomComparator extends Comparator {
         foreach($diff->newTables as $newTable) {
             $tableName = $newTable->getName();
             foreach($classes as $class) {
-                if($class->getTableName() == $tableName)
+                if($class->getTableName() == $tableName) {
                     $this->newModels[] = $class->getReflectionClass()->name;
+                }
             }
         }
         $this->newModels = array_unique($this->newModels);
@@ -86,8 +87,9 @@ class CustomSchemaTool extends SchemaTool {
         $schema = $this->getSchemaFromMetadata($classes);
         
         $newModels = array();
-        foreach($classes as $class)
+        foreach($classes as $class) {
             $newModels[] = $class->getReflectionClass()->name;
+        }
         $this->newModels = $newModels;
         
         return $schema->toSql($this->__platform);

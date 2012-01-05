@@ -80,8 +80,9 @@ class Settings extends Object {
     public function __destruct() {
         if(isset($this->store['Fossil'])) {
             $fossilHash = md5(serialize($this->store['Fossil']));
-            if($fossilHash != $this->fossilHash)
+            if($fossilHash != $this->fossilHash) {
                 file_put_contents($this->backingFile, yaml_emit($this->store['Fossil']));
+            }
         }
     }
     
@@ -94,8 +95,9 @@ class Settings extends Object {
     }
     
     public function isBootstrapped() {
-        if(!isset($this->store['Fossil']))
+        if(!isset($this->store['Fossil'])) {
             return false;
+        }
         return true;
     }
     
@@ -104,27 +106,32 @@ class Settings extends Object {
     }
     
     protected function loadSectionSettings($section) {
-        if(!$this->orm->_isReady())
+        if(!$this->orm->_isReady()) {
             return;
+        }
         $settings = Setting::findBySection($this->container, $section);
-        if(!isset($this->store[$section]))
+        if(!isset($this->store[$section])) {
             $this->store[$section] = array();
+        }
         foreach($settings as $setting) {
             $this->store[$section][$setting->name] = $this->dbValueToValue($setting->value);
         }
     }
     
     public function get($section, $setting, $default = null) {
-        if(!isset($this->store[$section]))
+        if(!isset($this->store[$section])) {
             $this->loadSectionSettings($section);
-        if(isset($this->store[$section][$setting]))
+        }
+        if(isset($this->store[$section][$setting])) {
             return $this->store[$section][$setting];
+        }
         return $default;
     }
     
     public function set($section, $setting, $value) {
-        if(!isset($this->store[$section]))
+        if(!isset($this->store[$section])) {
             $this->loadSectionSettings($section);
+        }
         $this->store[$section][$setting] = $value;
         // Serialize the setting as appropriate
         $value = $this->valueToDbValue($value);

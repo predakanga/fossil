@@ -45,8 +45,9 @@ class MemoryWriter extends Output {
 
     public function doWrite($message, $newline) {
         $this->backingStore .= $message;
-        if($newline)
+        if($newline) {
             $this->backingStore .= "\n";
+        }
     }
     
     public function getOutput() {

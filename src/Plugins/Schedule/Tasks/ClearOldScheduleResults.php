@@ -50,10 +50,11 @@ class ClearOldScheduleResults extends BaseTask {
         $firstSkipped = array();
         $toDel = array();
         foreach($objs as $str) {
-            if(isset($firstSkipped[$str->scheduledItem->id])) 
+            if(isset($firstSkipped[$str->scheduledItem->id])) {
                 $toDel[] = $str->id;
-            else
+            } else {
                 $firstSkipped[$str->scheduledItem->id] = true;;
+            }
         }
         if(count($toDel)) {
             $dql = "DELETE Fossil\Plugins\Schedule\Models\ScheduledTaskResult str WHERE str.id IN (?1)";

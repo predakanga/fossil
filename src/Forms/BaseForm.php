@@ -69,8 +69,9 @@ abstract class BaseForm extends Object {
             $this->form_template = $form_anno[0]->template;
         }
         $this->detectFields();
-        if($this->isSubmitted())
+        if($this->isSubmitted()) {
             $this->populate();
+        }
     }
     
     private function detectFields() {
@@ -83,16 +84,19 @@ abstract class BaseForm extends Object {
             if(count($annotations)) {
                 $propName = $reflProp->getName();
                 $data = array('type' => $annotations[0]->type);
-                if($annotations[0]->fieldName)
+                if($annotations[0]->fieldName) {
                     $data['fieldName'] = $annotations[0]->fieldName;
-                else
+                } else {
                     $data['fieldName'] = $propName;
-                if($annotations[0]->type == "select")
+                }
+                if($annotations[0]->type == "select") {
                     $data['options'] = explode(",", $annotations[0]->options);
-                if($annotations[0]->label)
+                }
+                if($annotations[0]->label) {
                     $data['label'] = $annotations[0]->label;
-                else
+                } else {
                     $data['label'] = ucfirst($propName);
+                }
                 $data['default'] = $annotations[0]->default;
                 
                 $this->form_fields[$propName] = $data;
@@ -106,13 +110,15 @@ abstract class BaseForm extends Object {
         // For each property that we have, check for FormField annotations
         foreach($this->form_fields as $propName => $data) {
             if($data['type'] == "file") {
-                if(isset($_FILES[$data['fieldName']]))
+                if(isset($_FILES[$data['fieldName']])) {
                     $this->$propName = $_FILES[$data['fieldName']];
+                }
             } else {
-                if(isset($request->args[$data['fieldName']]))
+                if(isset($request->args[$data['fieldName']])) {
                     $this->$propName = $request->args[$data['fieldName']];
-                else
+                } else {
                     $this->$propName = $data['default'];
+                }
             }
         }
     }
@@ -128,12 +134,14 @@ abstract class BaseForm extends Object {
     public function isSubmitted() {
         // FIXME: Do we always want to populate forms from the topmost request?
         $request = $this->dispatcher->getTopRequest();
-        if(!isset($request->args['form_id']))
+        if(!isset($request->args['form_id'])) {
             return false;
-        if(is_array($request->args['form_id']) && in_array($this->form_identifier, $request->args['form_id']))
+        }
+        if(is_array($request->args['form_id']) && in_array($this->form_identifier, $request->args['form_id'])) {
             return true;
-        elseif(!is_array($request->args['form_id']) && $request->args['form_id'] == $this->form_identifier)
+        } elseif(!is_array($request->args['form_id']) && $request->args['form_id'] == $this->form_identifier) {
             return true;
+        }
         return false;
     }
     

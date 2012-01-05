@@ -116,12 +116,14 @@ class Dispatcher extends Object {
         $response = $req->run();
         // Flush immediately after running each request, so that we can grab any errors
         if($this->orm->_isReady()) {
-            if($this->orm->getEM()->isOpen())
+            if($this->orm->getEM()->isOpen()) {
                 $this->orm->flush();
+            }
         }
         
-        if(!$react)
+        if(!$react) {
             return $response;
+        }
 
         if($response instanceof RenderableResponse) {
             $response->render();

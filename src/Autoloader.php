@@ -99,8 +99,9 @@ class Autoloader {
      */
     static public function autoload($classname) {
         // If it begins with a \, kill that
-        if($classname[0] == '\\')
+        if($classname[0] == '\\') {
             $classname = substr($classname, 1);
+        }
         // First, determine the namespace
         $classPaths = explode("\\", $classname);
         $resolvePath = array();
@@ -134,7 +135,8 @@ class Autoloader {
         // Fold the class name into the path
         $fullClassPath = self::$classPaths[$namespace] . DIRECTORY_SEPARATOR . $class . ".php";
         // And require it
-        if(file_exists($fullClassPath))
+        if(file_exists($fullClassPath)) {
             include_once($fullClassPath);
+        }
     }
 }

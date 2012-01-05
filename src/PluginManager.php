@@ -75,8 +75,9 @@ class PluginManager extends Object {
     }
     
     public function get($pluginName) {
-        if($this->has($pluginName))
+        if($this->has($pluginName)) {
             return $this->availablePlugins[$pluginName];
+        }
         throw new \Exception("Plugin not found: $pluginName");
     }
     
@@ -112,8 +113,9 @@ class PluginManager extends Object {
         if($pluginName == "fossil") {
             $plugin = array("fossil", $this->core->version);
         } else {
-            if(!$this->has($pluginName))
+            if(!$this->has($pluginName)) {
                 throw new \Exception("Unsatisfied dependency: $pluginName");
+            }
             $plugin = $this->get($pluginName);
         }
         // And next, if a version is provided, compare it
@@ -126,24 +128,28 @@ class PluginManager extends Object {
             }
         }
         // Finally, load the plugin if it isn't already
-        if($pluginName != "fossil" && !$this->enabled($pluginName))
+        if($pluginName != "fossil" && !$this->enabled($pluginName)) {
             $this->enablePlugin($pluginName);
+        }
     }
     
     public function enablePlugin($pluginName) {
-        if(!$this->has($pluginName))
+        if(!$this->has($pluginName)) {
             throw new \Exception("Plugin not found: $pluginName");
-        if($this->enabled($pluginName))
+        }
+        if($this->enabled($pluginName)) {
             return;
+        }
         
         // Check any dependencies and enable them as necessary
         $plugin = $this->availablePlugins[$pluginName];
         if(isset($plugin['dependencies'])) {
             foreach($plugin['dependencies'] as $dep) {
-                if(!isset($dep['version']))
+                if(!isset($dep['version'])) {
                     $this->satisfyDependency($dep['name']);
-                else
+                } else {
                     $this->satisfyDependency($dep['name'], $dep['version']);
+                }
             }
         }
         // Finally, store it
@@ -151,16 +157,18 @@ class PluginManager extends Object {
     }
     
     public function disablePlugin($pluginName) {
-        if(!isset($this->enabledPlugins[$pluginName]))
+        if(!isset($this->enabledPlugins[$pluginName])) {
             return;
+        }
         unset($this->enabledPlugins[$pluginName]);
     }
     
     public function loadEnabledPlugins() {
         $plugins = $this->settings->get("Fossil", "plugins", "");
         if($plugins != "") {
-            foreach(explode(",", $plugins) as $plugin)
+            foreach(explode(",", $plugins) as $plugin) {
                 $this->enablePlugin($plugin);
+            }
         }
     }
 }

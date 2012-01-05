@@ -42,7 +42,8 @@ abstract class StreamingTask extends BaseTask {
     public function run(OutputInterface $out) {
         // Run the task until runOneIteration returns false
         // Extensions can provide pre/post logic in here
-        while($this->runOneIteration($out))
+        while($this->runOneIteration($out)) {
             ;
+        }
     }
 }

@@ -158,8 +158,9 @@ class User extends \Fossil\Models\Model {
             }
         }
         foreach($this->grantedPermissions as $perm) {
-            if(!in_array($perm, $permissions))
+            if(!in_array($perm, $permissions)) {
                 $permissions[] = $perm;
+            }
         }
         return $permissions;
     }
@@ -185,10 +186,11 @@ class User extends \Fossil\Models\Model {
     }
     
     public function getAvatarURL($size) {
-        if(empty($this->avatar))
+        if(empty($this->avatar)) {
             return $this->getGravatarURL($size);
-        else
+        } else {
             return $this->avatar;
+        }
     }
     
     public function getGravatarURL($size) {
