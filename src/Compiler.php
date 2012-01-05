@@ -199,6 +199,7 @@ class Compiler extends Object {
     }
     
     protected function reparentClass($originalClass, $newParent) {
+        // @codingStandardsIgnoreStart
         $sourceTpl = <<<'EOT'
 <?php
 
@@ -208,6 +209,7 @@ namespace %s;
 
 %s
 EOT;
+        // @codingStandardsIgnoreEnd
         $oldReflClass = $this->broker->getClass($originalClass);
         // First param, new namespace
         $oldNamespace = $oldReflClass->getNamespaceName();
@@ -278,6 +280,7 @@ EOT;
         $reflCompileClass = $this->broker->getClass(get_class($compilationAnnotation));
         $reflCompileMethod = $reflCompileClass->getMEthod('call');
         
+        // @codingStandardsIgnoreStart
         $classTpl = <<<'EOC'
 <?php
 
@@ -306,6 +309,7 @@ EOC;
     }
 
 EOM;
+        // @codingStandardsIgnoreEnd
         
         // Figure out our target namespace
         $newNS = $this->baseNamespaceName($newFQN);

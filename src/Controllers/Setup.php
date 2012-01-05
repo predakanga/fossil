@@ -75,6 +75,7 @@ class Setup extends AutoController {
         $deps = array();
         $fs = $this->fs;
         
+        // @codingStandardsIgnoreStart
         $deps['Required'] = array(
             'PHP' => array('Version' => '>= 5.3', 'URL' => 'http://www.php.net', 'Type' => 'Runtime', 'Test' => function() {
                 if(!defined('PHP_VERSION_ID')) {
@@ -117,6 +118,7 @@ class Setup extends AutoController {
                 return false;
             })
         );
+        // @codingStandardsIgnoreEnd
             
         return $deps;
     }
