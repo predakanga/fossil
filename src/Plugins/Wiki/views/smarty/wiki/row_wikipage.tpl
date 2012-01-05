@@ -1,0 +1,1 @@
+    <li>{link action="view" page=$item->id}{$item->title}{/link}</li>

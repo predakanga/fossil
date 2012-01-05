@@ -1,0 +1,10 @@
+---
+name: wiki
+version: 0.0.1
+description: >-
+    This plugin provides a basic wiki system for Fossil.
+    Includes administration pages and a simple RTE.
+dependencies:
+    - name: fossil
+    - name: users
+...
