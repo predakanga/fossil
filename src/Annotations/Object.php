@@ -43,7 +43,7 @@ namespace Fossil\Annotations;
  */
 class Object extends Annotation {
     public $type;
-	public $name = "default";
+    public $name = "default";
 }
 
 ?>

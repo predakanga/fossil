@@ -226,9 +226,9 @@ class SolrSearchBackend extends BaseSearchBackend {
 
     <!-- A general text field that has reasonable, generic
          cross-language defaults: it tokenizes with StandardTokenizer,
-	 removes stop words from case-insensitive "stopwords.txt"
-	 (empty by default), and down cases.  At query time only, it
-	 also applies synonyms. -->
+     removes stop words from case-insensitive "stopwords.txt"
+     (empty by default), and down cases.  At query time only, it
+     also applies synonyms. -->
     <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
       <analyzer type="index">
         <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -283,16 +283,16 @@ class SolrSearchBackend extends BaseSearchBackend {
     </fieldType>
 
     <!-- A text field with defaults appropriate for English, plus
-	 aggressive word-splitting and autophrase features enabled.
-	 This field is just like text_en, except it adds
-	 WordDelimiterFilter to enable splitting and matching of
-	 words on case-change, alpha numeric boundaries, and
-	 non-alphanumeric chars.  This means certain compound word
-	 cases will work, for example query "wi fi" will match
-	 document "WiFi" or "wi-fi".  However, other cases will still
-	 not match, for example if the query is "wifi" and the
-	 document is "wi fi" or if the query is "wi-fi" and the
-	 document is "wifi".
+     aggressive word-splitting and autophrase features enabled.
+     This field is just like text_en, except it adds
+     WordDelimiterFilter to enable splitting and matching of
+     words on case-change, alpha numeric boundaries, and
+     non-alphanumeric chars.  This means certain compound word
+     cases will work, for example query "wi fi" will match
+     document "WiFi" or "wi-fi".  However, other cases will still
+     not match, for example if the query is "wifi" and the
+     document is "wi fi" or if the query is "wi-fi" and the
+     document is "wifi".
         -->
     <fieldType name="text_en_splitting" class="solr.TextField" positionIncrementGap="100" autoGeneratePhraseQueries="true">
       <analyzer type="index">
@@ -343,7 +343,7 @@ class SolrSearchBackend extends BaseSearchBackend {
     </fieldType>
 
     <!-- Just like text_general except it reverses the characters of
-	 each token, to enable more efficient leading wildcard queries. -->
+     each token, to enable more efficient leading wildcard queries. -->
     <fieldType name="text_general_rev" class="solr.TextField" positionIncrementGap="100">
       <analyzer type="index">
         <tokenizer class="solr.StandardTokenizerFactory"/>
@@ -418,10 +418,10 @@ class SolrSearchBackend extends BaseSearchBackend {
         a token of "foo|1.4"  would be indexed as "foo" with a payload of 1.4f
         Attributes of the DelimitedPayloadTokenFilterFactory : 
          "delimiter" - a one character delimiter. Default is | (pipe)
-	 "encoder" - how to encode the following value into a playload
-	    float -> org.apache.lucene.analysis.payloads.FloatEncoder,
-	    integer -> o.a.l.a.p.IntegerEncoder
-	    identity -> o.a.l.a.p.IdentityEncoder
+     "encoder" - how to encode the following value into a playload
+        float -> org.apache.lucene.analysis.payloads.FloatEncoder,
+        integer -> o.a.l.a.p.IntegerEncoder
+        identity -> o.a.l.a.p.IdentityEncoder
             Fully Qualified class name implementing PayloadEncoder, Encoder must have a no arg constructor.
          -->
         <filter class="solr.DelimitedPayloadTokenFilterFactory" encoder="float"/>

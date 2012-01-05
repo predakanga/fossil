@@ -48,7 +48,7 @@ class FilesystemScanner {
 }
 
 class SourceDirectoryFilter extends \RecursiveFilterIterator {
-	public static $DIR_FILTERS = array('.git',
+    public static $DIR_FILTERS = array('.git',
                                        'libs',
                                        'Compiled',
                                        'templates_c',
@@ -56,7 +56,7 @@ class SourceDirectoryFilter extends \RecursiveFilterIterator {
                                        'scratch');
 
     public static $FILE_FILTERS = array('cli-config.php');
-	
+    
     public static $ROOT_FILE_FILTERS = array('index.php',
                                              'quickstart.php');
     
@@ -72,8 +72,8 @@ class SourceDirectoryFilter extends \RecursiveFilterIterator {
         parent::__construct($iter);
     }
     
-	public function accept() {
-		if($this->current()->isDir())
+    public function accept() {
+        if($this->current()->isDir())
             return !in_array($this->current()->getFilename(),
                              $this->usedDirFilters,
                              true);
@@ -89,7 +89,7 @@ class SourceDirectoryFilter extends \RecursiveFilterIterator {
                 return false;
         }
         return true;
-	}
+    }
 }
 
 ?>

@@ -72,7 +72,7 @@ class Core extends Object {
                            'required' => true, 'lazy' => true));
     }
     
-	public function run() {
+    public function run() {
         // Main loop process:
         $this->dispatcher->run();
         // fastcgi_finish_request() if available
