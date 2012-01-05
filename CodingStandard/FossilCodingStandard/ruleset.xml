@@ -21,7 +21,10 @@
 	<rule ref="Generic.WhiteSpace.DisallowTabIndent"/>
 	<rule ref="Generic.WhiteSpace.ScopeIndent"/>
 	<rule ref="PEAR.Files.IncludingFile"/>
-	<rule ref="PEAR.Functions.FunctionCallSignature"/>
+	<rule ref="PEAR.Functions.FunctionCallSignature">
+		<exclude name="PEAR.Functions.FunctionCallSignature.CloseBracketLine"/>
+		<exclude name="PEAR.Functions.FunctionCallSignature.ContentAfterOpenBracket"/>
+	</rule>
 	<rule ref="PEAR.Functions.ValidDefaultValue"/>
 	<rule ref="Squiz.Arrays.ArrayBracketSpacing"/>
 	<rule ref="Squiz.Arrays.ArrayDeclaration">
