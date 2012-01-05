@@ -92,8 +92,8 @@ class SolrSearchBackend extends BaseSearchBackend {
         return $fieldName;
     }
     protected function getID(ISearchable $entity) {
-        $idxName = call_user_func(array($entity,"getIndexName"));
-        $idField = call_user_func(array($entity,"getIDField"));
+        $idxName = call_user_func(array($entity, "getIndexName"));
+        $idField = call_user_func(array($entity, "getIDField"));
         
         return $idxName . "_" . $entity->{$idField};
     }
@@ -108,8 +108,8 @@ class SolrSearchBackend extends BaseSearchBackend {
     }
     public function indexEntity(ISearchable $entity) {
         $doc = new SolrInputDocument();
-        $idxName = call_user_func(array($entity,"getIndexName"));
-        $types = call_user_func(array($entity,"getSearchFields"));
+        $idxName = call_user_func(array($entity, "getIndexName"));
+        $types = call_user_func(array($entity, "getSearchFields"));
         
         $id = $this->getID($entity);
         $doc->addField("type", $idxName);
@@ -133,8 +133,8 @@ class SolrSearchBackend extends BaseSearchBackend {
         $this->solr->deleteById($this->getID($entity));
     }
     public function findEntity(ISearchable $entity) {
-        $idxName = call_user_func(array($entity,"getIndexName"));
-        $types = call_user_func(array($entity,"getSearchFields"));
+        $idxName = call_user_func(array($entity, "getIndexName"));
+        $types = call_user_func(array($entity, "getSearchFields"));
 
         $query = new SolrQuery();
         $id = $this->getID($entity);
@@ -452,9 +452,9 @@ XML;
         $ourFields = "";
         $copyFields = "";
         foreach($entities as $entity) {
-            $idxName = call_user_func(array($entity,"getIndexName"));
-            $idField = call_user_func(array($entity,"getIDField"));
-            $types = call_user_func(array($entity,"getSearchFields"));
+            $idxName = call_user_func(array($entity, "getIndexName"));
+            $idField = call_user_func(array($entity, "getIDField"));
+            $types = call_user_func(array($entity, "getSearchFields"));
             foreach($types as $field => $type) {
                 $type = $type['options'];
                 $fieldName = $this->getFieldName($idxName, $field, $type);
@@ -542,8 +542,8 @@ XML;
     }
     
     public function search($model, $queryStr, $returnRaw = false, $boosts = array()) {
-        $idxName = call_user_func(array($model,"getIndexName"));
-        $types = call_user_func(array($model,"getSearchFields"));
+        $idxName = call_user_func(array($model, "getIndexName"));
+        $types = call_user_func(array($model, "getSearchFields"));
         $fieldMappings = array();
 
         $query = new SolrQuery();

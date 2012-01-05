@@ -24,15 +24,15 @@
 	<rule ref="PEAR.Functions.FunctionCallSignature"/>
 	<rule ref="PEAR.Functions.ValidDefaultValue"/>
 	<rule ref="Squiz.Arrays.ArrayBracketSpacing"/>
-	<rule ref="Squiz.Arrays.ArrayDeclaration"/>
-	<rule ref="Squiz.Arrays.ArrayDeclaration.FirstIndexNoNewLine">
-		<severity>0</severity>
-	</rule>
-	<rule ref="Squiz.Arrays.ArrayDeclaration.SingleLineNotAllowed">
-		<severity>0</severity>
-	</rule>
-	<rule ref="Squiz.Arrays.ArrayDeclaration.CloseBraceNewLine">
-		<severity>0</severity>
+	<rule ref="Squiz.Arrays.ArrayDeclaration">
+		<exclude name="Squiz.Arrays.ArrayDeclaration.FirstIndexNoNewLine"/>
+		<exclude name="Squiz.Arrays.ArrayDeclaration.FirstValueNoNewLine"/>
+		<exclude name="Squiz.Arrays.ArrayDeclaration.CloseBraceNewLine"/>
+		<exclude name="Squiz.Arrays.ArrayDeclaration.CloseBraceNotAligned"/>
+		<exclude name="Squiz.Arrays.ArrayDeclaration.KeyNotAligned"/>
+		<exclude name="Squiz.Arrays.ArrayDeclaration.ValueNotAligned"/>
+		<exclude name="Squiz.Arrays.ArrayDeclaration.SingleLineNotAllowed"/>
+		<exclude name="Squiz.Arrays.ArrayDeclaration.NoCommaAfterLast"/>
 	</rule>
 	<rule ref="Squiz.Classes.ClassFileName"/>
 	<rule ref="Squiz.Classes.LowercaseClassKeywords"/>
