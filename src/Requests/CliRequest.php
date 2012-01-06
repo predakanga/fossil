@@ -69,8 +69,9 @@ class CliRequest extends BaseRequest {
         
         // Figure out the app name
         $this->app = new Application($this->decideName(), "1.0");
-        $helperSet = new HelperSet(array('db' => new ConnectionHelper($this->orm->getEM()->getConnection()),
-                                         'em' => new EntityManagerHelper($this->orm->getEM())));
+        $em = $this->orm->getEM();
+        $helperSet = new HelperSet(array('db' => new ConnectionHelper($em->getConnection()),
+                                         'em' => new EntityManagerHelper($em)));
         $this->app->setHelperSet($helperSet);
         $this->app->setAutoExit(false);
         // And add any commands

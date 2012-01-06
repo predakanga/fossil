@@ -60,6 +60,8 @@ class Error extends AutoController {
     }
     
     public function runDb(\Exception $e) {
-        return $this->templateResponse("fossil:error/db", array('e' => $e, 'query' => $this->orm->getLogger()->getQuery()), 503);
+        return $this->templateResponse("fossil:error/db", array('e' => $e,
+                                                                'query' => $this->orm->getLogger()->getQuery()),
+                                                                503);
     }
 }

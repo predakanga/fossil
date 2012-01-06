@@ -127,14 +127,16 @@ abstract class AutoController extends BaseController {
             return $value;
         }
         
+        $paramName = $reflParam->getName();
         $paramTypeName = $reflParam->getClass()->name;
         
         // If the type hint is a model...
         if($paramType->isSubclassOf("Fossil\Models\Model")) {
             // Look it up by primary key, which the value should be the value of
-            $retval = call_user_func_array(array($paramTypeName, "find"), array($this->container, $value));
+            $method = array($paramTypeName, "find");
+            $retval = call_user_func_array($method, array($this->container, $value));
             if(!$retval && !$reflParam->isOptional()) {
-                throw new \Fossil\Exceptions\NoSuchInstanceException("Unknown " . $reflParam->getName() . " specified");
+                throw new \Fossil\Exceptions\NoSuchInstanceException("Unknown $paramName specified");
             }
             return $retval;
         }

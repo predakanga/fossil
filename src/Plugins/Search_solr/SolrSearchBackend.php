@@ -165,6 +165,7 @@ class SolrSearchBackend extends BaseSearchBackend {
         $this->solr->commit();
     }
     public function getSchemas($entities) {
+        // @codingStandardsIgnoreStart
         $typeXML = <<<XML
   <types>
     <!-- The StrField type is not analyzed, but indexed/stored verbatim. -->
@@ -449,6 +450,7 @@ class SolrSearchBackend extends BaseSearchBackend {
     <fieldtype name="ignored" stored="false" indexed="false" multiValued="true" class="solr.StrField" />
  </types>
 XML;
+        // @codingStandardsIgnoreEnd
         $ourFields = "";
         $copyFields = "";
         foreach($entities as $entity) {

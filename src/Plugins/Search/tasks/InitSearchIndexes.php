@@ -71,7 +71,8 @@ class InitSearchIndexes extends StreamingTask {
             $searchData[$class] = $q->getSingleScalarResult();
         }
         $out->writeln("Wiping indexes");
-        $indexes = array_map(function($model) { return call_user_func(array($model, "getIndexName")); }, $toSearch);
+        $indexes = array_map(function($model) { return call_user_func(array($model, "getIndexName")); },
+                             $toSearch);
         OM::Search()->clearIndexes($indexes);
         $out->writeln("Done");
         $out->writeln("Indexing:");

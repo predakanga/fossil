@@ -96,7 +96,8 @@ class Wiki extends LoginRequiredController {
             }
         }
         if($revModel) {
-            return $this->templateResponse("fossil:wiki/view", array("page" => $page, "rev" => $revModel));
+            return $this->templateResponse("fossil:wiki/view", array("page" => $page,
+                                                                     "rev" => $revModel));
         } else {
             return $this->templateResponse("fossil:wiki/invalidRev", array("page" => $page));
         }
@@ -114,7 +115,8 @@ class Wiki extends LoginRequiredController {
                 if(!$page->currentRevision) {
                     $page->title = $form->title;
                 }
-                // Only save the revision when we have no existing rev, or there's been a change in the content
+                // Only save the revision when we have no existing rev,
+                // or there's been a change in the content
                 if(!$page->currentRevision || $page->currentRevision->content != $form->content) {
                     $page->newRevision($form->content, $form->summary);
                 }

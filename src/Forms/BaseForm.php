@@ -80,7 +80,6 @@ abstract class BaseForm extends Object {
         foreach($reflClass->getProperties() as $reflProp) {
             $annotations = $this->annotations->getPropertyAnnotations($reflProp, "F:FormField");
             // Should only be one
-            // TODO: Double check that Doctrine's annotation layer only allows one annotation per type
             if(count($annotations)) {
                 $propName = $reflProp->getName();
                 $data = array('type' => $annotations[0]->type);
@@ -123,6 +122,7 @@ abstract class BaseForm extends Object {
         }
     }
     
+    // @codingStandardsIgnoreStart
     public function getFields() { return $this->form_fields; }
     public function getFieldType($field) { return $this->form_fields[$field]['type']; }
     public function setFieldType($field, $type) { $this->form_fields[$field]['type'] = $type; if($type == "select") { $this->form_fields[$field]['options'] = array(); } }
@@ -130,6 +130,7 @@ abstract class BaseForm extends Object {
     public function setFieldOptions($field, $options) { $this->form_fields[$field]['options'] = $options; }
     public function getIdentifier() { return $this->form_identifier; }
     public function getTemplate() { return $this->form_template; }
+    // @codingStandardsIgnoreEnd
     
     public function isSubmitted() {
         // FIXME: Do we always want to populate forms from the topmost request?
@@ -137,9 +138,11 @@ abstract class BaseForm extends Object {
         if(!isset($request->args['form_id'])) {
             return false;
         }
-        if(is_array($request->args['form_id']) && in_array($this->form_identifier, $request->args['form_id'])) {
+        if(is_array($request->args['form_id']) &&
+           in_array($this->form_identifier, $request->args['form_id'])) {
             return true;
-        } elseif(!is_array($request->args['form_id']) && $request->args['form_id'] == $this->form_identifier) {
+        } elseif(!is_array($request->args['form_id']) &&
+                 $request->args['form_id'] == $this->form_identifier) {
             return true;
         }
         return false;

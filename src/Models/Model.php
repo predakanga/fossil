@@ -199,6 +199,7 @@ abstract class Model extends Object {
                     foreach($value as $targetData) {
                         $targetEntity = $targetClass::findOneBy($diContainer, $targetData);
                         if(!$targetEntity) {
+                            // TODO: Switch to specific exception
                             throw new \Exception("Required entity not found: $targetClass (" . var_export($targetData, true) . ")");
                         }
                         $collection->add($targetEntity);
@@ -208,6 +209,7 @@ abstract class Model extends Object {
                 } else {
                     $targetEntity = $targetClass::findOneBy($diContainer, $value);
                     if(!$targetEntity) {
+                        // TODO: Switch to specific exception
                         throw new \Exception("Required entity not found: $targetClass (" . var_export($targetData, true) . ")");
                     }
                     $model->set($key, $targetEntity);

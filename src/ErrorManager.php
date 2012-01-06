@@ -67,7 +67,9 @@ class ErrorManager {
             // TODO: Only store the backtrace on specific occasions
             $bt = debug_backtrace();
             array_shift($bt);
-            $this->log['errors'][] = array('errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile, 'errline' => $errline, 'backtrace' => $bt);
+            $this->log['errors'][] = array('errno' => $errno, 'errstr' => $errstr,
+                                           'errfile' => $errfile, 'errline' => $errline,
+                                           'backtrace' => $bt);
         }
         if($errno & $this->showMask) {
             echo "Encountered an error at $errfile:$errline\n";

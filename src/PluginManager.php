@@ -123,8 +123,9 @@ class PluginManager extends Object {
             if(!isset($plugin['version'])) {
                 throw new \Exception("Unsatisfied dependency: $pluginName - need $version");
             }
-            if(!version_compare($plugin['version'], $version, '>=')) {
-                throw new \Exception("Unsatisfied dependency: $pluginName - need $version, have {$plugin['version']}");
+            $ourVersion = $plugin['version'];
+            if(!version_compare($ourVersion, $version, '>=')) {
+                throw new \Exception("Unsatisfied dependency: $pluginName - need $version, have $ourVersion");
             }
         }
         // Finally, load the plugin if it isn't already

@@ -63,7 +63,8 @@ class PaginationProxy {
             // BUGFIX: Clone doesn't copy parameters
             $countQuery->setParameters($this->query->getParameters());
             
-            $countQuery->setHint(Query::HINT_CUSTOM_TREE_WALKERS, array('Fossil\DoctrineExtensions\CountSqlWalker'));
+            $countQuery->setHint(Query::HINT_CUSTOM_TREE_WALKERS,
+                                 array('Fossil\DoctrineExtensions\CountSqlWalker'));
             $countQuery->setFirstResult(null)->setMaxResults(null);
             // Reset the RSM so that it's automatically generated
             $countQuery->setResultSetMapping(null);

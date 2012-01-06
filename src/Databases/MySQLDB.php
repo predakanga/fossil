@@ -53,14 +53,18 @@ class MySQLDB extends BaseDatabase {
     
     public function getPDO() {
         if(!$this->pdo) {
-            $dsn = "mysql:host={$this->config['host']};dbname={$this->config['dbname']};port={$this->config['port']}";
-            $this->pdo = new \PDO($dsn, $this->config['user'], $this->config['password'], array(\PDO::ATTR_PERSISTENT));
+            $dsn = "mysql:host={$this->config['host']};port={$this->config['port']};
+                    dbname={$this->config['dbname']}";
+            $this->pdo = new \PDO($dsn,
+                                  $this->config['user'], $this->config['password'],
+                                  array(\PDO::ATTR_PERSISTENT));
         }
         return $this->pdo;
     }
     
     protected function getDefaultConfig() {
-        return array('host' => 'localhost', 'dbname' => 'fossil', 'port' => 3306, 'user' => 'fossil', 'password' => 'fossil');
+        return array('host' => 'localhost', 'dbname' => 'fossil', 'port' => 3306,
+                     'user' => 'fossil', 'password' => 'fossil');
     }
     
     public function getConnectionConfig() {

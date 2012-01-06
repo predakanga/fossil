@@ -549,7 +549,7 @@ class ObjectContainer {
     }
     
     public function setClassMap($classMap) {
-        // TODO: Should we just wipe it out instead? Could cause issues with cached class map otherwise
+        // TODO: Should we just wipe it out instead? Could cause issues with cached class map
         $this->classMap += $classMap;
     }
     

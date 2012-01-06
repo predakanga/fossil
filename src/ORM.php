@@ -101,7 +101,8 @@ class ORM extends Object {
 
         // Load up custom types
         $types = array();
-        foreach(glob($this->fs->fossilRoot() . D_S . "DoctrineExtensions" . D_S . "Types" . D_S . "*.php") as $type) {
+        $typeRoot = $this->fs->fossilRoot() . D_S . "DoctrineExtensions" . D_S . "Types";
+        foreach(glob($typeRoot . D_S . "*.php") as $type) {
             require_once $type;
         }
         
@@ -127,7 +128,8 @@ class ORM extends Object {
         Autoloader::addNamespacePath("Fossil\\Proxies", $tempDir);
         $config->setAutoGenerateProxyClasses(($appEnv == "development"));
 
-        // Register the Doctrine annotations ourselves, as it's usually done by $config->newDefaultAnnotationDriver()
+        // Register the Doctrine annotations ourselves,
+        // as it's usually done by $config->newDefaultAnnotationDriver()
         AnnotationRegistry::registerFile('Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php');
 
         $this->driver = CustomAnnotationDriver::create();
@@ -144,7 +146,7 @@ class ORM extends Object {
         $backingCache = FossilCache::create($this->container);
         $config->setMetadataCacheImpl($backingCache);
         $config->setQueryCacheImpl($backingCache);
-        $config->setClassMetadataFactoryName("\\Fossil\\DoctrineExtensions\\ActiveClassMetadataFactory");
+        $config->setClassMetadataFactoryName('\Fossil\DoctrineExtensions\ActiveClassMetadataFactory');
         $this->logger = new QueryLogger();
         $config->setSQLLogger($this->logger);
         
@@ -182,7 +184,7 @@ class ORM extends Object {
     protected function setupProxyFactory() {
         // Unfortunately, this requires changing a private property on the EM
         $origProxyFactory = $this->em->getProxyFactory();
-        $newProxyFactory = new DoctrineExtensions\ActiveProxyFactory($this->container, $origProxyFactory);
+        $newProxyFactory = new ActiveProxyFactory($this->container, $origProxyFactory);
         
         $reflClass = new \ReflectionClass($this->em);
         $reflProp = $reflClass->getProperty("proxyFactory");
@@ -306,7 +308,8 @@ class ORM extends Object {
             if($annos) {
                 $modelData[$model] = array();
                 foreach($annos as $anno) {
-                    $modelData[$model] = array_merge($modelData[$model], $anno->getData($this->container));
+                    $modelData[$model] = array_merge($modelData[$model],
+                                                     $anno->getData($this->container));
                 }
             }
         }

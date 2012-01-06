@@ -133,7 +133,8 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
         // Create a new document
         $entityDoc = new \Zend_Search_Lucene_Document();
         // Add the index field
-        $entityDoc->addField(\Zend_Search_Lucene_Field::keyword('dbId', $entity->{call_user_func(array($model, "getIDField"))}));
+        $idField = call_user_func(array($model, "getIDField"));
+        $entityDoc->addField(\Zend_Search_Lucene_Field::keyword('dbId', $entity->$idField));
         // Then add each regular field
         foreach(call_user_func(array($model, "getSearchFields")) as $field => $type) {
             $accessor = $field;
@@ -165,7 +166,8 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
     }
     public function findEntity(ISearchable $entity) {
         $idx = $this->getIndex(call_user_func(array($model, "getIndexName")));
-        $term = new \Zend_Search_Lucene_Index_Term('dbId', $entity->{call_user_func(array($model, "getIDField"))});
+        $idField = call_user_func(array($model, "getIDField"));
+        $term = new \Zend_Search_Lucene_Index_Term('dbId', $entity->$idField);
         
         $docs = $idx->termDocs($term);
         

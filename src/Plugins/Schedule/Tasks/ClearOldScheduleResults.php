@@ -44,7 +44,10 @@ class ClearOldScheduleResults extends BaseTask {
     public function run(OutputInterface $out) {
         $out->writeln("Deleting successful schedule results other than the most recent");
         // TODO: Find a better way to do this
-        $dql = "SELECT str, st FROM Fossil\Plugins\Schedule\Models\ScheduledTaskResult str JOIN str.scheduledItem st WHERE str.result = ?1 ORDER BY str.id DESC";
+        $dql = "SELECT str, st FROM Fossil\Plugins\Schedule\Models\ScheduledTaskResult str
+                               JOIN str.scheduledItem st
+                WHERE str.result = ?1
+                ORDER BY str.id DESC";
         $q = OM::ORM()->getEM()->createQuery($dql)->setParameter(1, BaseTask::RESULT_SUCCEEDED);
         $objs = $q->getResult();
         $firstSkipped = array();
@@ -57,7 +60,8 @@ class ClearOldScheduleResults extends BaseTask {
             }
         }
         if(count($toDel)) {
-            $dql = "DELETE Fossil\Plugins\Schedule\Models\ScheduledTaskResult str WHERE str.id IN (?1)";
+            $dql = "DELETE Fossil\Plugins\Schedule\Models\ScheduledTaskResult str
+                    WHERE str.id IN (?1)";
             $q = OM::ORM()->getEM()->createQuery($dql)->setParameter(1, $toDel);
             $numDel = $q->getSingleScalarResult();
             $out->writeln("Deleted $numDel successful schedule results");
@@ -68,7 +72,8 @@ class ClearOldScheduleResults extends BaseTask {
         $out->writeln("Deleting unsuccessful schedule results older than a week");
         $cutoff = new \DateTime();
         $cutoff->sub(new \DateInterval("P1W"));
-        $dql = "DELETE Fossil\Plugins\Schedule\Models\ScheduledTaskResult str WHERE str.result = ?1 AND str.runAt <= ?2";
+        $dql = "DELETE Fossil\Plugins\Schedule\Models\ScheduledTaskResult str
+                WHERE str.result = ?1 AND str.runAt <= ?2";
         $q = OM::ORM()->getEM()->createQuery($dql)->setParameter(1, BaseTask::RESULT_FAILED)
                                                   ->setParameter(2, $cutoff);
         $numDel = $q->getSingleScalarResult();

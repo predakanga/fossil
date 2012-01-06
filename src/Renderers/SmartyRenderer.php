@@ -91,7 +91,7 @@ class SmartyRenderer extends BaseRenderer {
         require_once $this->fs->fossilRoot() . D_S . "libs/smarty/distribution/libs/Smarty.class.php";
         $this->smarty = new \Smarty();
         foreach($this->fs->roots() as $root) {
-            $this->smarty->addTemplateDir($root . DIRECTORY_SEPARATOR . "views" . DIRECTORY_SEPARATOR . "smarty");
+            $this->smarty->addTemplateDir($root . D_S . "views" . D_S . "smarty");
         }
         $this->smarty->compile_dir = $this->fs->tempDir() . D_S . "templates_c";
         $this->smarty->registerPlugin('function', 'form', array($this, 'formFunction'));
@@ -212,7 +212,7 @@ class SmartyRenderer extends BaseRenderer {
             $data['fields'][] = $fieldData;
         }
         
-        $formTpl = $this->smarty->createTemplate("fossil:forms" . DIRECTORY_SEPARATOR . $form->getTemplate(), $data);
+        $formTpl = $this->smarty->createTemplate("fossil:forms" . D_S . $form->getTemplate(), $data);
         return $formTpl->fetch();
     }
     
@@ -497,23 +497,7 @@ class SmartyRenderer extends BaseRenderer {
     }
     
     function smarty_outputfilter_tidyrepairhtml ($source, $smarty) {
-        if(extension_loaded('tidy')) {
-            /*
-            $tidyoptions = array("indent-spaces" => 4, 
-                                 "wrap" => 120, 
-                                 "indent" =>  auto,
-                                 "tidy-mark" => true, 
-                                 "show-body-only" => true, 
-                                 "force-output" => true,
-                                 "output-xhtml", true,
-                                 "clean" => true,
-                                 "drop-proprietary-attributes" => true,
-                                 "drop-font-tags" => true,
-                                 "drop-empty-paras" => true,
-                                 "hide-comments" => false,
-                                 "join-classes" => false,
-                                 "join-styles" => false);   
-            */                     
+        if(extension_loaded('tidy')) {                    
             $opts = array("output-xhtml" => true,
                           "indent-spaces" => 4, 
                           "wrap" => 200, 

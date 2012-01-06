@@ -39,6 +39,7 @@ namespace Fossil\Annotations;
 use Fossil\Autoloader,
     Fossil\Object,
     Fossil\DoctrineExtensions\FossilCache,
+    Fossil\DoctrineExtensions\TokenizedPhpParser,
     \Doctrine\Common\Annotations\AnnotationReader,
     \Doctrine\Common\Annotations\CachedReader,
     \Doctrine\Common\Annotations\AnnotationRegistry,
@@ -142,7 +143,8 @@ class AnnotationManager extends Object {
         // And restore the original error handler
         restore_error_handler();
 
-        // After all of the annotations have been built, we want to cull all those who don't have any annotations
+        // After all of the annotations have been built, we want to cull
+        // all those whichdon't have any annotations
         $culledAnnos = array();
         foreach(array_keys($this->annotations) as $class) {
             if($this->hasAnnotations($class))
@@ -190,7 +192,7 @@ class AnnotationManager extends Object {
             $reflClass = new \ReflectionClass($this->realReader);
             $reflProp = $reflClass->getProperty("phpParser");
             $reflProp->setAccessible(true);
-            $reflProp->setValue($this->realReader, new \Fossil\DoctrineExtensions\TokenizedPhpParser());
+            $reflProp->setValue($this->realReader, new TokenizedPhpParser());
         
             $this->realReader->setIgnoreNotImportedAnnotations(true);
             
@@ -217,7 +219,9 @@ class AnnotationManager extends Object {
         }
         $classData = $this->annotations[$class];
         
-        if(count($classData['annos']) || count($classData['methods']) || count($classData['properties'])) {
+        if(count($classData['annos']) ||
+           count($classData['methods']) ||
+           count($classData['properties'])) {
             return true;
         }
         if(isset($classData['parent'])) {
@@ -285,7 +289,8 @@ class AnnotationManager extends Object {
         }
         
         $annotation = $this->resolveName($annotation);
-        return array_filter($this->annotations[$class]['properties'][$prop], function($thisAnno) use($annotation) {
+        return array_filter($this->annotations[$class]['properties'][$prop],
+                            function($thisAnno) use ($annotation) {
             return is_a($thisAnno, $annotation);
         });
     }
@@ -317,7 +322,8 @@ class AnnotationManager extends Object {
         }
         
         $annotation = $this->resolveName($annotation);
-        return array_filter($this->annotations[$class]['methods'][$method], function ($thisAnno) use ($annotation) {
+        return array_filter($this->annotations[$class]['methods'][$method],
+                            function ($thisAnno) use ($annotation) {
             // Check inheritance
             return is_a($thisAnno, $annotation);
         });
@@ -350,10 +356,12 @@ class AnnotationManager extends Object {
      * @param string $annotation
      * @return string[]
      */
-    public function filterClassesByAnnotation($classes, $annotation, $negativeFilter = false, $recursive = true) {
+    public function filterClassesByAnnotation($classes, $annotation,
+                                              $negativeFilter = false, $recursive = true) {
         $annotation = $this->resolveName($annotation);
         $self = $this;
-        return array_filter($classes, function($class) use($annotation, $negativeFilter, $recursive, $self) {
+        return array_filter($classes,
+                            function($class) use($annotation, $negativeFilter, $recursive, $self) {
             if($negativeFilter) {
                 return !$self->classHasAnnotation($class, $annotation, $recursive);
             } else {

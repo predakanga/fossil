@@ -53,14 +53,18 @@ class PgSQLDB extends BaseDatabase {
     
     public function getPDO() {
         if(!$this->pdo) {
-            $dsn = "pgsql:host={$this->config['host']};dbname={$this->config['dbname']};port={$this->config['port']}";
-            $this->pdo = new \PDO($dsn, $this->config['user'], $this->config['password'], array(\PDO::ATTR_PERSISTENT));
+            $dsn = "pgsql:host={$this->config['host']};port={$this->config['port']};
+                    dbname={$this->config['dbname']}";
+            $this->pdo = new \PDO($dsn,
+                                  $this->config['user'], $this->config['password'],
+                                  array(\PDO::ATTR_PERSISTENT));
         }
         return $this->pdo;
     }
 
     protected function getDefaultConfig() {
-        return array('host' => 'localhost', 'dbname' => 'fossil', 'port' => 5432, 'user' => 'fossil', 'password' => 'fossil');
+        return array('host' => 'localhost', 'dbname' => 'fossil', 'port' => 5432,
+                     'user' => 'fossil', 'password' => 'fossil');
     }
 
     public function getConnectionConfig() {

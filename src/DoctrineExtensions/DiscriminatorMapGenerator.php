@@ -68,7 +68,8 @@ class DiscriminatorMapGenerator extends BaseMetadataListener {
         
         $discriminatorMap = $classMetadata->discriminatorMap;
 
-        if($classMetadata->isInheritanceTypeJoined() || $classMetadata->isInheritanceTypeSingleTable()) {
+        if($classMetadata->isInheritanceTypeJoined() ||
+           $classMetadata->isInheritanceTypeSingleTable()) {
             // If we're a child entity, just make sure it's in the root discriminator map
             if($classMetadata->rootEntityName != $classMetadata->name) {
                 $rootEntity = $em->getClassMetadata($classMetadata->rootEntityName);

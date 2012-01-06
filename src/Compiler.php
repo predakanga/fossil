@@ -231,7 +231,8 @@ EOT;
         // Third param, the class source, with the "extends" clause rewritten
         $origSource = $this->broker->getClass($originalClass)->getSource();
         $baseClassName = $this->baseClassName($originalClass);
-        $origSource = preg_replace("/^(.*?\s+extends\s+)[\S]+?\s*{/s", '\1' . $newParent . ' {', $origSource);
+        $origSource = preg_replace("/^(.*?\s+extends\s+)[\S]+?\s*{/s",
+                                   '\1' . $newParent . ' {', $origSource);
         
         // Print the new source
         $newSource = sprintf($sourceTpl, $newNamespace, $useListStr, $origSource);
@@ -274,7 +275,8 @@ EOT;
     
     protected function compileExtension($originalClass, $currentClass, $compilationAnnotation) {
         // Determine final class name
-        $newFQN = $this->transformNamespace($originalClass) . "_" . $this->baseClassName(get_class($compilationAnnotation));
+        $newFQN = $this->transformNamespace($originalClass) . "_" .
+                  $this->baseClassName(get_class($compilationAnnotation));
         $newClassName = $this->baseClassName($newFQN);
         $reflOrigClass = $this->broker->getClass($originalClass);
         $reflCompileClass = $this->broker->getClass(get_class($compilationAnnotation));
@@ -350,10 +352,12 @@ EOM;
                 $methodPostamble = substr($fullCompileSource, strpos($fullCompileSource, "{")+1);
                 $methodPostamble = trim(substr($methodPostamble, 0, strrpos($methodPostamble, "}")));
                 
-                $overriddenMethodSource .= sprintf($methodTpl, $methodPreamble, serialize($anno->getArgs()), $methodPostamble);
+                $overriddenMethodSource .= sprintf($methodTpl, $methodPreamble,
+                                                   serialize($anno->getArgs()), $methodPostamble);
             }
         }
-        $source = sprintf($classTpl, $newNS, $useListStr, $newClassName, $currentClass, $overriddenMethodSource);
+        $source = sprintf($classTpl, $newNS, $useListStr,
+                          $newClassName, $currentClass, $overriddenMethodSource);
         
         $this->saveClass($newClassName, $newNS, $source);
         return $newFQN;

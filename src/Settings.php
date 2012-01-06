@@ -136,7 +136,8 @@ class Settings extends Object {
         // Serialize the setting as appropriate
         $value = $this->valueToDbValue($value);
         // Persist to the DB as well
-        $settingModel = Setting::findOneBy($this->container, array('section' => $section, 'name' => $setting));
+        $settingModel = Setting::findOneBy($this->container, array('section' => $section,
+                                                                   'name' => $setting));
         if(!$settingModel) {
             $settingModel = new Setting($this->container);
             $settingModel->section = $section;
