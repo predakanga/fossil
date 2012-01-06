@@ -43,6 +43,16 @@ class InitSearchIndexes extends StreamingTask {
     protected $curQuery;
     protected $batchSize = 500;
     protected $cullPoint = 2000;
+    /**
+     * @F:Inject("Search")
+     * @var BaseSearchBackend
+     */
+    protected $search;
+    /**
+     * @F:Inject("ORM")
+     * @var Fossil\ORM
+     */
+    protected $orm;
     
     public function runOneIteration(OutputInterface $out) {
         // Query for the objects
@@ -50,14 +60,14 @@ class InitSearchIndexes extends StreamingTask {
         $results = $this->curQuery->getResult();
         foreach($results as $result) {
             $startMem = memory_get_usage();
-            OM::Search()->indexEntity($result);
+            $this->search->indexEntity($result);
         }
     }
 
     public function run(OutputInterface $out) {
         // Check what models implement ISearchable
         $toSearch = array();
-        foreach(OM::ORM()->getEM()->getMetadataFactory()->getAllMetadata() as $md) {
+        foreach($this->orm->getEM()->getMetadataFactory()->getAllMetadata() as $md) {
             $class = $md->getName();
             $reflClass = $md->getReflectionClass();
             if($reflClass->implementsInterface('Fossil\Plugins\Search\ISearchable')) {
@@ -67,13 +77,13 @@ class InitSearchIndexes extends StreamingTask {
         // Then get the counts of each
         $searchData = array();
         foreach($toSearch as $class) {
-            $q = OM::ORM()->getEM()->createQuery("SELECT COUNT(u) FROM " . $class . " u");
+            $q = $this->orm->getEM()->createQuery("SELECT COUNT(u) FROM " . $class . " u");
             $searchData[$class] = $q->getSingleScalarResult();
         }
         $out->writeln("Wiping indexes");
         $indexes = array_map(function($model) { return call_user_func(array($model, "getIndexName")); },
                              $toSearch);
-        OM::Search()->clearIndexes($indexes);
+        $this->search->clearIndexes($indexes);
         $out->writeln("Done");
         $out->writeln("Indexing:");
         $memstart = memory_get_usage();
@@ -81,7 +91,7 @@ class InitSearchIndexes extends StreamingTask {
         foreach($searchData as $model => $entCount) {
             $out->writeln("\t$model ($entCount items)");
             $this->curOffset = 0;
-            $this->curQuery = OM::ORM()->getEM()->createQuery("SELECT entity FROM $model entity");
+            $this->curQuery = $this->orm->getEM()->createQuery("SELECT entity FROM $model entity");
             $this->curQuery->setMaxResults($this->batchSize);
             $curIdx = call_user_func(array($model, "getIndexName"));
             
@@ -89,17 +99,17 @@ class InitSearchIndexes extends StreamingTask {
                 $this->runOneIteration($out);
                 $this->curOffset += $this->batchSize;
                 // Cull the entities if we have too many
-                if(OM::ORM()->getEM()->getUnitOfWork()->size() > $this->cullPoint) {
+                if($this->orm->getEM()->getUnitOfWork()->size() > $this->cullPoint) {
                     $out->writeln("\t\tIndexed {$this->curOffset} items");
-                    OM::Search()->flush();
-                    OM::ORM()->getEM()->clear();
+                    $this->search->flush();
+                    $this->orm->getEM()->clear();
                     gc_collect_cycles();
                 }
             }
             // Finally, optimize the index, so that the flushing doesn't slow things down
             $out->writeln("\t\tOptimizing index");
-            OM::Search()->optimizeIndex($curIdx);
-            OM::Search()->flush();
+            $this->search->optimizeIndex($curIdx);
+            $this->search->flush();
         }
         // And disable batch mode again
         $this->result = self::RESULT_SUCCEEDED;

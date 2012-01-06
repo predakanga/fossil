@@ -32,8 +32,7 @@ namespace Fossil\Commands;
 use Symfony\Component\Console\Input\InputInterface,
     Symfony\Component\Console\Output\OutputInterface,
     Symfony\Component\Console\Input\InputDefinition,
-    Symfony\Component\Console\Input\InputArgument,
-    Fossil\OM;
+    Symfony\Component\Console\Input\InputArgument;
 
 /**
  * Description of RunTask
@@ -52,7 +51,7 @@ class RunTask extends BaseCommand {
         $start_time = microtime(true);
         
         $taskName = $input->getArgument("task");
-        $task = OM::obj("tasks", $taskName)->create();
+        $task = $this->container->createObject("Task", $taskName, array());
         $task->run($output);
         
         $end_time = microtime(true);

@@ -38,7 +38,11 @@ use Symfony\Component\Console\Command\Command;
  * @F:InstancedType("Command")
  */
 abstract class BaseCommand extends Command {
+    protected $container;
+    
     public function __construct($container) {
+        $this->container = $container;
+        
         parent::__construct();
     }
 }

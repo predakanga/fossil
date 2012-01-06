@@ -29,15 +29,16 @@
 
 namespace Fossil\Tasks;
 
-use Symfony\Component\Console\Output\OutputInterface;
+use Fossil\Object,
+    Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Description of BaseTask
  *
  * @author predakanga
- * @F:Instanced
+ * @F:InstancedType("Task")
  */
-abstract class BaseTask {
+abstract class BaseTask extends Object {
     const RESULT_SUCCEEDED = 0;
     const RESULT_NOT_RUN = 1;
     const RESULT_FAILED = 2;

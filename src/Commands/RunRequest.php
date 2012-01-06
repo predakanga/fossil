@@ -32,8 +32,7 @@ namespace Fossil\Commands;
 use Symfony\Component\Console\Input\InputInterface,
     Symfony\Component\Console\Output\OutputInterface,
     Symfony\Component\Console\Input\InputDefinition,
-    Symfony\Component\Console\Input\InputArgument,
-    Fossil\OM;
+    Symfony\Component\Console\Input\InputArgument;
 
 /**
  * Description of RunRequest
@@ -62,7 +61,8 @@ class RunRequest extends BaseCommand {
             $args[$args_raw[$i]] = $args_raw[$i+1];
         }
         
-        $req = OM::obj("Requests", "InternalRequest")->create($controller, $action, $args);
+        $req = $this->container->createObject("Request", "Internal",
+                                              array($controller, $action, $args));
         $response = $req->run();
         
         $end_time = microtime(true);

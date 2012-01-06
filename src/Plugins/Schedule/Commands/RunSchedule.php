@@ -33,7 +33,6 @@ use Symfony\Component\Console\Input\InputInterface,
     Symfony\Component\Console\Output\OutputInterface,
     Symfony\Component\Console\Input\InputDefinition,
     Symfony\Component\Console\Input\InputArgument,
-    Fossil\OM,
     Fossil\DoctrineExtensions\MemoryWriter,
     Fossil\Commands\BaseCommand,
     Fossil\Plugins\Schedule\Models\ScheduledTask,
@@ -53,31 +52,39 @@ class RunSchedule extends BaseCommand {
     }
     
     protected function findTasks() {
-        $cachedTasks = OM::Cache("knownTasks", true);
+        $cache = $this->container->get("Cache");
+        $annoMgr = $this->container->get("AnnotationManager");
+        $orm = $this->container->get("ORM");
+        
+        $cachedTasks = $cache->get("knownTasks", true);
         if(!$cachedTasks) {
             $cachedTasks = array();
             // Check for all classes with @Fossil\Plugins\Schedule\Annotations\Schedule
-            $tasks = OM::Annotations()->getClassesWithAnnotation("Fossil\\Plugins\\Schedule\\Annotations\\Schedule");
+            $tasks = $annoMgr->getClassesWithAnnotation("Fossil\\Plugins\\Schedule\\Annotations\\Schedule");
             foreach($tasks as $taskClass) {
                 // Grab the task name
-                $taskNameAnno = OM::Annotations()->getClassAnnotations($taskClass, "F:Instanced");
-                $scheduleAnno = OM::Annotations()->getClassAnnotations($taskClass, "Fossil\\Plugins\\Schedule\\Annotations\\Schedule");
-                if(!$taskNameAnno) {
+                $taskNameAnno = $annoMgr->getClassAnnotations($taskClass, "F:Instanced");
+                $isInstAnno = $annoMgr->getClassAnnotations($taskClass, "F:InstancedType");
+                $scheduleAnno = $annoMgr->getClassAnnotations($taskClass, "Fossil\\Plugins\\Schedule\\Annotations\\Schedule");
+                if(!$isInstAnno) {
                     throw new \Exception("$taskClass has a Schedule annotation, but is not an instanced class");
                 }
                 $taskName = "";
-                if(isset($taskNameAnno[0]->name)) {
-                    $taskName = $taskNameAnno[0]->name;
-                } elseif(isset($taskNameAnno[0]->value)) {
-                    $taskName = $taskNameAnno[0]->value;
-                } else {
+                if($taskNameAnno) {
+                    if(isset($taskNameAnno[0]->name)) {
+                        $taskName = $taskNameAnno[0]->name;
+                    } elseif(isset($taskNameAnno[0]->value)) {
+                        $taskName = $taskNameAnno[0]->value;
+                    }
+                } 
+                if($taskName == "") {
                     $taskName = substr($taskClass, strrpos($taskClass, "\\")+1);
                 }
 
                 // Make sure that the model is up to date
-                $taskModel = ScheduledTask::findOneByTask($taskName);
+                $taskModel = ScheduledTask::findOneByTask($this->container, $taskName);
                 if(!$taskModel) {
-                    $taskModel = new ScheduledTask();
+                    $taskModel = new ScheduledTask($this->container);
                     $taskModel->task = $taskName;
                     $taskModel->nextRun = new \DateTime();
                     $taskModel->period = $scheduleAnno[0]->period;
@@ -94,8 +101,8 @@ class RunSchedule extends BaseCommand {
                 }
                 $cachedTasks[] = $taskName;
             }
-            OM::Cache()->set("knownTasks", $cachedTasks, true);
-            OM::ORM()->flush();
+            $cache->set("knownTasks", $cachedTasks, true);
+            $orm->flush();
         }
         return $cachedTasks;
     }
@@ -106,7 +113,7 @@ class RunSchedule extends BaseCommand {
         // Check whether we have a list of tasks
         $taskNames = $this->findTasks();
         
-        $tasksToRun = ScheduledTask::getDueTasks($taskNames);
+        $tasksToRun = ScheduledTask::getDueTasks($this->container, $taskNames);
         
         $writer = new MemoryWriter();
         
@@ -115,12 +122,12 @@ class RunSchedule extends BaseCommand {
             $writer->clear();
             
             // Run the task
-            $task = OM::Obj("tasks", $taskModel->task)->create();
+            $task = $this->container->createObject("task", $taskModel->task, array());
             $task->run($writer);
             
             // Save the result
             $runAt = new \DateTime();
-            $result = new ScheduledTaskResult();
+            $result = new ScheduledTaskResult($this->container);
             $result->result = $task->getResult();
             $result->output = $writer->getOutput();
             $result->runAt = $runAt;
