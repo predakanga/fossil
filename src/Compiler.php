@@ -152,7 +152,6 @@ class Compiler extends Object {
         $this->broker->scanFile($classPath);
     }
     
-    /** @F:LogCall() */
     public function compileAllClasses() {
         $classList = $this->container->getAllKnownClasses();
         foreach($classList as $class) {
