@@ -370,6 +370,9 @@ class ObjectContainer {
         // Gather the implementations of this class
         $implementors = $reflClass->getDirectSubclasses();
         $implementors += $reflClass->getIndirectSubclasses();
+        if($this->annotationMgr->classHasAnnotation($parentTypeClass, "F:Instanced", false)) {
+            $implementors[$parentTypeClass] = $reflClass;
+        }
         foreach($implementors as $implClass => $implReflClass) {
             // Make sure that the class is concrete
             if($implReflClass->isAbstract()) {
