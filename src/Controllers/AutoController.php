@@ -105,10 +105,10 @@ abstract class AutoController extends BaseController {
                 $thisParamInfo['name'] = strtolower($reflParam->getName());
 
                 $paramType = $reflParam->getClass();
-                if($paramType->isSubclassOf('Fossil\Forms\BaseForm')) {
+                if($paramType && $paramType->isSubclassOf('Fossil\Forms\BaseForm')) {
                     $thisParamInfo['type'] = "form";
                     $thisParamInfo['class'] = $paramType->getName();
-                } elseif($paramType->isSubclassOf('Fossil\Models\Model')) {
+                } elseif($paramType && $paramType->isSubclassOf('Fossil\Models\Model')) {
                     $thisParamInfo['type'] = "model";
                     $thisParamInfo['class'] = $paramType->getName();
                 } else {
