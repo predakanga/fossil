@@ -50,5 +50,4 @@ abstract class BaseTask extends Object {
     }
     
     abstract public function run(OutputInterface $out);
-    //put your code here
 }
