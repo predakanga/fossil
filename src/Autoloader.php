@@ -139,3 +139,5 @@ class Autoloader {
         }
     }
 }
+
+Autoloader::registerAutoloader();
