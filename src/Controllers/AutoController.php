@@ -54,6 +54,11 @@ abstract class AutoController extends BaseController {
      * @var Fossil\Forms\FormManager
      */
     protected $forms;
+    /**
+     * @F:Inject("Cache")
+     * @var Fossil\Caches\BaseCache
+     */
+    protected $cache;
     
     public function run(\Fossil\Requests\BaseRequest $req) {
         // Decide what action to use
@@ -88,62 +93,94 @@ abstract class AutoController extends BaseController {
         return null;
     }
     
+    protected function getArgumentInfo($method) {
+        $paramInfo = $this->cache->get("controller_" . get_class($this) . "_{$method}_params", true);
+        
+        if(!$paramInfo) {
+            $paramInfo = array();
+            $reflClass = new \ReflectionClass(get_class($this));
+            $reflMethod = $reflClass->getMethod($method);
+            foreach($reflMethod->getParameters() as $reflParam) {
+                $thisParamInfo = array();
+                $thisParamInfo['name'] = strtolower($reflParam->getName());
+
+                $paramType = $reflParam->getClass();
+                if($paramType->isSubclassOf('Fossil\Forms\BaseForm')) {
+                    $thisParamInfo['type'] = "form";
+                    $thisParamInfo['class'] = $paramType->getName();
+                } elseif($paramType->isSubclassOf('Fossil\Models\Model')) {
+                    $thisParamInfo['type'] = "model";
+                    $thisParamInfo['class'] = $paramType->getName();
+                } else {
+                    $thisParamInfo['type'] = "generic";
+                }
+                
+                $thisParamInfo['default'] = null;
+                if($reflParam->isOptional()) {
+                    $thisParamInfo['optional'] = true;
+                    $thisParamInfo['default'] = $reflParam->getDefaultValue();
+                } else {
+                    $thisParamInfo['optional'] = false;
+                }
+                
+                $paramInfo[] = $thisParamInfo;
+            }
+            $this->cache->set("controller_" . get_class($this) . "_{$method}_params", $paramInfo, true);
+        }
+        
+        return $paramInfo;
+    }
     protected function resolveArguments($method, $args) {
-        // TODO: Cache param info
+        $paramInfo = $this->getArgumentInfo($method);
         $args = array_change_key_case($args, CASE_LOWER);
         $outputArgs = array();
-        
+
         // For each of the method's arguments, grab the input from the args
-        $reflClass = new \ReflectionClass(get_class($this));
-        $reflMethod = $reflClass->getMethod($method);
-        foreach($reflMethod->getParameters() as $reflParam) {
-            $paramType = $reflParam->getClass();
-            $name = strtolower($reflParam->getName());
-            $finalArg = null;
+        foreach($paramInfo as $param) {
+            $outputArg = null;
             
-            if($paramType && $paramType->isSubclassOf("Fossil\Forms\BaseForm")) {
-                $finalArg = $this->resolveForm($reflParam);
-            } elseif(isset($args[$name])) {
-                $finalArg = $this->resolveArgument($reflParam, $args[$name]);
+            if($param['type'] == "model") {
+                $outputArg = $this->resolveModel($param, $args);
+            } elseif($param['type'] == "form") {
+                $outputArg = $this->resolveForm($param);
+            } else {
+                $outputArg = $this->resolveGeneric($param, $args);
             }
-            if($finalArg == null) {
-                // If the argument isn't optional, throw an exception immediately
-                if(!$reflParam->isOptional()) {
-                    throw new \Exception("Required parameter was not provided: " . $name);
+            
+            if(!$outputArg) {
+                if(!$param['optional']) {
+                    throw new \Exception("Required parameter was not provided: {$param['name']}");
                 } else {
-                    $finalArg = $reflParam->getDefaultValue();
+                    $outputArg = $param['default'];
                 }
             }
-            $outputArgs[] = $finalArg;
+            $outputArgs[] = $outputArg;
         }
+        
         return $outputArgs;
     }
     
-    protected function resolveArgument($reflParam, $value) {
-        $paramType = $reflParam->getClass();
-        
-        // If there's no type hint, return the value un-modified
-        if($paramType == null) {
-            return $value;
+    protected function resolveModel($paramInfo, $input) {
+        if(!isset($input[$paramInfo['name']])) {
+            return null;
         }
-        
-        $paramName = $reflParam->getName();
-        $paramTypeName = $reflParam->getClass()->name;
-        
-        // If the type hint is a model...
-        if($paramType->isSubclassOf("Fossil\Models\Model")) {
-            // Look it up by primary key, which the value should be the value of
-            $method = array($paramTypeName, "find");
-            $retval = call_user_func_array($method, array($this->container, $value));
-            if(!$retval && !$reflParam->isOptional()) {
-                throw new \Fossil\Exceptions\NoSuchInstanceException("Unknown $paramName specified");
-            }
-            return $retval;
+        $id = $input[$paramInfo['name']];
+        $lookupFunc = array($paramInfo['class'], 'find');
+        $model = call_user_func_array($lookupFunc, array($this->container, $id));
+        if(!$model && !$paramInfo['optional']) {
+            throw new \Fossil\Exceptions\NoSuchInstanceException("Unknown {$paramInfo['name']} specified");
         }
-        return $value;
+        return $model;
     }
     
-    protected function resolveForm($reflParam) {
-        return $this->forms->get($reflParam->getClass()->name);
+    protected function resolveGeneric($paramInfo, $input) {
+        if(!isset($input[$paramInfo['name']])) {
+            return null;
+        }
+        return $input[$paramInfo['name']];
+    }
+    
+    protected function resolveForm($paramInfo) {
+        return $this->forms->get($paramInfo['class']);
     }
 }
