@@ -184,7 +184,7 @@ class Filesystem extends Object {
         foreach($this->roots() as $root) {
             $sourceFiles = array_merge($sourceFiles, FilesystemScanner::sourceFiles($root));
         }
-        return $sourceFiles;
+        return array_unique($sourceFiles);
     }
     
     public function getRecursiveMtime($root) {

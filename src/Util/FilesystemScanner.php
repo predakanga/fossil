@@ -67,7 +67,7 @@ class SourceDirectoryFilter extends \RecursiveFilterIterator {
         $this->roots = $roots;
         $this->usedDirFilters = self::$DIR_FILTERS;
         if(!$includePlugins) {
-            $usedDirFilters[] = "Plugins";
+            $this->usedDirFilters[] = "Plugins";
         }
         parent::__construct($iter);
     }
