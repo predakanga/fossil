@@ -46,6 +46,11 @@ use Fossil\OM,
 class SolrSearchBackend extends BaseSearchBackend {
     /** @var SolrClient */
     protected $solr;
+    /**
+     * @F:Inject("Filesystem")
+     * @var Fossil\Filesystem
+     */
+    protected $fs;
     
     static function usable() {
         return function_exists("solr_get_version");
@@ -534,7 +539,7 @@ $copyFields
   <solrQueryParser defaultOperator="OR"/>
 </schema>
 XML;
-        $schemaDir = OM::FS()->tempDir() . D_S . "search" . D_S . "solr" . D_S . "conf";
+        $schemaDir = $this->fs->tempDir() . D_S . "search" . D_S . "solr" . D_S . "conf";
         if(!file_exists($schemaDir)) {
             mkdir($schemaDir, 0755, true);
         }
@@ -610,7 +615,7 @@ XML;
             $ids[] = (int)$idParts[1];
         }
         // Construct a query
-        $builder = OM::ORM()->getEM()->createQueryBuilder();
+        $builder = $this->orm->getEM()->createQueryBuilder();
         $builder = $builder->select("item")->from($model, "item")
                            ->where("item.id IN " . $builder->createPositionalParameter($ids));
         return new PaginationProxy($builder->getQuery(), $pageSize);

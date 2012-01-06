@@ -40,6 +40,6 @@ use Fossil\BaseInit,
  */
 class Init extends BaseInit {
     protected function registerEventSubscribers(EventManager $evm) {
-        $evm->addEventSubscriber(new Subscribers\SearchSubscriber());
+        $evm->addEventSubscriber(new Subscribers\SearchSubscriber($this->container));
     }
 }

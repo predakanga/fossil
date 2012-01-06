@@ -29,8 +29,7 @@
 
 namespace Fossil\Plugins\Search\Tasks;
 
-use Fossil\OM,
-    Fossil\Tasks\BaseTask,
+use Fossil\Tasks\BaseTask,
     Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -39,9 +38,21 @@ use Fossil\OM,
  * @author predakanga
  */
 class GenerateSearchSchema extends BaseTask {
+    /**
+     * @F:Inject("Search")
+     * @var BaseSearchBackend
+     */
+    protected $search;
+    /**
+     * @F:Inject("ORM")
+     * @var Fossil\ORM
+     */
+    protected $orm;
+    
     public function run(OutputInterface $out) {
         $toSearch = array();
-        foreach(OM::ORM()->getEM()->getMetadataFactory()->getAllMetadata() as $md) {
+
+        foreach($this->orm->getEM()->getMetadataFactory()->getAllMetadata() as $md) {
             $class = $md->getName();
             $reflClass = $md->getReflectionClass();
             if($reflClass->implementsInterface('Fossil\Plugins\Search\ISearchable')) {
@@ -52,7 +63,7 @@ class GenerateSearchSchema extends BaseTask {
         foreach($toSearch as $model) {
             $out->writeln("\t$model");
         }
-        $schemaFiles = OM::Search()->getSchemas($toSearch);
+        $schemaFiles = $this->search->getSchemas($toSearch);
         $out->writeln("");
         $out->writeln("Schema generated, in the following files:");
         foreach($schemaFiles as $file) {

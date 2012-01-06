@@ -44,6 +44,11 @@ set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__ . D_S . "libs");
 class ZendLuceneSearchBackend extends BaseSearchBackend {
     protected $indexes = array();
     protected $batchMode = false;
+    /**
+     * @F:Inject("Filesystem")
+     * @var Fossil\Filesystem
+     */
+    protected $fs;
     
     static function usable() {
         require_once "Zend/Search/Lucene.php";
@@ -72,7 +77,7 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
         \Zend_Search_Lucene_Analysis_Analyzer::setDefault(new \StandardAnalyzer_Analyzer_Standard_English());
     }
     protected function getIndexDir($indexName) {
-        $dir = OM::FS()->tempDir() . D_S . "search" . D_S . "lucene" . D_S . $indexName;
+        $dir = $this->fs->tempDir() . D_S . "search" . D_S . "lucene" . D_S . $indexName;
         if(!file_exists($dir)) {
             mkdir($dir, 0755, true);
         }
@@ -204,7 +209,7 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
             $ids[] = $r->dbId;
         }
         // Construct a query
-        $builder = OM::ORM()->getEM()->createQueryBuilder();
+        $builder = $this->orm->getEM()->createQueryBuilder();
         $builder = $builder->select("item")->from($model, "item")
                            ->where("item.id IN " . $builder->createPositionalParameter($ids));
         return new PaginationProxy($builder->getQuery(), $pageSize);

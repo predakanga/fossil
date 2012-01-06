@@ -29,7 +29,7 @@
 
 namespace Fossil\Plugins\Search\Subscribers;
 
-use Fossil\OM,
+use Fossil\Object,
     Doctrine\Common\EventSubscriber,
     Doctrine\ORM\Events,
     Doctrine\ORM\Event\OnFlushEventArgs,
@@ -40,7 +40,13 @@ use Fossil\OM,
  *
  * @author predakanga
  */
-class SearchSubscriber implements EventSubscriber {
+class SearchSubscriber extends Object implements EventSubscriber {
+    /**
+     * @F:Inject(type="search", lazy=true)
+     * @var BaseSearchBackend
+     */
+    protected $search;
+    
     public function getSubscribedEvents() {
         return array(Events::onFlush,
                      Events::postPersist);
@@ -53,26 +59,26 @@ class SearchSubscriber implements EventSubscriber {
 
         foreach($uow->getScheduledEntityUpdates() AS $entity) {
             if($entity instanceof ISearchable) {
-                OM::Search()->updateEntity($entity);
+                $this->search->updateEntity($entity);
                 $needsFlush = true;
             }
         }
 
         foreach($uow->getScheduledEntityDeletions() AS $entity) {
             if($entity instanceof ISearchable) {
-                OM::Search()->removeEntity($entity);
+                $this->search->removeEntity($entity);
                 $needsFlush = true;
             }
         }
         if($needsFlush) {
-            OM::Search()->commit();
+            $this->search->commit();
         }
     }
     
     public function postPersist(LifecycleEventArgs $eventArgs) {
         $entity = $eventArgs->getEntity();
         if($entity instanceof \Fossil\Plugins\Search\ISearchable) {
-            OM::Search()->indexEntity($entity);
+            $this->search->indexEntity($entity);
         }
     }
 }

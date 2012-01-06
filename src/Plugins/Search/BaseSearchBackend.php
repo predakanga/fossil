@@ -38,6 +38,12 @@ use Fossil\BaseDriver;
  * @F:Provides("Search")
  */
 abstract class BaseSearchBackend extends BaseDriver {
+    /**
+     * @F:Inject("ORM")
+     * @var Fossil\ORM
+     */
+    protected $orm;
+    
     public function __construct($container) {
         $this->driverType = "Search";
         parent::__construct($container);
@@ -77,7 +83,7 @@ abstract class BaseSearchBackend extends BaseDriver {
             $ids[] = $r->dbId;
         }
         // Construct a query
-        $builder = OM::ORM()->getEM()->createQueryBuilder();
+        $builder = $this->orm->getEM()->createQueryBuilder();
         $builder = $builder->select("item")->from($model, "item")
                            ->where("item.id IN " . $builder->createPositionalParameter($ids));
         return new PaginationProxy($builder->getQuery(), $pageSize);
