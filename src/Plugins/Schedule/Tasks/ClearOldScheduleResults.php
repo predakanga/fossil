@@ -56,7 +56,7 @@ class ClearOldScheduleResults extends BaseTask {
             if(isset($firstSkipped[$str->scheduledItem->id])) {
                 $toDel[] = $str->id;
             } else {
-                $firstSkipped[$str->scheduledItem->id] = true;;
+                $firstSkipped[$str->scheduledItem->id] = true;
             }
         }
         if(count($toDel)) {
