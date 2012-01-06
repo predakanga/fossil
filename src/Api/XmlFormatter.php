@@ -29,15 +29,13 @@
 
 namespace Fossil\Api;
 
-use Fossil\Interfaces\IApiFormatter;
-
 /**
  * Description of XmlFormatter
  *
  * @author predakanga
  * @F:Instanced("xml")
  */
-class XmlFormatter implements IApiFormatter {
+class XmlFormatter extends BaseFormatter {
     public function getContentType() {
         return "application/xml";
     }

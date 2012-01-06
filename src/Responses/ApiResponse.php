@@ -49,7 +49,9 @@ class ApiResponse extends RenderableResponse {
      */
     protected $dispatcher;
     
-    public function __construct($data) {
+    public function __construct($container, $data) {
+        parent::__construct($container);
+        
         $this->data = $data;
     }
     

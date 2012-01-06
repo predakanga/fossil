@@ -29,18 +29,16 @@
 
 namespace Fossil\Api;
 
+use Fossil\Object,
+    Fossil\Interfaces\IApiFormatter;
+
 /**
- * Description of SerializedPhpFormatter
+ * Description of BaseFormatter
  *
  * @author predakanga
- * @F:Instanced("php")
+ * @F:InstancedType("API")
  */
-class SerializedPhpFormatter extends BaseFormatter {
-    public function getContentType() {
-        return "application/vnd.php.serialized";
-    }
-    
-    public function getContentData($data) {
-        return serialize($data);
-    }
+abstract class BaseFormatter extends Object implements IApiFormatter {
 }
+
+?>

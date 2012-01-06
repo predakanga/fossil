@@ -29,7 +29,6 @@
 
 namespace Fossil\Api;
 
-use Fossil\Interfaces\IApiFormatter;
 
 /**
  * Description of JsonFormatter
@@ -37,7 +36,7 @@ use Fossil\Interfaces\IApiFormatter;
  * @author predakanga
  * @F:Instanced("json")
  */
-class JsonFormatter implements IApiFormatter {
+class JsonFormatter extends BaseFormatter {
     public function getContentType() {
         return "application/json";
     }
