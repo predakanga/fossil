@@ -39,14 +39,12 @@ class Object {
      * @var Fossil\ObjectContainer
      */
     protected $container;
-    protected $errorMgr;
     
     public function __construct(ObjectContainer $container) {
         // TODO: When PHP 5.4 is standard, replace this constructor
         // Use code similar to the following in ObjectContainer instead
         // http://au.php.net/manual/en/reflectionclass.newinstancewithoutconstructor.php#105670
         $this->container = $container;
-        $this->errorMgr = $container->get("ErrorManager");
         $this->setupObjects();
     }
     
