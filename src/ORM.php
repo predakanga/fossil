@@ -191,6 +191,7 @@ class ORM extends Object {
         $reflProp->setAccessible(true);
         $reflProp->setValue($this->em, $newProxyFactory);
     }
+    
     public function registerPluginPaths() {
         $pluginsWithModels = array_filter($this->fs->pluginRoots(), function($root) {
             return is_dir($root . D_S . "Models");
@@ -219,6 +220,13 @@ class ORM extends Object {
      */
     public function getLogger() {
         return $this->logger;
+    }
+    
+    public function setLogger(\Doctrine\DBAL\Loggin\SQLLogger $logger) {
+        $this->logger = $logger;
+        // Surprisingly enough, the DB layer gets the SQL Logger
+        // from the config every single time it needs it
+        $this->config->setSQLLogger($this->logger);
     }
     
     public function flush() {
