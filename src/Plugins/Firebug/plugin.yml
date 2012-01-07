@@ -1,0 +1,9 @@
+---
+name: firebug
+version: 0.0.1
+description: >-
+    This plugin provides error/warning reporting via FirePHP,
+    as well as an SQL logger which outputs to FirePHP.
+dependencies:
+    - name: fossil
+...
