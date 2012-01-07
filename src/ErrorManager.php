@@ -52,7 +52,7 @@ class ErrorManager {
         error_reporting(E_ALL | E_STRICT);
         // Set up an error and exception handler
         set_error_handler(array($this, "errorHandler"));
-        //set_exception_handler(array($this, "exceptionHandler"));
+//        set_exception_handler(array($this, "exceptionHandler"));
     }
     
     public function init($logMask = 11, $showMask = 3, $dieMask = 1) {
@@ -67,9 +67,17 @@ class ErrorManager {
             // TODO: Only store the backtrace on specific occasions
             $bt = debug_backtrace();
             array_shift($bt);
-            $this->log['errors'][] = array('errno' => $errno, 'errstr' => $errstr,
-                                           'errfile' => $errfile, 'errline' => $errline,
-                                           'backtrace' => $bt);
+            $error = array('errno' => $errno, 'errstr' => $errstr, 'errfile' => $errfile,
+                           'errline' => $errline, 'backtrace' => $bt);
+            if($errno & E_ERROR) {
+                $this->logError($error);
+            } elseif($errno & E_WARNING) {
+                $this->logWarning($error);
+            } elseif($errno & E_NOTICE) {
+                $this->logInfo($error);
+            } else {
+                $this->logError($error);
+            }
         }
         if($errno & $this->showMask) {
             echo "Encountered an error at $errfile:$errline\n";
@@ -82,12 +90,29 @@ class ErrorManager {
     
     public function exceptionHandler(\Exception $exception) {
         $exception->handled = false;
+        $this->logException($exception);
+        header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+    }
+    
+    public function logException($exception) {
         $this->log['exceptions'][] = $exception;
+    }
+    
+    public function logError($error) {
+        $this->log['errors'][] = $error;
+    }
+    
+    public function logWarning($warning) {
+        $this->log['warnings'][] = $warning;
+    }
+    
+    public function logInfo($info) {
+        $this->log['info'][] = $info;
     }
     
     public function logHandledException(\Exception $exception) {
         $exception->handled = true;
-        $this->log['exceptions'][] = $exception;
+        $this->logException($exception);
     }
     
     public function getLog() {
