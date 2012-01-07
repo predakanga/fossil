@@ -141,6 +141,7 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
         $idField = call_user_func(array($model, "getIDField"));
         $entityDoc->addField(\Zend_Search_Lucene_Field::keyword('dbId', $entity->$idField));
         // Then add each regular field
+        $hasData = false;
         foreach(call_user_func(array($model, "getSearchFields")) as $field => $type) {
             $accessor = $field;
             if(isset($type['accessor'])) {
@@ -148,6 +149,9 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
             }
             $type = $type['options'];
             $value = $this->getDataFromModel($entity, $accessor);
+            if(!empty($value)) {
+                $hasData = true;
+            }
             $fieldObj = null;
             if($type & ISearchable::SEARCH_FIELD_BINARY) {
                 $fieldObj = \Zend_Search_Lucene_Field::binary($field, $value);
@@ -162,7 +166,9 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
             }
             $entityDoc->addField($fieldObj);
         }
-        $idx->addDocument($entityDoc);
+        if($hasData) {
+            $idx->addDocument($entityDoc);
+        }
     }
     public function removeEntity(ISearchable $entity) {
         $idx = $this->getIndex(call_user_func(array($model, "getIndexName")));

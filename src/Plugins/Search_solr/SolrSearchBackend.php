@@ -119,6 +119,7 @@ class SolrSearchBackend extends BaseSearchBackend {
         $id = $this->getID($entity);
         $doc->addField("type", $idxName);
         $doc->addField("id", $this->getID($entity));
+        $hasData = false;
         foreach($types as $field => $type) {
             $typeAccessor = $field;
             if(isset($type['accessor'])) {
@@ -130,9 +131,15 @@ class SolrSearchBackend extends BaseSearchBackend {
             }
 
             $fieldName = $this->getFieldName($idxName, $field, $type['options']);
-            $doc->addField($fieldName, $this->getDataFromModel($entity, $typeAccessor));
+            $datum = $this->getDataFromModel($entity, $typeAccessor);
+            if(!empty($datum)) {
+                $hasData = true;
+            }
+            $doc->addField($fieldName, $datum);
         }
-        $this->solr->addDocument($doc);
+        if($hasData) {
+            $this->solr->addDocument($doc);
+        }
     }
     public function removeEntity(ISearchable $entity) {
         $this->solr->deleteById($this->getID($entity));
