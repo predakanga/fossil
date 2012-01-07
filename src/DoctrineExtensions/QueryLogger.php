@@ -37,19 +37,26 @@ use Doctrine\DBAL\Logging\SQLLogger;
  * @author predakanga
  */
 class QueryLogger implements SQLLogger {
-    protected $currentQuery;
+    protected $queries = array();
     
     public function getQuery() {
-        return $this->currentQuery;
+        return end($this->queries);
+    }
+    
+    public function getQueries() {
+        return $this->queries;
     }
     
     /** {@inheritDoc} */
     public function startQuery($sql, array $params = null, array $types = null) {
-        $this->currentQuery = array('sql' => $sql, 'params' => $params, 'types' => $types);
+        array_push($this->queries, array('sql' => $sql, 'params' => $params,
+                                         'types' => $types, 'time' => microtime(true)));
     }
     
     /** {@inheritDoc} */
     public function stopQuery() {
-        
+        $i = count($this->queries)-1;
+        $startTime = $this->queries[$i]['time'];
+        $this->queries[$i]['time'] = microtime(true) - $startTime;
     }
 }
