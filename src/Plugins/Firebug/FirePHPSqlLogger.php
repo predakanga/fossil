@@ -64,6 +64,10 @@ class FirePHPSqlLogger implements \Doctrine\DBAL\Logging\SQLLogger {
         $this->queries[$this->queryNo]['time'] = microtime(true) - $startTime;
     }
     
+    public function getQuery() {
+        return end($this->queries);
+    }
+    
     public function printTable() {
         $table = array();
         $table[] = array('SQL', 'Parameters', 'Time taken');
