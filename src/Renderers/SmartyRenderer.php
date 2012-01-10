@@ -54,7 +54,7 @@ class SmartyRenderer extends BaseRenderer {
      *
      * @var \Smarty
      */
-    private $smarty;
+    protected $smarty;
     /**
      * @F:Inject("Filesystem")
      * @var Fossil\Filesystem
