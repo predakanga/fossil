@@ -48,16 +48,18 @@ class ApiResponse extends RenderableResponse {
      * @var Fossil\Dispatcher
      */
     protected $dispatcher;
+    protected $depth;
     
-    public function __construct($container, $data) {
+    public function __construct($container, $data, $depth = 2) {
         parent::__construct($container);
+        $this->depth = $depth;
         
         $this->data = $data;
     }
     
     public function apiValueAdapter($datum) {
         if($datum instanceof Model) {
-            $datum = $datum->toArray();
+            $datum = $datum->toArray($this->depth);
         } elseif($datum instanceof \DateTime) {
             return $datum->getTimestamp();
         }

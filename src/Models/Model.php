@@ -38,7 +38,8 @@ namespace Fossil\Models;
 
 use Fossil\Object,
     Fossil\Exceptions\ValidationFailedException,
-    Doctrine\ORM\Mapping\ClassMetadataInfo;
+    Doctrine\ORM\Mapping\ClassMetadataInfo,
+    Doctrine\ORM\Proxy\Proxy;
 
 /**
  * Description of Model
@@ -234,11 +235,49 @@ abstract class Model extends Object {
         return new PaginationProxy($this->get($field), $fieldsPerPage);
     }
     
-    public function toArray() {
-        // TODO: Decide how to handle associations
+    public function toArray($depth = 2, $fetchedOnly = true, &$visited = array()) {
         $toRet = array();
+        $uow = $this->orm->getEM()->getUnitOfWork();
+        $entityID = $uow->getEntityIdentifier($this);
+        if(in_array($entityID, $visited)) {
+            return "*VISITED*";
+        } else {
+            $visited[] = $entityID;
+        }
         foreach($this->getMetadata()->getFieldNames() as $field) {
             $toRet[$field] = $this->get($field);
+        }
+        if($depth != 0) {
+            foreach($this->getMetadata()->getAssociationNames() as $assoc) {
+                if($this->getMetadata()->isSingleValuedAssociation($assoc)) {
+                    $value = $this->get($assoc);
+                    if($value instanceof Proxy && $fetchedOnly) {
+                        $toRet[$assoc] = "*NOT FETCHED*";
+                    } else {
+                        if($value) {
+                            $toRet[$assoc] = $value->toArray($depth-1, $fetchedOnly, $visited);
+                        } else {
+                            $toRet[$assoc] = null;
+                        }
+                    }
+                } elseif($this->getMetadata()->isCollectionValuedAssociation($assoc)) {
+                    $assocArray = array();
+                    foreach($this->get($assoc) as $subModel) {
+                        if($value instanceof Proxy && $fetchedOnly) {
+                            $toRet[$assoc] = "*NOT FETCHED*";
+                        } else {
+                            if($subModel) {
+                                $assocArray[] = $subModel->toArray($depth-1, $fetchedOnly, $visited);
+                            } else {
+                                $assocArray[] = null;
+                            }
+                        }
+                    }
+                    $toRet[$assoc] = $assocArray;
+                } else {
+                    throw new \Exception("Unsupported association");
+                }
+            }
         }
         return $toRet;
     }

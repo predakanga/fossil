@@ -66,7 +66,7 @@ abstract class BaseController extends Object {
         return $this->_new("Response", "Template", $templateName, $fullData);
     }
     
-    public function apiResponse($data) {
-        return $this->_new("Response", "API", $data);
+    public function apiResponse($data, $traversalDepth = 2) {
+        return $this->_new("Response", "API", $data, $traversalDepth);
     }
 }
