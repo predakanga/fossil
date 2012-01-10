@@ -58,7 +58,6 @@ class ErrorManager extends \Fossil\ErrorManager {
     }
     
     public function logWarning($warning) {
-        die("Handling warning\n");
         if(!is_array($warning)) {
             $this->firephp->warn($warning);
         } else {
