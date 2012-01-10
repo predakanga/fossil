@@ -41,8 +41,8 @@ use Fossil\OM,
 class InitSearchIndexes extends StreamingTask {
     protected $curOffset;
     protected $curQuery;
-    protected $batchSize = 500;
-    protected $cullPoint = 2000;
+    protected $batchSize = 250;
+    protected $cullPoint = 1500;
     /**
      * @F:Inject("Search")
      * @var BaseSearchBackend
@@ -59,12 +59,13 @@ class InitSearchIndexes extends StreamingTask {
         $this->curQuery->setFirstResult($this->curOffset);
         $results = $this->curQuery->getResult();
         foreach($results as $result) {
-            $startMem = memory_get_usage();
             $this->search->indexEntity($result);
         }
     }
 
     public function run(OutputInterface $out) {
+        // Memory intensive process, so up the limit
+        ini_set('memory_limit', '256M');
         // Check what models implement ISearchable
         $toSearch = array();
         foreach($this->orm->getEM()->getMetadataFactory()->getAllMetadata() as $md) {
@@ -86,7 +87,6 @@ class InitSearchIndexes extends StreamingTask {
         $this->search->clearIndexes($indexes);
         $out->writeln("Done");
         $out->writeln("Indexing:");
-        $memstart = memory_get_usage();
         // Then index items, 100 at a time
         foreach($searchData as $model => $entCount) {
             $out->writeln("\t$model ($entCount items)");
