@@ -207,7 +207,11 @@ class ZendLuceneSearchBackend extends BaseSearchBackend {
         }
         return $allResults;
     }
-    
+
+    public function multiSearch($modelsWithOptions, $query, $returnRaw = false) {
+        throw new \Exception("Unimplemented");
+    }
+
     public function paginatedSearch($query, $model, $pageSize = 10) {
         $res = $this->search($model, $query, true);
         $ids = array();

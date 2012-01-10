@@ -66,6 +66,8 @@ abstract class BaseSearchBackend extends BaseDriver {
     abstract public function getSchemas($entities);
     
     abstract public function search($model, $query, $returnRaw = false, $boosts = array());
+    abstract public function multiSearch($modelsWithOptions, $query, $returnRaw = false);
+    
     /**
      * Searches an index, returns a PaginationProxy of the results
      * 

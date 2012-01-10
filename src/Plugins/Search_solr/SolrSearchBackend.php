@@ -611,6 +611,75 @@ XML;
         return $toRet;
     }
     
+    public function multiSearch($modelsWithOptions, $queryStr, $returnRaw = false) {
+        $idxNames = array();
+        $boosts = array();
+        $fieldMappings = array();
+        
+        $query = new SolrQuery();
+        $query->setStart(0);
+        $query->setQuery($queryStr);
+        $query->addField("id")->addField("type");
+        $query->setParam("defType", "edismax");
+        
+        foreach($modelsWithOptions as $modelAndOpts) {
+            $model = $modelAndOpts['model'];
+            
+            $idxName = call_user_func(array($model, "getIndexName"));
+            $curFields = call_user_func(array($model, "getSearchFields"));
+            
+            $idxNames[] = $idxName;
+            
+            foreach($curFields as $curField => $curType) {
+                $fieldName = $this->getFieldName($idxName, $curField, $curType['options']);
+                if(!($curType['options'] & ISearchable::SEARCH_FIELD_STORED)) {
+                    continue;
+                }
+                $fieldMappings[$fieldName] = $curField;
+                $query->addField($fieldName);
+            }
+            if(isset($modelAndOpts['boosts'])) {
+                foreach($modelAndOpts['boosts'] as $name => $factor) {
+                    $fieldName = $this->getFieldName($idxName, $name, $curFields[$name]['options']);
+                    $boosts[] = "{$fieldName}^{$factor}";
+                }
+            }
+        }
+        $query->addFilterQuery("type:(" . implode(' ', $idxNames) . ")");
+        if(count($boosts)) {
+            $query->setParam("qf", implode(' ', $boosts));
+        }
+//        die($query->toString(false));
+
+        $queryResponse = $this->solr->query($query);
+        if(!$queryResponse->success()) {
+            return null;
+        }
+        $response = $queryResponse->getResponse();
+        $response = $response->response;
+        if($returnRaw) {
+            return $response->docs;
+        }
+        $toRet = array();
+        if(!$response->docs) {
+            return $toRet;
+        }
+        foreach($response->docs as $doc) {
+            $data = array();
+            $idParts = explode("_", $doc->id);
+            $data['dbId'] = (int)$idParts[count($idParts)-1];
+            $data['type'] = $doc->type;
+            foreach($fieldMappings as $docField => $dataField) {
+                if(!empty($doc->{$docField})) {
+                    $data[$dataField] = $doc->{$docField};
+                }
+            }
+            $toRet[] = new SearchResult($data);
+        }
+        return $toRet;
+    }
+
+    
     public function paginatedSearch($model, $query, $pageSize = 10) {
         $docs = $this->search($model, $query, true);
         if(!$docs) {
