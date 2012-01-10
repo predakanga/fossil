@@ -58,7 +58,12 @@ class ActiveProxyFactory extends ProxyFactory {
     public function getProxy($className, $identifier) {
         $toRet = $this->factory->getProxy($className, $identifier);
         if($toRet instanceof Model) {
+            // HACKHACK: To stop restoreObjects() from loading the proxy immediately
+            // we have to make it think it's already initialized
+            $oldInit = $toRet->__isInitialized__;
+            $toRet->__isInitialized__ = true;
             $toRet->restoreObjects($this->container);
+            $toRet->__isInitialized__ = $oldInit;
         }
         return $toRet;
     }
