@@ -29,7 +29,7 @@
 
 namespace Fossil\Plugins\Firebug;
 
-require_once("lib/FirePHP.class.php");
+require_once("libs/FirePHP.class.php");
 
 /**
  * Description of FossilFirePHP
