@@ -62,6 +62,8 @@ class ErrorManager {
     }
     
     public function errorHandler($errno, $errstr, $errfile, $errline, $errcontext) {
+        $errLevel = ini_get("error_reporting");
+        $silenced = ($errLevel && $errLevel != "0") ? false : true;
         if($errno & $this->logMask) {
             // Store to a log here
             // TODO: Only store the backtrace on specific occasions
@@ -79,7 +81,7 @@ class ErrorManager {
                 $this->logError($error);
             }
         }
-        if($errno & $this->showMask) {
+        if($errno & $this->showMask && !$silenced) {
             echo "Encountered an error at $errfile:$errline\n";
             echo "$errstr\n\n";
         }
