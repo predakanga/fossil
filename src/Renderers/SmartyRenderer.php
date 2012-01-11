@@ -319,63 +319,67 @@ class SmartyRenderer extends BaseRenderer {
     }
     
     function linkFunction($params, $content, $smarty, &$repeat) {
-        // Set up default params
-        $curRequest = $this->dispatcher->getCurrentRequest();
-        $target = array('controller' => $curRequest->controller);
-        $classStr = "";
-        
-        if(isset($params['controller'])) {
-            $target['controller'] = $params['controller'];
-            unset($params['controller']);
+        if(!$repeat) {
+            // Set up default params
+            $curRequest = $this->dispatcher->getCurrentRequest();
+            $target = array('controller' => $curRequest->controller);
+            $classStr = "";
+
+            if(isset($params['controller'])) {
+                $target['controller'] = $params['controller'];
+                unset($params['controller']);
+            }
+            if(isset($params['action'])) {
+                $target['action'] = $params['action'];
+                unset($params['action']);
+            } else {
+                $target['action'] = $this->_new("Controller", $target['controller'])->indexAction();
+            }
+            if(isset($params['cssClass'])) {
+                $classStr = " class=\"" . $params['cssClass'] . "\"";
+                unset($params['cssClass']);
+            }
+            $fragment = "";
+            if(isset($params['fragment'])) {
+                $fragment = "#" . $params['fragment'];
+                unset($params['fragment']);
+            }
+
+            // TODO: Use a router-supplied mapping for this
+            $url = $_SERVER['PHP_SELF'] . "?";
+            $url .= "controller=" . urlencode($target['controller']);
+            $url .= "&amp;action=" . urlencode($target['action']);
+            foreach($params as $key => $value) {
+                $url .= "&amp;" . urlencode($key) . "=" . urlencode($value);
+            }
+            $url .= $fragment;
+
+            return "<a href=\"$url\"$classStr>" . $content . "</a>";
         }
-        if(isset($params['action'])) {
-            $target['action'] = $params['action'];
-            unset($params['action']);
-        } else {
-            $target['action'] = $this->_new("Controller", $target['controller'])->indexAction();
-        }
-        if(isset($params['cssClass'])) {
-            $classStr = " class=\"" . $params['cssClass'] . "\"";
-            unset($params['cssClass']);
-        }
-        $fragment = "";
-        if(isset($params['fragment'])) {
-            $fragment = "#" . $params['fragment'];
-            unset($params['fragment']);
-        }
-        
-        // TODO: Use a router-supplied mapping for this
-        $url = $_SERVER['PHP_SELF'] . "?";
-        $url .= "controller=" . urlencode($target['controller']);
-        $url .= "&amp;action=" . urlencode($target['action']);
-        foreach($params as $key => $value) {
-            $url .= "&amp;" . urlencode($key) . "=" . urlencode($value);
-        }
-        $url .= $fragment;
-        
-        return "<a href=\"$url\"$classStr>" . $content . "</a>";
     }
     
     function linkPageFunction($params, $content, $smarty, &$repeat) {
-        // Generate our current arguments
-        $req = $this->dispatcher->getCurrentRequest();
-        if($req->controller) {
-            $toAdd['controller'] = $req->controller;
+        if(!$repeat) {
+            // Generate our current arguments
+            $req = $this->dispatcher->getCurrentRequest();
+            if($req->controller) {
+                $toAdd['controller'] = $req->controller;
+            }
+            if($req->action) {
+                $toAdd['action'] = $req->action;
+            }
+            $toAdd += $req->args;
+
+            // Add the page parameter
+            if(isset($params['page'])) {
+                $toAdd['page'] = $params['page'];
+            } else {
+                $toAdd['page'] = 1;
+            }
+
+            // And call the normal link function
+            return $this->linkFunction($toAdd, $content, $smarty, $repeat);
         }
-        if($req->action) {
-            $toAdd['action'] = $req->action;
-        }
-        $toAdd += $req->args;
-        
-        // Add the page parameter
-        if(isset($params['page'])) {
-            $toAdd['page'] = $params['page'];
-        } else {
-            $toAdd['page'] = 1;
-        }
-        
-        // And call the normal link function
-        return $this->linkFunction($toAdd, $content, $smarty, $repeat);
     }
     
     function displayFunction($params, $smarty) {
