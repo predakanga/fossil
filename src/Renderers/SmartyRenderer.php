@@ -93,13 +93,13 @@ class SmartyRenderer extends BaseRenderer {
         foreach($this->fs->roots() as $root) {
             $this->smarty->addTemplateDir($root . D_S . "views" . D_S . "smarty");
         }
+        $this->smarty->use_sub_dirs = true;
         $this->smarty->compile_dir = $this->fs->tempDir() . D_S . "templates_c";
         $this->smarty->registerPlugin('function', 'form', array($this, 'formFunction'));
         $this->smarty->registerPlugin('function', 'display', array($this, 'displayFunction'));
         $this->smarty->registerPlugin('function', 'paginate', array($this, 'paginateFunction'));
         $this->smarty->registerPlugin('modifier', 'bbdecode', array($this, 'bbdecodeModifier'));
         $this->smarty->registerPlugin('modifier', 'date_interval_format', array($this, 'dateIntervalFmtModifier'));
-        $this->smarty->registerPlugin('compiler', 'use', array($this, 'useFunction'));
         $this->smarty->registerPlugin('block', 'link', array($this, 'linkFunction'));
         $this->smarty->registerPlugin('block', 'link_page', array($this, 'linkPageFunction'));
         $this->smarty->registerPlugin('block', 'multiform', array($this, 'multiformFunction'));
@@ -112,6 +112,10 @@ class SmartyRenderer extends BaseRenderer {
                                                         array($this, "smarty_resource_get_trusted")));
     }
     
+    protected function decideCompileID()  {
+        return $this->smarty->compile_id;
+    }
+    
     protected function setDefaultVariables($tpl) {
         $errorLog = $this->errorMgr->getLog();
         $tpl->assign('errors', $errorLog['errors']);
@@ -119,33 +123,26 @@ class SmartyRenderer extends BaseRenderer {
     }
     
     public function render($templateName, $templateData) {
-        if(strpos($templateName, "fossil:") !== 0) {
-            $templateName = $templateName . ".tpl";
-        }
+        $oldCompileID = $this->smarty->compile_id;
+        $this->smarty->compile_id = $this->decideCompileID();
         
-        $tpl = $this->smarty->createTemplate($templateName);
-        $tpl->assign('title', $templateName);
-        $this->setDefaultVariables($tpl);
-        foreach($templateData as $key => $val) {
-            $tpl->assign($key, $val);
+        try {
+            if(strpos($templateName, "fossil:") !== 0) {
+                $templateName = $templateName . ".tpl";
+            }
+
+            $tpl = $this->smarty->createTemplate($templateName);
+            $tpl->assign('title', $templateName);
+            $this->setDefaultVariables($tpl);
+            foreach($templateData as $key => $val) {
+                $tpl->assign($key, $val);
+            }
+            $tpl->display();
+        } catch(\Exception $e) {
+            $this->smarty->compile_id = $oldCompileID;
+            throw $e;
         }
-        $tpl->display();
-    }
-    
-    function useFunction($params, $smarty) {
-        if(!isset($params['fqcn'])) {
-            throw new \Exception("{use} requires a model");
-        }
-        if(!isset($params['as'])) {
-            throw new \Exception("{use} requires an 'as'");
-        }
-        
-        $params['fqcn'] = trim($params['fqcn'], "'\"");
-        $params['as'] = trim($params['as'], "'\"");
-        
-        return "<?php
-            use {$params['fqcn']} as {$params['as']};
-        ?>";
+        $this->smarty->compile_id = $oldCompileID;
     }
     
     function formFunction($params, $smarty) {

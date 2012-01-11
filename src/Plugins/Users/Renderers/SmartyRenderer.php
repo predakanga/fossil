@@ -40,6 +40,22 @@ use Fossil\Plugins\Users\Models\User;
 class SmartyRenderer extends \Fossil\Renderers\SmartyRenderer {
     protected function setDefaultVariables($tpl) {
         parent::setDefaultVariables($tpl);
-        $tpl->assign('me', User::me($this->container));
+        $me = User::me($this->container);
+        $tpl->assign('me', $me);
+        $tpl->assign('loggedInOrNotTpl', $me ? "fossil:loggedIn" : "fossil:loggedOut");
+    }
+    
+    protected function decideCompileID() {
+        $retval = parent::decideCompileID();
+        $me = User::me($this->container);
+        
+        if($retval && $retval != "") {
+            $retval = $retval . "|";
+        } else {
+            $retval = "";
+        }
+        
+        $retval .= ($me ? "loggedIn" : "loggedOut");
+        return $retval;
     }
 }
