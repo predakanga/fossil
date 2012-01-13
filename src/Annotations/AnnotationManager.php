@@ -59,7 +59,7 @@ class AnnotationManager extends Object {
      * @var string[]
      */
     private $namespaces;
-    private $annotations = array();
+    public $annotations = array();
 
     /**
      * @F:Inject("Cache")
@@ -71,6 +71,7 @@ class AnnotationManager extends Object {
      * @var Fossil\Reflection
      */
     protected $reflection;
+    protected $origErrorHandler;
     
     private function registerNamespaceAlias($namespace, $alias) {
         $this->namespaces[$alias] = $namespace;
@@ -133,7 +134,7 @@ class AnnotationManager extends Object {
         $classes = $this->reflection->getAllClasses();
         
         // Set up a temporary error handler, to bypass Doctrine's type hinting
-        $origErrorHandler = set_error_handler(array($this, "tempErrorHandler"));
+        $this->origErrorHandler = set_error_handler(array($this, "tempErrorHandler"));
         
         // Read annotations from all of the classes
         foreach($classes as $reflClass) {
@@ -193,8 +194,9 @@ class AnnotationManager extends Object {
             $reflProp = $reflClass->getProperty("phpParser");
             $reflProp->setAccessible(true);
             $reflProp->setValue($this->realReader, new TokenizedPhpParser());
-        
+            
             $this->realReader->setIgnoreNotImportedAnnotations(true);
+            $this->realReader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
             
             $this->reader = new CachedReader($this->realReader, FossilCache::create($this->container));
             $this->registerNamespaceAlias("\\Fossil\\Annotations\\", "F");
@@ -262,6 +264,13 @@ class AnnotationManager extends Object {
         }));
     }
     
+    /**
+     *
+     * @param string $class
+     * @param string $annotation
+     * @param bool $recursive
+     * @return Fossil\Annotations\Annotation
+     */
     public function getClassAnnotation($class, $annotation, $recursive = true) {
         assert($annotation != null);
         $annos = $this->getClassAnnotations($class, $annotation, $recursive);

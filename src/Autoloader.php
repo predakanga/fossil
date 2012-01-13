@@ -69,6 +69,8 @@ class Autoloader {
         // Also add in the default Doctrine classloader, to pass off responsibility
         require_once 'Doctrine/ORM/Tools/Setup.php';
         \Doctrine\ORM\Tools\Setup::registerAutoloadPEAR();
+        // And the Doctrine annotations, so that they can be loaded from cache
+        require_once 'Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php';
     }
     
     /**
