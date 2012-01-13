@@ -24,7 +24,11 @@ use Fossil\Models\Model;
 
 class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata {
     // As with parent class, this will be serialized, so leave it's scope public
+    /**
+     * @var Fossil\ObjectContainer
+     */
     public $diContainer = null;
+    protected $_prototype;
     
     public function __construct($entityName, $diContainer) {
         $this->diContainer = $diContainer;
@@ -70,7 +74,14 @@ class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata {
     }
     
     public function newInstance() {
-        $newInst = parent::newInstance();
+        if ($this->_prototype === null) {
+            // Look up the correct name to use
+            $realClassName = $this->name;
+            $realClassName = $this->diContainer->mapClass($this->name);
+            $this->_prototype = unserialize(sprintf('O:%d:"%s":0:{}', strlen($realClassName), $realClassName));
+        }
+        $newInst = clone $this->_prototype;
+        
         // If we have diProp, put the container in place
         if($newInst instanceof \Fossil\Models\Model) {
             $newInst->restoreObjects($this->diContainer);

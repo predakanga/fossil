@@ -21,10 +21,52 @@ namespace Fossil\DoctrineExtensions;
 
 class ActiveClassMetadataFactory extends \Doctrine\ORM\Mapping\ClassMetadataFactory
 {
+    private $metadataNameMap = array();
+    private $modifiedMetadataCache = array();
+    
+    /**
+     * @var Fossil\ObjectContainer
+     */
     private $diContainer = null;
     
     public function getMetadataFor($className) {
-        $retval = parent::getMetadataFor($className);
+        // Map className on non-entities to the closest entity parent
+        if(!$this->diContainer) {
+            throw new \Exception("ActiveClassMetadata::setDIContainer must be called before getMetadataFor");
+        }
+        if(isset($this->metadataNameMap[$className])) {
+            $realClassName = $this->metadataNameMap[$className];
+        } else {
+            $annoMgr = $this->diContainer->get("AnnotationManager");
+            $realClassName = $className;
+            while(!$annoMgr->getClassAnnotation($realClassName, 'Doctrine\ORM\Mapping\Entity', false)) {
+                // Walk up to the nearest entity
+                $parent = get_parent_class($realClassName);
+                if(!$parent) {
+                    throw new \Exception("Metadata could not be loaded for $className; it is not an Entity or a direct descendant of an Entity");
+                }
+                $realClassName = $parent;
+            }
+            // But warn unless the mapping is occurring on a compiled class
+            if($realClassName != $className && !strstr($className, "\\Compiled\\")) {
+                trigger_error("Model $realClassName was subclassed without the resultant class, $className, being marked as an entity", E_USER_WARNING);
+            }
+            $this->metadataNameMap[$className] = $realClassName;
+        }
+        if($realClassName != $className) {
+            if(!isset($this->modifiedMetadataCache[$className])) {
+                $retval = parent::getMetadataFor($realClassName);
+                $proxiedMD = new \Fossil\DoctrineExtensions\ProxiedClassMetadata($retval, $className);
+                
+                $this->modifiedMetadataCache[$className] = $proxiedMD;
+                $retval = $proxiedMD;
+            } else {
+                $retval = $this->modifiedMetadataCache[$className];
+            }
+        } else {
+            $retval = parent::getMetadataFor($realClassName);
+        }
+        
         if($retval instanceof ActiveClassMetadata) {
             $retval->setDIContainer($this->diContainer);
         }
