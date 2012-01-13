@@ -6,7 +6,7 @@
 <div class="box-16-expand">
     <div class="box">
         A database error occured.
-{if $me->isDev()}
+{if $me && $me->isDev()}
     <br />
     Error: {$e->getMessage()}<br />
     <br />
