@@ -199,6 +199,8 @@ class SmartyRenderer extends BaseRenderer {
             $fieldData['label'] = $settings['label'];
             if(isset($form->$name)) {
                 $fieldData['value'] = $form->$name;
+            } else {
+                $fieldData['value'] = null;
             }
             $fieldData['options'] = array();
             if($settings['type'] == 'select') {
@@ -229,7 +231,7 @@ class SmartyRenderer extends BaseRenderer {
         }
         if($interval->d !== 0) {
             $weeks = (int)($interval->d / 7);
-            $days = $interval % 7;
+            $days = $interval->d % 7;
             
             if($weeks) {
                 $format[] = "$weeks " . $doPlural($weeks, "week");
