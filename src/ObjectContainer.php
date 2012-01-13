@@ -465,6 +465,10 @@ class ObjectContainer {
                 $toRet[] = $provImpl;
             }
         }
+        $reflObject = $this->get("Reflection")->getClass('Fossil\Object');
+        $toRet = array_merge($toRet, $reflObject->getDirectSubclassNames());
+        $toRet = array_merge($toRet, $reflObject->getIndirectSubclassNames());
+        $toRet = array_unique($toRet);
         return $toRet;
     }
     
