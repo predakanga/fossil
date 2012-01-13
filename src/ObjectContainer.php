@@ -563,4 +563,11 @@ class ObjectContainer {
     public function __sleep() {
         return array('registrations', 'instancedTypes', 'classmap');
     }
+    
+    public function mapClass($className) {
+        if(isset($this->classMap[$className])) {
+            return $this->classMap[$className];
+        }
+        return $className;
+    }
 }
