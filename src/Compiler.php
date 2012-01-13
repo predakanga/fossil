@@ -96,11 +96,11 @@ class Compiler extends Object {
         // Determine which namespace we live in - root, app, or overlay
         $fossilDetails = $this->core->getFossilDetails();
         $appDetails = $this->core->getAppDetails();
-        $overlayDetails = $this->core->getAppDetails();
+        $overlayDetails = $this->core->getOverlayDetails();
         
         $baseNamespace = '';
         $outputNamespace = $fossilDetails['ns'] . '\\' . 'Compiled' . '\\';
-        
+
         if($fossilDetails) {
             if(strpos($inputNamespace, $fossilDetails['ns']) === 0) {
                 if(strlen($fossilDetails['ns']) > strlen($baseNamespace)) {
