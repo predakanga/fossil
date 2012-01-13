@@ -185,7 +185,7 @@ abstract class Model extends Object {
     }
     
     public static function createFromArray($diContainer, $data) {
-        $model = new static($diContainer);
+        $model = static::create($diContainer);
         $orm = $diContainer->get("ORM");
         $classMetadata = $orm->getEM()->getClassMetadata(get_called_class());
         

@@ -95,7 +95,7 @@ class WikiPage extends Model {
             $newRevNo = $this->currentRevision->revision + 1;
         }
         
-        $newRev = new WikiPageRevision($this->container);
+        $newRev = WikiPageRevision::create($this->container);
         $newRev->author = User::me($this->container);
         $newRev->revision = $newRevNo;
         $newRev->content = $content;

@@ -84,7 +84,7 @@ class RunSchedule extends BaseCommand {
                 // Make sure that the model is up to date
                 $taskModel = ScheduledTask::findOneByTask($this->container, $taskName);
                 if(!$taskModel) {
-                    $taskModel = new ScheduledTask($this->container);
+                    $taskModel = ScheduledTask::create($this->container);
                     $taskModel->task = $taskName;
                     $taskModel->nextRun = new \DateTime();
                     $taskModel->period = $scheduleAnno[0]->period;
@@ -127,7 +127,7 @@ class RunSchedule extends BaseCommand {
             
             // Save the result
             $runAt = new \DateTime();
-            $result = new ScheduledTaskResult($this->container);
+            $result = ScheduledTaskResult::create($this->container);
             $result->result = $task->getResult();
             $result->output = $writer->getOutput();
             $result->runAt = $runAt;

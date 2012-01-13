@@ -188,7 +188,7 @@ class Setup extends AutoController {
         if(!file_exists("temp_settings.yml") || (filemtime("settings.yml") > filemtime("temp_settings.yml"))) {
             copy("settings.yml", "temp_settings.yml");
         }
-        $sideSet = new Settings($this->container, "temp_settings.yml");
+        $sideSet = Settings::create($this->container, "temp_settings.yml");
 
         if(!$driverForm->isSubmitted()) {
             // Build the list of possible drivers
@@ -224,7 +224,7 @@ class Setup extends AutoController {
     }
     
     public function runConfigureDrivers() {
-        $sideSet = new Settings($this->container, "temp_settings.yml");
+        $sideSet = Settings::create($this->container, "temp_settings.yml");
         
         $drivers = $sideSet->get('Fossil', 'Drivers', array());
         

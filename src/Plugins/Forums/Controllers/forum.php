@@ -80,12 +80,12 @@ class Forum extends LoginRequiredController {
                 throw new NoSuchInstanceException("Subforum not found");
             }
             // Create the new topic
-            $topic = new ForumTopic($this->container);
+            $topic = ForumTopic::create($this->container);
             $topic->author = User::me($this->container);
             $topic->forum = $forum;
             $topic->name = $form->title;
             $topic->save();
-            $firstPost = new ForumPost($this->container);
+            $firstPost = ForumPost::create($this->container);
             $firstPost->postedAt = new \DateTime();
             $firstPost->topic = $topic;
             $firstPost->content = $form->content;
@@ -115,7 +115,7 @@ class Forum extends LoginRequiredController {
             throw new NoSuchInstanceException("Topic not found");
         }
         // Create the new post
-        $newPost = new ForumPost($this->container);
+        $newPost = ForumPost::create($this->container);
         $newPost->postedAt = new \DateTime();
         $newPost->topic = $topic;
         $newPost->content = $form->content;

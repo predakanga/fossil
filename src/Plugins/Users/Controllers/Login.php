@@ -99,6 +99,6 @@ class Login extends \Fossil\Controllers\AutoController {
     }
     
     protected function createUser() {
-        return new UserModel($this->container);
+        return UserModel::create($this->container);
     }
 }

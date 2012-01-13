@@ -61,7 +61,7 @@ class Wiki extends LoginRequiredController {
         }
         if(!$page) {
             // If we still have no page, create it
-            $page = new WikiPage($this->container);
+            $page = WikiPage::create($this->container);
             $page->title = $strPage;
             $page->save();
         }
