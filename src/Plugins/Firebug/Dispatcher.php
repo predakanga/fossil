@@ -43,8 +43,19 @@ class Dispatcher extends \Fossil\Dispatcher {
         parent::run();
         // Send our FirePHP headers
         if(FireFossil::getInstance()->detectClientExtension()) {
+            // Output the time taken/memory usage info
+            $core = $this->container->get("Core");
+            $deltaTime = microtime(TRUE) - $core->startTime;
+            $deltaMem = memory_get_usage() - $core->startMem;
+            $maxDeltaMem = memory_get_peak_usage() - $core->startMem;
+            $deltaTime *= 1000;
+            $deltaMem /= (1024*1024);
+            $maxDeltaMem /= (1024*1024);
+            $messageFmt = "Finished in %0.4f ms, memory usage was %0.2f MB (max was %0.2f MB)";
+            FireFossil::getInstance()->info(sprintf($messageFmt, $deltaTime, $deltaMem, $maxDeltaMem));
             // Output the SQL log
             $this->container->get("ORM")->getLogger()->printTable();
+            // And flush to the browser
             FireFossil::getInstance()->sendHeaders();
         }
         // And flush the output buffer

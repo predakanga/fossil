@@ -59,9 +59,14 @@ class Core extends Object {
      */
     protected $orm;
     
+    public $startTime;
+    public $startMem;
+    
     // Because this has no dependencies, it's guaranteed to be instantiated first
     public function __construct($container) {
         parent::__construct($container);
+        $this->startTime = microtime(TRUE);
+        $this->startMem = memory_get_usage();
     }
     
     protected function determineObjects() {
