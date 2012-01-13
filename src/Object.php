@@ -117,7 +117,7 @@ class Object {
         return $this->container->createObject($type, $name, $argList);
     }
     
-    public static function create(Fossil\ObjectContainer $diContainer) {
+    public static function create(ObjectContainer $diContainer) {
         $className = get_called_class();
         $className = $diContainer->mapClass($className);
         $reflClass = new \ReflectionClass($className);
