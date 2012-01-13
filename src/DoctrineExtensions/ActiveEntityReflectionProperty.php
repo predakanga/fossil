@@ -22,7 +22,6 @@ namespace Fossil\DoctrineExtensions;
 class ActiveEntityReflectionProperty {
     public $name = null;
     public $class = null;
-    private $reflProp = null;
 
     public function __construct($class, $name) {
         $this->class = $class;
