@@ -76,6 +76,9 @@ class Compiler extends Object {
     }
     
     protected function baseNamespaceName($fqn) {
+        if(strlen($fqn) && $fqn[0] == '\\') {
+            $fqn = substr($fqn, 1);
+        }
         $lastSlash = strrpos($fqn, '\\');
         if($lastSlash === FALSE) {
             return '';
