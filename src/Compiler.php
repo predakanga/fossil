@@ -100,12 +100,13 @@ class Compiler extends Object {
         
         $baseNamespace = '';
         $outputNamespace = $fossilDetails['ns'] . '\\' . 'Compiled' . '\\';
+        $finalNamespace = $outputNamespace;
 
         if($fossilDetails) {
             if(strpos($inputNamespace, $fossilDetails['ns']) === 0) {
                 if(strlen($fossilDetails['ns']) > strlen($baseNamespace)) {
                     $baseNamespace = $fossilDetails['ns'];
-                    $outputNamespace .= 'Fossil';
+                    $finalNamespace = $outputNamespace . 'Fossil';
                 }
             }
         }
@@ -113,7 +114,7 @@ class Compiler extends Object {
             if(strpos($inputNamespace, $appDetails['ns']) === 0) {
                 if(strlen($appDetails['ns']) > strlen($baseNamespace)) {
                     $baseNamespace = $appDetails['ns'];
-                    $outputNamespace .= 'App';
+                    $finalNamespace = $outputNamespace . 'App';
                 }
             }
         }
@@ -121,12 +122,12 @@ class Compiler extends Object {
             if(strpos($inputNamespace, $overlayDetails['ns']) === 0) {
                 if(strlen($overlayDetails['ns']) > strlen($baseNamespace)) {
                     $baseNamespace = $overlayDetails['ns'];
-                    $outputNamespace .= 'Overlay';
+                    $finalNamespace = $outputNamespace . 'Overlay';
                 }
             }
         }
         // Strip baseNamespace off inputNamespace, and replace with outputNamespace
-        return str_replace($baseNamespace, $outputNamespace, $inputNamespace);
+        return str_replace($baseNamespace, $finalNamespace, $inputNamespace);
     }
     
     /**
