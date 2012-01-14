@@ -53,6 +53,8 @@ abstract class Model extends Object {
      * @var Fossil\ORM
      */
     protected $orm;
+    protected $unattached = false;
+    public static $unattachedDirty = array();
     
     private function getMetadata() {
         return $this->orm->getEM()->getClassMetadata(get_class($this));
@@ -70,9 +72,35 @@ abstract class Model extends Object {
         }
     }
     
-    public function restoreObjects($container) {
-        $this->container = $container;
-        $this->setupObjects();
+    public function __sleep() {
+        // Don't worry about it if we're not already set up
+        if($this->orm) {
+            // Replace all loaded models with proxies
+            foreach(get_object_vars($this) as $fieldName => $fieldValue) {
+                if($this->$fieldName instanceof Model) {
+                    // TODO: Make this more air-tight, and figure out why is_a and ReflectionClass didn't work
+                    if(!strstr(get_class($this->$fieldName), "Proxy")) {
+                        echo "Class of type " . get_class($this->$fieldName) . " is not a proxy, apparently<br />\n";
+                        // Then replace it with one
+                        $origObj = $this->$fieldName;
+                        $proxy = $this->orm->getEM()->getProxyFactory()->getProxy(get_class($origObj),
+                                                                                  $origObj->id());
+                        $this->$fieldName = $proxy;
+                    }
+                }
+            }
+        }
+        return parent::__sleep();
+    }
+    
+    public function __wakeup() {
+        if($this->id) {
+            $this->unattached = true;
+        }
+    }
+    
+    public function reattach($container) {
+        throw new \Exception("As yet, detached Models aren't re-attachable. Sorry!");
     }
     
     public function save() {
@@ -104,6 +132,11 @@ abstract class Model extends Object {
     }
     
     public function set($key, $value, $direct = false) {
+        if($this->unattached) {
+            if(!in_array($this, self::$unattachedDirty)) {
+                self::$unattachedDirty[] = $this;
+            }
+        }
         if($direct) {
             $this->$key = $value;
             return;

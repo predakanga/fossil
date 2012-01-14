@@ -38,6 +38,7 @@ class ActiveClassMetadataFactory extends \Doctrine\ORM\Mapping\ClassMetadataFact
             $realClassName = $this->metadataNameMap[$className];
         } else {
             $annoMgr = $this->diContainer->get("AnnotationManager");
+            // TODO: This fails on compiled classes, likely due to missing annotations
             $realClassName = $className;
             while(!$annoMgr->getClassAnnotation($realClassName, 'Doctrine\ORM\Mapping\Entity', false)) {
                 // Walk up to the nearest entity
