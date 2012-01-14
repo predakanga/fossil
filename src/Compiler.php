@@ -190,6 +190,7 @@ class Compiler extends Object {
     }
     
     protected function reparentClass($originalClass, $newParent) {
+        $baseClassName = $this->baseClassName($originalClass);
         // @codingStandardsIgnoreStart
         $sourceTpl = <<<'EOT'
 <?php
@@ -215,15 +216,17 @@ EOT;
         if(count($useList)) {
             $useListStr = "use ";
             foreach($useList as $alias => $fqn) {
-                $useListStr .= $fqn . " as " . $alias . ",\n\t";
+                // Skip ourselves, for obvious reasons
+                if($alias != $baseClassName) {
+                    $useListStr .= $fqn . " as " . $alias . ",\n\t";
+                }
             }
             $useListStr = trim($useListStr, ",\n\t") . ";";
         }
         // Third param, the class source, with the "extends" clause rewritten
         $origSource = $this->broker->getClass($originalClass)->getSource();
-        $baseClassName = $this->baseClassName($originalClass);
         $origSource = preg_replace("/^(.*?\s+extends\s+)[\S]+?\s*{/s",
-                                   '\1' . $newParent . ' {', $origSource);
+                                   '\1\\' . $newParent . ' {', $origSource);
         
         // Print the new source
         $newSource = sprintf($sourceTpl, $newNamespace, $useListStr, $origSource);
