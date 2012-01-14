@@ -102,7 +102,7 @@ class CompilerTest extends FossilTestCase {
     }
     
     /**
-     * @covers Fossil\Compiler::baseClassName
+     * @covers Fossil\Compiler::baseNamespaceName
      * @dataProvider dataForBaseNamespaceName
      */
     public function testBaseNamespaceName($input, $expected) {
