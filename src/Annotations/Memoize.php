@@ -40,7 +40,7 @@ class Memoize extends Compilation {
             throw new \Exception("Memoize currently doesn't support methods with arguments");
         }
         
-        $memoizeName = "_" . get_class($this) . "_$funcname_memoize";
+        $memoizeName = "_" . get_class($this) . "_{$funcname}_memoize";
         if(!isset($this->$memoizeName)) {
             $this->$memoizeName = $this->completeCall($funcname, $args);
         }
