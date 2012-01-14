@@ -90,6 +90,30 @@ class CompilerTest extends FossilTestCase {
     }
     
     /**
+     * @covers Fossil\Compiler::baseClassName
+     * @dataProvider dataForBaseClassName
+     */
+    public function testBaseClassName($input, $expected) {
+        $method = new \ReflectionMethod('Fossil\Compiler', "baseClassName");
+        $method->setAccessible(true);
+        
+        $result = $method->invoke($this->object, $input);
+        $this->assertEquals($expected, $result);
+    }
+    
+    /**
+     * @covers Fossil\Compiler::baseClassName
+     * @dataProvider dataForBaseNamespaceName
+     */
+    public function testBaseNamespaceName($input, $expected) {
+        $method = new \ReflectionMethod('Fossil\Compiler', "baseNamespaceName");
+        $method->setAccessible(true);
+        
+        $result = $method->invoke($this->object, $input);
+        $this->assertEquals($expected, $result);
+    }
+    
+    /**
      * @covers {className}::{origMethodName}
      * @todo Implement testCompileAllClasses().
      */
@@ -125,6 +149,24 @@ class CompilerTest extends FossilTestCase {
                      array('Fossil\SomeOverlay\OverlayClass', 'Fossil\Compiled\Overlay\OverlayClass'),
                      array('Fossil\SomeApplication\AppClass', 'Fossil\Compiled\App\AppClass'),
                      array('ExternalNS\SomeClass', 'ExternalNS\SomeClass'));
+    }
+    
+    public function dataForBaseNamespaceName() {
+        return array(array('NamespacelessClass', ""),
+                     array('\NamespacelessClass', ""),
+                     array('Fossil\Compiler', "Fossil"),
+                     array('Fossil\SubNS\Some\Other\NS', 'Fossil\SubNS\Some\Other'),
+                     array('\A\B\C\D\E\F\G\H\U', 'A\B\C\D\E\F\G\H'),
+                     array('', ""));
+    }
+    
+    public function dataForBaseClassName() {
+        return array(array('NamespacelessClass', 'NamespacelessClass'),
+                     array('\NamespacelessClass', "NamespacelessClass"),
+                     array('Fossil\Compiler', "Compiler"),
+                     array('Fossil\SubNS\Some\Other\NS', 'NS'),
+                     array('\A\B\C\D\E\F\G\H\U', 'U'),
+                     array('', ""));
     }
 }
 
