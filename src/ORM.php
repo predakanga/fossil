@@ -222,7 +222,7 @@ class ORM extends Object {
         return $this->logger;
     }
     
-    public function setLogger(\Doctrine\DBAL\Loggin\SQLLogger $logger) {
+    public function setLogger(\Doctrine\DBAL\Logging\SQLLogger $logger) {
         $this->logger = $logger;
         // Surprisingly enough, the DB layer gets the SQL Logger
         // from the config every single time it needs it
