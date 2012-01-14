@@ -67,9 +67,6 @@ class Compiler extends Object {
     protected $fs;
     protected $compiled = array();
     
-    /**
-     * @F:LogCall()
-     */
     protected function baseClassName($fqn) {
         $lastSlash = strrpos($fqn, '\\');
         if($lastSlash === FALSE) {
@@ -78,9 +75,6 @@ class Compiler extends Object {
         return substr($fqn, $lastSlash+1);
     }
     
-    /**
-     * @F:LogCall()
-     */
     protected function baseNamespaceName($fqn) {
         $lastSlash = strrpos($fqn, '\\');
         if($lastSlash === FALSE) {
@@ -89,9 +83,6 @@ class Compiler extends Object {
         return substr($fqn, 0, $lastSlash);
     }
     
-    /**
-     * @F:LogCall()
-     */
     protected function transformNamespace($inputNamespace) {
         // Determine which namespace we live in - root, app, or overlay
         $fossilDetails = $this->core->getFossilDetails();
@@ -130,9 +121,6 @@ class Compiler extends Object {
         return str_replace($baseNamespace, $finalNamespace, $inputNamespace);
     }
     
-    /**
-     * @F:LogCall()
-     */
     protected function saveClass($className, $namespaceName, $source) {
         // Save the class to disk
         // First, determine the path, and ensure it exists
