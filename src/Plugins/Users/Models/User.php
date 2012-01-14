@@ -133,11 +133,18 @@ class User extends \Fossil\Models\Model {
         // TODO: Add cookie support
         $session = $container->get("Session");
         $haveCookie = false;
-        if(isset($session->get("FossilAuth")->userID)) {
-            $user = self::find($container, $session->get("FossilAuth")->userID);
+        if(isset($session->get("FossilAuth")->user)) {
+            $user = $session->get("FossilAuth")->user;
+            $user->restoreObjects($container);
             return $user;
-        } else if($haveCookie) {
-            
+        } else {
+            if(isset($session->get("FossilAuth")->userID)) {
+                $user = self::find($container, $session->get("FossilAuth")->userID);
+                $session->get("FossilAuth")->user = $user;
+                return $user;
+            } else if($haveCookie) {
+
+            }
         }
         return null;
     }
