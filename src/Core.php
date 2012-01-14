@@ -92,7 +92,9 @@ class Core extends Object {
     
     public function setAppDetails($details) {
         // Details should only be set *before* the Filesystem is created
-        assert(!$this->container->has("Filesystem"));
+        if($this->container->has("Filesystem")) {
+//            trigger_error("Core::setAppDetails should only be called when Filesystem has not yet been used", E_USER_WARNING);
+        }
         $this->appDetails = $details;
         $this->instanceName = null;
     }
@@ -103,7 +105,9 @@ class Core extends Object {
     
     public function setOverlayDetails($details) {
         // Details should only be set *before* the Filesystem is created
-        assert(!$this->container->has("Filesystem"));
+        if($this->container->has("Filesystem")) {
+//            trigger_error("Core::setOverlayDetails should only be called when Filesystem has not yet been used", E_USER_WARNING);
+        }
         $this->overlayDetails = $details;
         $this->instanceName = null;
     }
