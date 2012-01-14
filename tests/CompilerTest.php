@@ -114,10 +114,45 @@ class CompilerTest extends FossilTestCase {
     }
     
     /**
-     * @covers {className}::{origMethodName}
-     * @todo Implement testCompileAllClasses().
+     * @covers Fossil\Compiler::compileAllClasses
      */
-    public function testCompileAllClasses() {
+    public function testCompileAllClassesBare() {
+        $classList = array('ClassA', 'ClassB', 'ClassC', 'ClassD');
+        $resultList = array('AssalC', 'BssalC', 'CssalC', 'DssalC');
+        
+        
+        // Create a mock ObjectContainer
+        $containerMock = $this->getMockBuilder('Fossil\ObjectContainer')
+                              ->disableOriginalConstructor()
+                              ->getMock();
+        $containerMock->expects($this->once())
+                      ->method('getAllKnownClasses')
+                      ->will($this->returnValue($classList));
+        $containerMock->expects($this->once())
+                      ->method('setClassMap')
+                      ->with($this->equalTo($resultList));
+        
+        $compilerMock = $this->getMock('Fossil\Compiler', array('compileClass', 'setupObjects'), array($containerMock));
+        
+        $reflProp = new \ReflectionProperty('Fossil\Compiler', 'classMap');
+        $reflProp->setAccessible(true);
+        $compileClassCB = function($className) use($compilerMock, $reflProp) {
+            $origMap = $reflProp->getValue($compilerMock);
+            $origMap[] = strrev($className);
+            $reflProp->setValue($compilerMock, $origMap);
+        };
+        
+        $compilerMock->expects($this->exactly(4))
+                     ->method('compileClass')
+                     ->will($this->returnCallback($compileClassCB));
+        
+        $compilerMock->compileAllClasses();
+    }
+    
+    /**
+     * @covers Fossil\Compiler::compileAllClasses
+     */
+    public function testCompileAllClassesComplete() {
         // Remove the following lines when you implement this test.
         $this->markTestIncomplete(
                 'This test has not been implemented yet.'
