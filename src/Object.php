@@ -48,6 +48,23 @@ class Object {
         $this->setupObjects();
     }
     
+    public function __sleep() {
+        // Get a list of keys to store
+        // Act this way so that we can persist memoized data, amongst other things
+        $keysToStore = array_keys(get_object_vars($this));
+        // And exclude all of our objects, and container
+        $toExclude = array();
+        // Only needs to be done if we don't have a container
+        if($this->container) {
+            foreach($this->determineObjects() as $obj) {
+                $toExclude[] = $obj['destination'];
+            }
+            $toExclude[] = 'container';
+        }
+        
+        return array_diff($keysToStore, $toExclude);
+    }
+    
     protected function determineObjects() {
         $classname = get_class($this);
         if(!isset($this->container->dependencies[$classname])) {
@@ -83,6 +100,11 @@ class Object {
     
     protected function storeObject($destination, $object) {
         $this->{$destination} = $object;
+    }
+    
+    public function restoreObjects($container) {
+        $this->container = $container;
+        $this->setupObjects();
     }
     
     protected function setupObjects() {
