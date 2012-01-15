@@ -80,7 +80,7 @@ class ActiveClassMetadataFactory extends \Doctrine\ORM\Mapping\ClassMetadataFact
             }
             $realClassName = $outClassName;
             // But warn unless the mapping is occurring on a compiled class
-            if($realClassName != $className && !strstr($className, "\\Compiled\\")) {
+            if($realClassName != $className && !strstr($className, "\\Compiled\\") && !strstr($className, "\\Proxies\\")) {
                 trigger_error("Model $realClassName was subclassed without the resultant class, $className, being marked as an entity", E_USER_WARNING);
             }
             $this->metadataNameMap[$className] = $realClassName;
