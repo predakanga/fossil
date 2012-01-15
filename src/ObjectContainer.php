@@ -250,7 +250,6 @@ class ObjectContainer {
         }
         // After all classes are known, etc, make sure the schemas are updated
         $this->get("ORM")->ensureSchema();
-        // TODO: Trigger compilation here
         $this->get("Compiler")->compileAllClasses();
     }
     
