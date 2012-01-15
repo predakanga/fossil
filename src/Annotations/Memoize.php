@@ -35,17 +35,27 @@ namespace Fossil\Annotations;
  * @author predakanga
  */
 class Memoize extends Compilation {
+    public $value = "PT15M";
+    
     public function call($funcname, $args, $compileArgs) {
         if(count($args)) {
             throw new \Exception("Memoize currently doesn't support methods with arguments");
         }
         
         $memoizeName = "_" . get_class($this) . "_{$funcname}_memoize";
+        if(isset($this->$memoizeName)) {
+            // Check the expiry time
+            list($value, $expiry) = $this->$memoizeName;
+            $expiry->add(new \DateInterval($compileArgs['value']));
+            if($expiry < new \DateTime()) {
+                unset($this->$memoizeName);
+            }
+        }
         if(!isset($this->$memoizeName)) {
-            $this->$memoizeName = $this->completeCall($funcname, $args);
+            $this->$memoizeName = array($this->completeCall($funcname, $args), new \DateTime());
         }
         
-        return $this->$memoizeName;
+        return $this->{$memoizeName}[0];
     }
 }
 
