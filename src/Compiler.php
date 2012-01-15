@@ -46,7 +46,7 @@ class Compiler extends Object {
     protected $reflClassMap = array();
     
     /**
-     * @F:Inject("Reflection")
+     * @F:Inject(type = "Reflection", lazy = true)
      * @var Fossil\ReflectionBroker
      */
     protected $broker;
@@ -84,6 +84,31 @@ class Compiler extends Object {
             return '';
         }
         return substr($fqn, 0, $lastSlash);
+    }
+    
+    public function mapCompiledClassNameToOriginal($className) {
+        $className = ltrim($className, '\\');
+        $details = $this->core->getFossilDetails();
+        $fossilNS = $details['ns'] . '\Compiled';
+        if(strpos($className, $fossilNS) !== 0) {
+            return $className;
+        }
+        if(strpos($className, $fossilNS . '\Fossil') === 0) {
+            if($details) {
+                return str_replace($fossilNS . '\Fossil', $details['ns'], $className);
+            }
+        } elseif(strpos($className, $fossilNS . '\App') === 0) {
+            $details = $this->core->getAppDetails();
+            if($details) {
+                return str_replace($fossilNS . '\App', $details['ns'], $className);
+            }
+        } elseif(strpos($className, $fossilNS . '\Overlay') === 0) {
+            $details = $this->core->getOverlayDetails();
+            if($details) {
+                return str_replace($fossilNS . '\Overlay', $details['ns'], $className);
+            }
+        }
+        return $className;
     }
     
     protected function transformNamespace($inputNamespace) {
