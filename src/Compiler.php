@@ -87,9 +87,32 @@ class Compiler extends Object {
     }
     
     public function mapCompiledClassNameToOriginal($className) {
+        if(strpos($className, 'Fossil\Compiled') !== 0) {
+            return $className;
+        }
+        // Skip over extended classes by checking whether the class's parent is the prefix to this
+        $classParent = get_parent_class($className);
+        if($classParent) {
+            if(strpos($className, $classParent) === 0) {
+                return $this->mapCompiledClassNameToOriginal($classParent);
+            } else {
+                $potentialParent = $this->transformCompiledNameToOriginal($className);
+                if(class_exists($potentialParent)) {
+                    return $potentialParent;
+                } else {
+                    return $classParent;
+                }
+            }
+        } else {
+            throw new \Exception("Input class, $className, was not a compiled class");
+        }
+    }
+    
+    private function transformCompiledNameToOriginal($className) {
         $className = ltrim($className, '\\');
         $details = $this->core->getFossilDetails();
         $fossilNS = $details['ns'] . '\Compiled';
+        
         if(strpos($className, $fossilNS) !== 0) {
             return $className;
         }
