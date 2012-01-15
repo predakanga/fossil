@@ -75,7 +75,7 @@ class ReverseMappingGenerator extends BaseMetadataListener {
                     } else {
                         // Load the metadata out-of-band, otherwise
                         if(!isset($this->outOfBand[$class])) {
-                            $cm = new ActiveClassMetadata($class, $this->container);
+                            $cm = new ActiveClassMetadata($class, $this->container, null);
                             $config = $em->getConfiguration();
                             $config->getMetadataDriverImpl()->loadMetadataForClass($class, $cm);
                             $this->outOfBand[$class] = $cm;

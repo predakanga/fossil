@@ -28,9 +28,11 @@ class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata {
      * @var Fossil\ObjectContainer
      */
     public $diContainer = null;
+    public $origClassName = null;
     protected $_prototype;
     
-    public function __construct($entityName, $diContainer) {
+    public function __construct($entityName, $diContainer, $origName) {
+        $this->origClassName = $origName;
         $this->diContainer = $diContainer;
         parent::__construct($entityName);
         $this->reflClass = new ActiveEntityReflectionClass($entityName);
@@ -41,6 +43,10 @@ class ActiveClassMetadata extends \Doctrine\ORM\Mapping\ClassMetadata {
 
     public function setDIContainer($container) {
         $this->diContainer = $container;
+    }
+    
+    public function __sleep() {
+        return array_merge(parent::__sleep(), array("origClassName"));
     }
     
     /**

@@ -37,22 +37,43 @@ class ActiveClassMetadataFactory extends \Doctrine\ORM\Mapping\ClassMetadataFact
             if(!$this->compiler) {
                 $this->compiler = $this->diContainer->get("Compiler");
             }
-            if($this->compiler) {
-                // Map class to original class, in case it's a reparenting and not a compilation
-                $origClassName = $this->compiler->mapCompiledClassNameToOriginal($className);
-                if(class_exists($origClassName)) {
-                    $outClassName = $origClassName;
-                }
+            
+            // Map class to original class, in case it's a reparenting and not a compilation
+            $origClassName = $this->compiler->mapCompiledClassNameToOriginal($className);
+            if(class_exists($origClassName)) {
+                $outClassName = $origClassName;
             }
         }
         if(!$this->annoMgr) {
             $this->annoMgr = $this->diContainer->get("AnnotationManager");
         }
-        if(!$this->annoMgr) {
-            throw new \Exception("ActiveClassMetadata::setDIContainer must be called before getMetadataFor");
-        } else {
-            return $this->annoMgr->getClassAnnotation($outClassName, 'Doctrine\ORM\Mapping\Entity', false);
+        return $this->annoMgr->getClassAnnotation($outClassName, 'Doctrine\ORM\Mapping\Entity', false);
+    }
+    
+    public function getRealEntityClass($className) {
+        if(!isset($this->metadataNameMap[$className])) {
+            // Look up the class's real metadata name, if it's not an entity itself
+            $realClassName = $className;
+            $outClassName = "";
+            while(!$this->isDeclaredEntity($realClassName, $outClassName)) {
+                // Walk up to the nearest entity
+                $parent = get_parent_class($realClassName);
+                if(!$parent) {
+                    throw new \Exception("Metadata could not be loaded for $className; " .
+                                         "it is not an Entity or a direct descendant of an Entity");
+                }
+                $realClassName = $parent;
+            }
+            $realClassName = $outClassName;
+            // But warn unless the mapping is occurring on a compiled class
+            if($realClassName != $className && !strstr($className, "\\Compiled\\")
+                                            && !strstr($className, "\\Proxies\\")) {
+                trigger_error("Model $realClassName was subclassed without the resultant class, " .
+                              "$className, being marked as an entity", E_USER_WARNING);
+            }
+            $this->metadataNameMap[$className] = $realClassName;
         }
+        return $this->metadataNameMap[$className];
     }
     
     public function getMetadataFor($className) {
@@ -64,40 +85,11 @@ class ActiveClassMetadataFactory extends \Doctrine\ORM\Mapping\ClassMetadataFact
             throw new \Exception("ActiveClassMetadata::setDIContainer must be called before getMetadataFor");
         }
         
-        // Find the correct entity name for this class
-        if(isset($this->metadataNameMap[$className])) {
-            $realClassName = $this->metadataNameMap[$className];
-        } else {
-            $realClassName = $className;
-            $outClassName = "";
-            while(!$this->isDeclaredEntity($realClassName, $outClassName)) {
-                // Walk up to the nearest entity
-                $parent = get_parent_class($realClassName);
-                if(!$parent) {
-                    throw new \Exception("Metadata could not be loaded for $className; it is not an Entity or a direct descendant of an Entity");
-                }
-                $realClassName = $parent;
-            }
-            $realClassName = $outClassName;
-            // But warn unless the mapping is occurring on a compiled class
-            if($realClassName != $className && !strstr($className, "\\Compiled\\") && !strstr($className, "\\Proxies\\")) {
-                trigger_error("Model $realClassName was subclassed without the resultant class, $className, being marked as an entity", E_USER_WARNING);
-            }
-            $this->metadataNameMap[$className] = $realClassName;
-        }
+        // Look up the real class name
+        $realClassname = $this->getRealEntityClass($className);
         
         // Then get the metadata for it
         $retval = parent::getMetadataFor($realClassName);
-        // When we retrieve metadata, we want to set it's name to the mapped class for it
-        $origName = $retval->name;
-        $finalName = $this->diContainer->mapClass($realClassName);
-        if($retval->name != $finalName) {
-            $retval->name = $finalName;
-            $cacheDriver = parent::getCacheDriver();
-            if($cacheDriver) {
-                $cacheDriver->save("$origName\$CLASSMETADATA", $retval, null);
-            }
-        }
         // Add the DI container if need be
         if($retval instanceof ActiveClassMetadata) {
             $retval->setDIContainer($this->diContainer);
@@ -112,6 +104,9 @@ class ActiveClassMetadataFactory extends \Doctrine\ORM\Mapping\ClassMetadataFact
     }
     
     protected function newClassMetadataInstance($className) {
-        return new ActiveClassMetadata($className, $this->diContainer);
+        // Look up the real class name
+        $realClassname = $this->getRealEntityClass($className);
+        // And pass it to a new ACMD instance
+        return new ActiveClassMetadata($className, $this->diContainer, $realClassName);
     }
 }

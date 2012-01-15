@@ -43,6 +43,7 @@ use Fossil\Object,
     Fossil\DoctrineExtensions\ActiveProxyFactory,
     Fossil\DoctrineExtensions\QueryLogger,
     Fossil\DoctrineExtensions\FossilCache,
+    Fossil\DoctrineExtensions\FossilUnitOfWork,
     Doctrine\DBAL\Types\Type,
     Doctrine\ORM\Tools\SchemaTool,
     Doctrine\ORM\EntityManager,
@@ -166,6 +167,7 @@ class ORM extends Object {
         }
         
         $this->em = EntityManager::create($conn, $this->config, $this->evm);
+        $this->setupUnitOfWork();
         $this->em->getMetadataFactory()->setDIContainer($this->container);
         // Replace the EM's proxy factory with our own
         $this->setupProxyFactory();
@@ -179,6 +181,16 @@ class ORM extends Object {
             // Convention - our Doctrine type names must map directly to DB type names
             $platform->registerDoctrineTypeMapping($typeName, $typeName);
         }
+    }
+    
+    protected function setupUnitOfWork() {
+        // Replace the Unit of Work as well
+        $uow = new FossilUnitOfWork($this->em, $this->container);
+        
+        $reflClass = new \ReflectionClass($this->em);
+        $reflProp = $reflClass->getProperty("unitOfWork");
+        $reflProp->setAccessible(true);
+        $reflProp->setValue($this->em, $uow);
     }
     
     protected function setupProxyFactory() {
