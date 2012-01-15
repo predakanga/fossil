@@ -67,6 +67,15 @@ class Object {
     
     protected function determineObjects() {
         $classname = get_class($this);
+        
+        // For reparented classes, grab annotations from the original class
+        if(strstr($classname, 'Fossil\Compiled')) {
+            $originalClassname = $this->container->get("Compiler")->mapCompiledClassNameToOriginal($classname);
+            if($classname != $originalClassname) {
+                $classname = $originalClassname;
+            }
+        }
+        
         if(!isset($this->container->dependencies[$classname])) {
             // Collect dependencies
             $deps = array();
@@ -74,7 +83,7 @@ class Object {
             /** @var Fossil\Annotations\AnnotationManager */
             $annoMgr = $this->container->get("AnnotationManager");
             
-            $reflClass = new \ReflectionClass($this);
+            $reflClass = new \ReflectionClass($classname);
             foreach($reflClass->getProperties() as $reflProp) {
                 $propAnno = $annoMgr->getPropertyAnnotation($reflProp, "F:Inject");
                 if($propAnno) {
