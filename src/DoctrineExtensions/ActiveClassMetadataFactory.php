@@ -86,7 +86,7 @@ class ActiveClassMetadataFactory extends \Doctrine\ORM\Mapping\ClassMetadataFact
         }
         
         // Look up the real class name
-        $realClassname = $this->getRealEntityClass($className);
+        $realClassName = $this->getRealEntityClass($className);
         
         // Then get the metadata for it
         $retval = parent::getMetadataFor($realClassName);
@@ -105,7 +105,7 @@ class ActiveClassMetadataFactory extends \Doctrine\ORM\Mapping\ClassMetadataFact
     
     protected function newClassMetadataInstance($className) {
         // Look up the real class name
-        $realClassname = $this->getRealEntityClass($className);
+        $realClassName = $this->getRealEntityClass($className);
         // And pass it to a new ACMD instance
         return new ActiveClassMetadata($className, $this->diContainer, $realClassName);
     }
