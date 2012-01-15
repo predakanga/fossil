@@ -100,6 +100,16 @@ abstract class Model extends Object {
     }
     
     public function reattach($container) {
+        // TODO: Implementation details follow
+        // In __sleep, store UOW->getOriginalEntityData($this) internally
+        // Upon reattach, use registerManaged() with said data
+        // Alternately, refuse to serialize unless all data is flushed (use UOW->recompuleSingleEntityChangeSet
+        // then recompute OED on wakeup (it's simply an assoc array of managed fields)
+        // To consider: Warn user that reattaching unversioned models can cause data stomping
+        // Ideally, with the new working merge code, we should be able to just manually reattach with
+        // registerManaged, then EntityManager::refresh($this)
+//        $this->restoreObjects($container);
+//        $this->orm->getEM()->merge($this);
         throw new \Exception("As yet, detached Models aren't re-attachable. Sorry!");
     }
     
