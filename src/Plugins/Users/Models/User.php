@@ -58,7 +58,7 @@ class User extends \Fossil\Models\Model {
      */
     protected $id;
     
-    /** @Column */
+    /** @Column(unique=true) */
     protected $name;
     
     /** @Column */
@@ -207,6 +207,9 @@ class User extends \Fossil\Models\Model {
         return true;
     }
     
+    /**
+     * @F:Memoize
+     */
     public function getUnreadConversationCount() {
         return PrivateMessageConversation::getUnreadCount($this->container, $this);
     }
