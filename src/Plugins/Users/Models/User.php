@@ -129,17 +129,36 @@ class User extends \Fossil\Models\Model {
         return $this->hashPassword($value) == $this->password;
     }
     
-    public static function me($container) {
+    public static function me($container, $reattach=true) {
+        static $me = null;
+        static $attached = false;
+        
+        if($me) {
+            if(!$attached && $reattach) {
+                $me->reattach($container);
+                $attached = true;
+            }
+            return $me;
+        }
         // TODO: Add cookie support
         $session = $container->get("Session");
         $haveCookie = false;
         if(isset($session->get("FossilAuth")->user)) {
             $user = $session->get("FossilAuth")->user;
-            $user->restoreObjects($container);
+            $me = $user;
+            if($reattach) {
+                $user->reattach($container);
+                $attached = true;
+            } else {
+                $user->restoreObjects($container);
+                $attached = false;
+            }
             return $user;
         } else {
             if(isset($session->get("FossilAuth")->userID)) {
                 $user = self::find($container, $session->get("FossilAuth")->userID);
+                $me = $user;
+                $attached = true;
                 $session->get("FossilAuth")->user = $user;
                 return $user;
             } else if($haveCookie) {
