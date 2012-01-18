@@ -41,6 +41,7 @@ use Fossil\Responses\BaseResponse,
     Fossil\Interfaces\ITemplated,
     Fossil\Models\Model,
     Fossil\Models\PaginationProxy,
+    Fossil\Util\BBCode,
     Doctrine\Common\Collections\Collection;
 
 /**
@@ -216,7 +217,7 @@ class SmartyRenderer extends BaseRenderer {
     }
     
     function bbdecodeModifier($input) {
-        return $this->container->get("BBCode")->decode($input);
+        return BBCode::create($this->container)->decode($input);
     }
     
     function dateIntervalFmtModifier(\DateInterval $interval) {

@@ -29,17 +29,20 @@
 
 namespace Fossil\Util;
 
+use Fossil\Object;
+
 /**
  * Description of BBCode
  *
  * @author predakanga
- * @F:Provides("BBCode")
  */
-class BBCode {
+class BBCode extends Object {
     /** @var \HTML_BBCodeParser */
     protected $parser;
     
-    public function __construct() {
+    public function __construct($container) {
+        parent::__construct($container);
+        
         require_once "HTML/BBCodeParser.php";
         $this->parser = new \HTML_BBCodeParser(array('filters' => ''));
         $this->parser->addFilters("Basic,Email,Extended,Images,Links,Lists");
