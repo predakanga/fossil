@@ -99,18 +99,37 @@ abstract class Model extends Object {
         }
     }
     
+    private function _getData() {
+        // Because Doctrine filters changeset data by the classMD's current representation of data,
+        // we can simply return all object vars here (filtering out those that are injected)
+        // Conveniently, this is exactly what Object::__sleep does
+        $keys = parent::__sleep();
+        $actualData = array();
+        foreach($keys as $field) {
+            $actualData[$field] = $this->{$field};
+        }
+        return $actualData;
+    }
+    
     public function reattach($container) {
         // TODO: Implementation details follow
         // In __sleep, store UOW->getOriginalEntityData($this) internally
         // Upon reattach, use registerManaged() with said data
-        // Alternately, refuse to serialize unless all data is flushed (use UOW->recompuleSingleEntityChangeSet
+        // Alternately, refuse to serialize unless all data is flushed (use UOW->recomputeSingleEntityChangeSet
         // then recompute OED on wakeup (it's simply an assoc array of managed fields)
         // To consider: Warn user that reattaching unversioned models can cause data stomping
         // Ideally, with the new working merge code, we should be able to just manually reattach with
         // registerManaged, then EntityManager::refresh($this)
-//        $this->restoreObjects($container);
+        $this->restoreObjects($container);
+        $md = $this->getMetadata();
+        $this->orm->getEM()->getUnitOfWork()->registerManaged($this, $md->getIdentifierValues($this),
+                                                              $this->_getData());
+        if(!$md->isVersioned) {
+            trigger_error("Reattaching an unversioned model, of type " . get_class($this) . ". " .
+                          "This can stomp on DB data.", E_USER_WARNING);
+        }
 //        $this->orm->getEM()->merge($this);
-        throw new \Exception("As yet, detached Models aren't re-attachable. Sorry!");
+//        throw new \Exception("As yet, detached Models aren't re-attachable. Sorry!");
     }
     
     public function save() {
