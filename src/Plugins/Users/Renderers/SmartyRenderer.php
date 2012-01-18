@@ -40,7 +40,7 @@ use Fossil\Plugins\Users\Models\User;
 class SmartyRenderer extends \Fossil\Renderers\SmartyRenderer {
     protected function setDefaultVariables($tpl) {
         parent::setDefaultVariables($tpl);
-        $me = User::me($this->container);
+        $me = User::me($this->container, false);
         $tpl->assign('me', $me);
         $tpl->assign('loggedInOrNotTpl', $me ? "fossil:loggedIn" : "fossil:loggedOut");
     }
