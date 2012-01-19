@@ -29,6 +29,8 @@
 
 use Fossil\Plugins\Users\Models\User;
 
+require_once("HTML/BBCodeParser/Filter.php");
+
 /**
  * Description of HTML_BBCodeParser_Filter_FossilUser
  *
