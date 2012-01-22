@@ -40,7 +40,7 @@ class FireFossil extends \FirePHP {
     protected $headers = array();
     
     public function __construct() {
-        $this->setOption('maxArrayDepth', 2);
+        $this->setOption('maxArrayDepth', 3);
         $this->setOption('maxObjectDepth', 1);
     }
     
