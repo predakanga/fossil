@@ -47,6 +47,10 @@ class QueryLogger implements SQLLogger {
         return $this->queries;
     }
     
+    public function clearQueries() {
+        $this->queries = array();
+    }
+    
     /** {@inheritDoc} */
     public function startQuery($sql, array $params = null, array $types = null) {
         array_push($this->queries, array('sql' => $sql, 'params' => $params,
