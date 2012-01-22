@@ -35,7 +35,8 @@ namespace Fossil\Annotations;
  * @author predakanga
  */
 class Memoize extends Compilation {
-    public $value = "PT15M";
+    public $ttl = "PT15M";
+    public $postStore = null;
     
     public function call($funcname, $args, $compileArgs) {
         if(count($args)) {
@@ -46,13 +47,16 @@ class Memoize extends Compilation {
         if(isset($this->$memoizeName)) {
             // Check the expiry time
             list($value, $expiry) = $this->$memoizeName;
-            $expiry->add(new \DateInterval($compileArgs['value']));
+            $expiry->add(new \DateInterval($compileArgs['ttl']));
             if($expiry < new \DateTime()) {
                 unset($this->$memoizeName);
             }
         }
         if(!isset($this->$memoizeName)) {
             $this->$memoizeName = array($this->completeCall($funcname, $args), new \DateTime());
+            if(isset($this->compileArgs['postStore'])) {
+                $this->{$this->compileArgs['postStore']}();
+            }
         }
         
         return $this->{$memoizeName}[0];

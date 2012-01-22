@@ -168,6 +168,12 @@ class User extends \Fossil\Models\Model {
         return null;
     }
     
+    public function storeToSession() {
+        if(self::me($this->container) == $this)
+        $session = $container->get("Session");
+        $session->get("FossilAuth")->user = $this;
+    }
+    
     public function getRoles() {
         return $this->userClass->roles->toArray();
     }
@@ -199,16 +205,22 @@ class User extends \Fossil\Models\Model {
         return in_array($permission, $this->getPermissions());
     }
     
+    /**
+     * @F:Memoize(postStore="storeToSession")
+     */
     public function isDev() {
         return true;
     }
     
+    /**
+     * @F:Memoize(postStore="storeToSession")
+     */
     public function isAdmin() {
         return true;
     }
     
     /**
-     * @F:Memoize
+     * @F:Memoize(postStore="storeToSession")
      */
     public function getUnreadConversationCount() {
         return PrivateMessageConversation::getUnreadCount($this->container, $this);
