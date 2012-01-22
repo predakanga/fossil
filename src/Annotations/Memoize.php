@@ -54,8 +54,8 @@ class Memoize extends Compilation {
         }
         if(!isset($this->$memoizeName)) {
             $this->$memoizeName = array($this->completeCall($funcname, $args), new \DateTime());
-            if(isset($this->compileArgs['postStore'])) {
-                $this->{$this->compileArgs['postStore']}();
+            if(isset($compileArgs['postStore'])) {
+                $this->{$compileArgs['postStore']}();
             }
         }
         

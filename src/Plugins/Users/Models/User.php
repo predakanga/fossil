@@ -170,7 +170,7 @@ class User extends \Fossil\Models\Model {
     
     public function storeToSession() {
         if(self::me($this->container) == $this)
-        $session = $container->get("Session");
+        $session = $this->container->get("Session");
         $session->get("FossilAuth")->user = $this;
     }
     
