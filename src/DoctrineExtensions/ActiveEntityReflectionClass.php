@@ -21,11 +21,19 @@
 namespace Fossil\DoctrineExtensions;
 
 class ActiveEntityReflectionClass extends \ReflectionClass {
+    protected $needsActiveReflProp = false;
+    
+    public function __construct($entName) {
+        parent::__construct($entName);
+        
+        $this->needsActiveReflProp = is_subclass_of($this->name, 'Fossil\Models\Model');
+    }
+    
     public function getProperty($name) {
-        if(property_exists($this->name, $name)) {
-            return new \ReflectionProperty($this->name, $name);
-        } else {
+        if($this->needsActiveReflProp) {
             return new ActiveEntityReflectionProperty($this->name, $name);
+        } else {
+            return new \ReflectionProperty($this->name, $name);
         }
     }
 }
