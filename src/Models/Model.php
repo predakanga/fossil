@@ -75,6 +75,14 @@ abstract class Model extends Object {
     public function __sleep() {
         // Don't worry about it if we're not already set up
         if($this->orm) {
+            // First, check whether this entity is dirty
+            $uow = $this->orm->getEM()->getUnitOfWork();
+            if($uow->getEntityState($this) == \Doctrine\ORM\UnitOfWork::STATE_MANAGED) {
+                $uow->recomputeSingleEntityChangeSet($this->getMetadata(), $this);
+                if(count($uow->getEntityChangeSet($this))) {
+                    trigger_error("Serializing dirty entity {$this} can have dangerous side effects", E_USER_WARNING);
+                }
+            }
             // Replace all loaded models with proxies
             foreach(get_object_vars($this) as $fieldName => $fieldValue) {
                 if($this->$fieldName instanceof Model) {
