@@ -84,8 +84,6 @@ class Core extends Object {
         if(function_exists("fastcgi_finish_request")) {
             fastcgi_finish_request();
         }
-        // Then flush the DB (note: might want to do this beforehand, in case of errors)
-        $this->orm->flush();
         // Run any registered background tasks
         return;
     }

@@ -74,6 +74,10 @@ class Dispatcher extends Object {
     public function run() {
         $entryReq = $this->createEntryRequest();
         $this->runRequest($entryReq);
+        // After running our request, force immediate session closure
+        // This avoids issues with __sleep being called from destructors
+        $this->orm->flush();
+        session_write_close();
     }
     
     public function runRequest(BaseRequest $req, $react = true) {
