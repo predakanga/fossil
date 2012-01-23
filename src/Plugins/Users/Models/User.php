@@ -169,9 +169,10 @@ class User extends \Fossil\Models\Model {
     }
     
     public function storeToSession() {
-        if(self::me($this->container) == $this)
-        $session = $this->container->get("Session");
-        $session->get("FossilAuth")->user = $this;
+        if(self::me($this->container) == $this) {
+            $session = $this->container->get("Session");
+            $session->get("FossilAuth")->user = $this;
+        }
     }
     
     public function getRoles() {
