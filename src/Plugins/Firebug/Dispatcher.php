@@ -58,6 +58,8 @@ class Dispatcher extends \Fossil\Dispatcher {
             // And flush to the browser
             FireFossil::getInstance()->sendHeaders();
         }
+        // Then un-register FireFossil
+        restore_exception_handler();
         // And flush the output buffer
         ob_end_flush();
     }
