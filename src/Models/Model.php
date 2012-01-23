@@ -39,7 +39,9 @@ namespace Fossil\Models;
 use Fossil\Object,
     Fossil\Exceptions\ValidationFailedException,
     Doctrine\ORM\Mapping\ClassMetadataInfo,
-    Doctrine\ORM\Proxy\Proxy;
+    Doctrine\ORM\Proxy\Proxy,
+    Doctrine\ORM\PersistentCollection,
+    Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * Description of Model
@@ -80,21 +82,19 @@ abstract class Model extends Object {
             if($uow->getEntityState($this) == \Doctrine\ORM\UnitOfWork::STATE_MANAGED) {
                 $uow->recomputeSingleEntityChangeSet($this->getMetadata(), $this);
                 if(count($uow->getEntityChangeSet($this))) {
-                    trigger_error("Serializing dirty entity {$this} can have dangerous side effects", E_USER_WARNING);
+                    trigger_error("Serializing dirty entity " . get_class($this) . " can have dangerous side effects", E_USER_WARNING);
                 }
             }
-            // Replace all loaded models with proxies
-            foreach(get_object_vars($this) as $fieldName => $fieldValue) {
-                if($this->$fieldName instanceof Model) {
-                    // TODO: Make this more air-tight, and figure out why is_a and ReflectionClass didn't work
-                    if(!strstr(get_class($this->$fieldName), "Proxy")) {
-                        echo "Class of type " . get_class($this->$fieldName) . " is not a proxy, apparently<br />\n";
-                        // Then replace it with one
-                        $origObj = $this->$fieldName;
-                        $proxy = $this->orm->getEM()->getProxyFactory()->getProxy(get_class($origObj),
-                                                                                  $origObj->id());
-                        $this->$fieldName = $proxy;
+            // Replace all associations with custom serialization
+            $md = $this->getMetadata();
+            foreach($md->getAssociationMappings() as $field => $mapping) {
+                if($md->isSingleValuedAssociation($field)) {
+                    // Wrap the field in a PersistedAssoc
+                    if($this->$field) {
+                        $this->$field = new PersistedAssoc($this->$field->id());
                     }
+                } elseif($md->isCollectionValuedAssociation($field)) {
+                    $this->$field = new PersistedAssoc();
                 }
             }
         }
@@ -130,14 +130,29 @@ abstract class Model extends Object {
         // registerManaged, then EntityManager::refresh($this)
         $this->restoreObjects($container);
         $md = $this->getMetadata();
+        $em = $this->orm->getEM();
+        // First, restore all associations
+        foreach(get_object_vars($this) as $fieldName => $fieldValue) {
+            if($fieldValue instanceof PersistedAssoc) {
+                $targetClass = $md->getAssociationTargetClass($fieldName);
+                if($md->isSingleValuedAssociation($fieldName)) {
+                    // Get a reference to the associated entity
+                    $this->$fieldName = $em->getReference($targetClass, $fieldValue->getID());
+                } elseif($md->isCollectionValuedAssociation($fieldName)) {
+                    // Create a new PersistentCollection, uninitialized
+                    $coll = new PersistentCollection($em, $targetClass, new ArrayCollection);
+                    $coll->setOwner($this, $md->getAssociationMapping($fieldName));
+                    $coll->setInitialized(false);
+                    $this->$fieldName = $coll;
+                }
+            }
+        }
         $this->orm->getEM()->getUnitOfWork()->registerManaged($this, $md->getIdentifierValues($this),
                                                               $this->_getData());
         if(!$md->isVersioned) {
             trigger_error("Reattaching an unversioned model, of type " . get_class($this) . ". " .
                           "This can stomp on DB data.", E_USER_WARNING);
         }
-//        $this->orm->getEM()->merge($this);
-//        throw new \Exception("As yet, detached Models aren't re-attachable. Sorry!");
     }
     
     public function save() {
