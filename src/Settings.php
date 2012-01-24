@@ -78,12 +78,7 @@ class Settings extends Object {
     }
     
     public function __destruct() {
-        if(isset($this->store['Fossil'])) {
-            $fossilHash = md5(serialize($this->store['Fossil']));
-            if($fossilHash != $this->fossilHash) {
-                file_put_contents($this->backingFile, yaml_emit($this->store['Fossil']));
-            }
-        }
+        $this->saveCoreSettings();
     }
     
     protected function determineObjects() {
@@ -103,6 +98,15 @@ class Settings extends Object {
     
     public function loadCoreSettings() {
         $this->loadSectionSettings("Fossil");
+    }
+    
+    public function saveCoreSettings() {
+        if(isset($this->store['Fossil'])) {
+            $fossilHash = md5(serialize($this->store['Fossil']));
+            if($fossilHash != $this->fossilHash) {
+                file_put_contents($this->backingFile, yaml_emit($this->store['Fossil']));
+            }
+        }
     }
     
     protected function loadSectionSettings($section) {
@@ -145,6 +149,9 @@ class Settings extends Object {
             $settingModel->save();
         }
         $settingModel->value = $value;
+        if($section == "Fossil") {
+            $this->saveCoreSettings();
+        }
     }
     
     protected function valueToDbValue($value) {
