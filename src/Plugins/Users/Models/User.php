@@ -36,7 +36,9 @@
 
 namespace Fossil\Plugins\Users\Models;
 
-use \Fossil\OM;
+use Fossil\OM,
+    Fossil\Util\Crypto,
+    Fossil\Util\Random;
 
 /**
  * @author predakanga
@@ -63,6 +65,9 @@ class User extends \Fossil\Models\Model {
     
     /** @Column */
     protected $password;
+    
+    /** @Column */
+    protected $cryptKey;
     
     /** @Column */
     protected $email;
@@ -117,16 +122,42 @@ class User extends \Fossil\Models\Model {
     }
     
     protected function hashPassword($value) {
-        return md5($value);
+        $crypt = Crypto::create($this->container);
+        
+        return $crypt->bcrypt($value);
     }
     
     protected function setPassword($value) {
-        // Hash the password - temporary
         $this->password = $this->hashPassword($value);
+        if(!$this->cryptKey) {
+            $this->initializeCryptKey($value);
+        }
+    }
+    
+    protected function setCryptKey($value) {
+        $this->cryptKey = base64_encode($value);
+    }
+    
+    protected function getCryptKey() {
+        return base64_decode($this->cryptKey);
+    }
+    
+    protected function initializeCryptKey($value) {
+        $crypt = Crypto::create($this->container);
+        $random = Random::create($this->container);
+        
+        // Generate a 16 letter salt
+        $salt = $random->string(16);
+        // And build the crypt key from that
+        $cryptKey = $crypt->pbkdf2($value, $salt, 1000, 56);
+        
+        $this->setCryptKey($cryptKey);
     }
     
     public function verifyPassword($value) {
-        return $this->hashPassword($value) == $this->password;
+        $crypt = Crypto::create($this->container);
+        
+        return $crypt->bcrypt_check($value, $this->password);
     }
     
     public static function me($container, $reattach=true) {
