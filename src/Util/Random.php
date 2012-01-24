@@ -45,7 +45,7 @@ class Random extends Object {
         $charsetLen = strlen($charset);
         
         $retval = "";
-        for($i = 0; $i < length; $i++) {
+        for($i = 0; $i < $charsetLen; $i++) {
             $retval .= $charset[$this->integer(0,$charsetLen-1)];
         }
         
