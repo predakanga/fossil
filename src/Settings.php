@@ -149,9 +149,6 @@ class Settings extends Object {
             $settingModel->save();
         }
         $settingModel->value = $value;
-        if($section == "Fossil") {
-            $this->saveCoreSettings();
-        }
     }
     
     protected function valueToDbValue($value) {
