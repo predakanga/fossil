@@ -426,7 +426,9 @@ class ObjectContainer {
         $this->registrations[$type] = $fqcn;
         if(isset($this->instances[$type])) {
             unset($this->instances[$type]);
-            trigger_error("Registering already instantiated type $type", E_USER_WARNING);
+            if(!$noConflict) {
+                trigger_error("Registering already instantiated type $type", E_USER_WARNING);
+            }
         }
     }
     
