@@ -104,6 +104,7 @@ class ObjectContainer {
         $cacheObj = array('registrations' => $this->registrations,
                           'instancedTypes' => $this->instancedTypes,
                           'classMap' => $this->classMap,
+                          'dependencies' => $this->dependencies,
                           'mtime' => $this->get("Core")->getMtime());
         file_put_contents($filename, yaml_emit($cacheObj));
     }
@@ -117,16 +118,18 @@ class ObjectContainer {
         $origReg = $this->registrations;
         $origInstTypes = $this->instancedTypes;
         $origClassMap = $this->classMap;
+        $origDeps = $this->dependencies;
         @$this->registrations = $cache['registrations'];
         @$this->instancedTypes = $cache['instancedTypes'];
         @$this->classMap = $cache['classMap'];
+        @$this->dependencies = $cache['dependencies'];
         @$mtime = $cache['mtime'];
         if(!$mtime) {
             $mtime = 0;
         }
         
         $cacheSucceeded = true;
-        if(!$this->registrations || !$this->instancedTypes || !$this->classMap) {
+        if(!$this->registrations || !$this->instancedTypes || !$this->classMap || !$this->dependencies) {
             $cacheSucceeded = false;
         } else {
             // TODO: Add setting to only check mtimes sometimes
@@ -143,6 +146,7 @@ class ObjectContainer {
             $this->registrations = $origReg;
             $this->instancedTypes = $origInstTypes;
             $this->classMap = $origClassMap;
+            $this->dependencies = $origDeps;
             return false;
         }
     }
@@ -559,6 +563,11 @@ class ObjectContainer {
     public function setClassMap($classMap) {
         // TODO: Should we just wipe it out instead? Could cause issues with cached class map
         $this->classMap += $classMap;
+    }
+    
+    public function setDependencies($class, $deps) {
+        $this->dependencies[$class] = $deps;
+        $this->updateCache();
     }
     
     public function __sleep() {

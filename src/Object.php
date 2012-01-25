@@ -97,7 +97,7 @@ class Object {
             }
             
             // And store them
-            $this->container->dependencies[$classname] = $deps;
+            $this->container->setDependencies($classname, $deps);
         }
         
         return $this->container->dependencies[$classname];
