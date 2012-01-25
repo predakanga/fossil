@@ -29,6 +29,8 @@
 
 namespace Fossil;
 
+use Fossil\Plugins\Users\Models\User;
+
 /**
  * Description of Init
  *
@@ -58,6 +60,21 @@ class Init extends BaseInit {
         }
     }
     
+    public function everyTimeInit() {
+        if(isset($_GET['FOSSIL_LOG'])) {
+            if(class_exists('Fossil\Plugins\Users\Models\User')) {
+                $me = User::me($this->container, false);
+                if($me && $me->isDev()) {
+                    $this->container->registerType('DebugLogger', 'Fossil\Logging\Debug\StdOutDebugLogger');
+                    if(is_numeric($_GET['FOSSIL_LOG'])) {
+                        $this->container->get("DebugLogger")->setLevel((int)$_GET['FOSSIL_LOG']);
+                    }
+                }
+            }
+        }
+        parent::everyTimeInit();
+    }
+
     protected function determineObjects() {
         // As a special case, we don't do auto-discovery on this object
         return array(array('type' => 'Settings', 'destination' => 'settings',
