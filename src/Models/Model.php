@@ -76,7 +76,7 @@ abstract class Model extends Object {
     
     public function __sleep() {
         // Don't worry about it if we're not already set up
-        if($this->orm) {
+        if(!$this->unattached) {
             // First, check whether this entity is dirty
             $uow = $this->orm->getEM()->getUnitOfWork();
             if($uow->getEntityState($this) == \Doctrine\ORM\UnitOfWork::STATE_MANAGED) {
