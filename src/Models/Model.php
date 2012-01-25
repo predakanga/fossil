@@ -142,7 +142,8 @@ abstract class Model extends Object {
                         $this->$fieldName = $em->getReference($targetClass, $fieldValue->getID());
                     } elseif($md->isCollectionValuedAssociation($fieldName)) {
                         // Create a new PersistentCollection, uninitialized
-                        $coll = new PersistentCollection($em, $targetClass, new ArrayCollection);
+                        $targetMD = $em->getClassMetadata($targetClass);
+                        $coll = new PersistentCollection($em, $targetMD, new ArrayCollection);
                         $coll->setOwner($this, $md->getAssociationMapping($fieldName));
                         $coll->setInitialized(false);
                         $this->$fieldName = $coll;
@@ -158,6 +159,11 @@ abstract class Model extends Object {
         if(!$md->isVersioned) {
             trigger_error("Reattaching an unversioned model, of type " . get_class($this) . ". " .
                           "This can stomp on DB data.", E_USER_WARNING);
+        }
+        $this->unattached = false;
+        $key = array_search($this, self::$unattachedDirty);
+        if($key !== false) {
+            unset(self::$unattachedDirty[$key]);
         }
     }
     
@@ -190,14 +196,14 @@ abstract class Model extends Object {
     }
     
     public function set($key, $value, $direct = false) {
+        if($direct) {
+            $this->$key = $value;
+            return;
+        }
         if($this->unattached) {
             if(!in_array($this, self::$unattachedDirty)) {
                 self::$unattachedDirty[] = $this;
             }
-        }
-        if($direct) {
-            $this->$key = $value;
-            return;
         }
         // First, validate the value
         if(!$this->validate($key, $value)) {
