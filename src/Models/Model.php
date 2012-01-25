@@ -132,18 +132,24 @@ abstract class Model extends Object {
         $md = $this->getMetadata();
         $em = $this->orm->getEM();
         // First, restore all associations
-        foreach(get_object_vars($this) as $fieldName => $fieldValue) {
-            if($fieldValue instanceof PersistedAssoc) {
-                $targetClass = $md->getAssociationTargetClass($fieldName);
-                if($md->isSingleValuedAssociation($fieldName)) {
-                    // Get a reference to the associated entity
-                    $this->$fieldName = $em->getReference($targetClass, $fieldValue->getID());
-                } elseif($md->isCollectionValuedAssociation($fieldName)) {
-                    // Create a new PersistentCollection, uninitialized
-                    $coll = new PersistentCollection($em, $targetClass, new ArrayCollection);
-                    $coll->setOwner($this, $md->getAssociationMapping($fieldName));
-                    $coll->setInitialized(false);
-                    $this->$fieldName = $coll;
+        foreach($md->getAssociationMappings() as $fieldName => $mapping) {
+            $fieldValue = $this->{$fieldName};
+            if($fieldValue) {
+                if($fieldValue instanceof PersistedAssoc) {
+                    $targetClass = $md->getAssociationTargetClass($fieldName);
+                    if($md->isSingleValuedAssociation($fieldName)) {
+                        // Get a reference to the associated entity
+                        $this->$fieldName = $em->getReference($targetClass, $fieldValue->getID());
+                    } elseif($md->isCollectionValuedAssociation($fieldName)) {
+                        // Create a new PersistentCollection, uninitialized
+                        $coll = new PersistentCollection($em, $targetClass, new ArrayCollection);
+                        $coll->setOwner($this, $md->getAssociationMapping($fieldName));
+                        $coll->setInitialized(false);
+                        $this->$fieldName = $coll;
+                    }
+                } else {
+                    trigger_error("Reattaching a model with improperly persisted associations, of type " .
+                                  get_class($this) . ".", E_USER_WARNING);
                 }
             }
         }
