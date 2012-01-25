@@ -29,7 +29,8 @@
 
 namespace Fossil\Plugins\Firebug;
 
-use Fossil\BaseInit;
+use Fossil\BaseInit,
+    Fossil\Plugins\Users\Models\User;
 
 /**
  * Description of Init
@@ -42,21 +43,35 @@ class Init extends BaseInit {
      */
     protected $firephp;
     
-    public function registerObjects() {
-        // Register our own error manager
-        $this->container->registerType("ErrorManager", "Fossil\Plugins\Firebug\ErrorManager");
-    }
-
     public function everyTimeInit() {
-        $this->firephp = FireFossil::getInstance();
+        // If we're not a dev, quit immediately
+        $user = User::me($this->container, false);
+        if($user && $user->isDev()) {
+            $this->firephp = FireFossil::getInstance();
+            // Only continue if we've detected the client extension
+            if($this->firephp->detectClientExtension()) {
+                $this->firephp->setIsActive(true);
+                // Register our own error manager
+                $this->container->registerType("ErrorManager", "Fossil\Plugins\Firebug\ErrorManager");
+                // And our own debug logger
+                $this->container->registerType("DebugLogger", "Fossil\Plugins\Firebug\Logging\Debug\FirebugDebugLogger", true, true);
+                // Inject FirePHP into the error manager and logger
+                $this->container->get("ErrorManager")->setFirephp($this->firephp);
+                $this->container->get("DebugLogger")->setFirephp($this->firephp);
+                $this->container->get("Dispatcher")->setFirephp($this->firephp);
+                
+                // Set the log level
+                if(isset($_GET['FOSSIL_LOG']) && is_numeric($_GET['FOSSIL_LOG'])) {
+                    $this->container->get("DebugLogger")->setLevel((int)$_GET['FOSSIL_LOG']);
+                }
 
-        // Inject FirePHP into the error manager
-        $this->container->get("ErrorManager")->setFirephp($this->firephp);
-        // Set the logger up
-        if(FireFossil::getInstance()->detectClientExtension()) {
-            $oldLogger = $this->container->get("ORM")->getLogger();
-            $newLogger = new FirePHPSqlLogger($this->firephp, $oldLogger);
-            $this->container->get("ORM")->setLogger($newLogger);
+                // Set the SQL logger up
+                if(FireFossil::getInstance()->detectClientExtension()) {
+                    $oldLogger = $this->container->get("ORM")->getLogger();
+                    $newLogger = new FirePHPSqlLogger($this->firephp, $oldLogger);
+                    $this->container->get("ORM")->setLogger($newLogger);
+                }
+            }
         }
         
         parent::everyTimeInit();

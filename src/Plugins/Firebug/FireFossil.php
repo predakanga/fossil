@@ -38,6 +38,15 @@ require_once("libs/FirePHP.class.php");
  */
 class FireFossil extends \FirePHP {
     protected $headers = array();
+    protected $isActive = false;
+    
+    public function isActive() {
+        return $this->isActive;
+    }
+
+    public function setIsActive($active) {
+        $this->isActive = $active;
+    }
     
     public function __construct() {
         $this->setOption('maxArrayDepth', 2);

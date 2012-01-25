@@ -36,13 +36,18 @@ namespace Fossil\Plugins\Firebug;
  * @F:ExtensionClass
  */
 class Dispatcher extends \Fossil\Dispatcher {
+    protected $firephp;
+    
+    public function setFirephp($firephp) {
+        $this->firephp = $firephp;
+    }
     public function run() {
         // Set up an output buffer
         ob_start();
         // Run the normal dispatcher
         parent::run();
         // Send our FirePHP headers
-        if(FireFossil::getInstance()->detectClientExtension()) {
+        if($this->firephp && $this->firephp->isActive()) {
             // Output the time taken/memory usage info
             $core = $this->container->get("Core");
             $deltaTime = microtime(TRUE) - $core->startTime;
@@ -52,14 +57,14 @@ class Dispatcher extends \Fossil\Dispatcher {
             $deltaMem /= (1024*1024);
             $maxDeltaMem /= (1024*1024);
             $messageFmt = "Finished in %0.4f ms, memory usage was %0.2f MB (max was %0.2f MB)";
-            FireFossil::getInstance()->info(sprintf($messageFmt, $deltaTime, $deltaMem, $maxDeltaMem));
+            $this->firephp->info(sprintf($messageFmt, $deltaTime, $deltaMem, $maxDeltaMem));
             // Output the SQL log
             $this->container->get("ORM")->getLogger()->printTable();
             // And flush to the browser
-            FireFossil::getInstance()->sendHeaders();
+            $this->firephp->sendHeaders();
+            // Then un-register FireFossil
+            restore_exception_handler();
         }
-        // Then un-register FireFossil
-        restore_exception_handler();
         // And flush the output buffer
         ob_end_flush();
     }
