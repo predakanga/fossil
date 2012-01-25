@@ -65,7 +65,7 @@ class Login extends \Fossil\Controllers\AutoController {
                 return $this->templateResponse("fossil:login", array('error' => 'Invalid user/pass'));
             }
             
-            $this->session->get("FossilAuth")->userID = $user->id;
+            $this->session->get("FossilAuth")->user = $user;
             // TODO: Set cookie if staySignedIn
             return $this->redirectResponse("?");
         }
