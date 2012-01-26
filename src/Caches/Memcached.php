@@ -87,7 +87,8 @@ class Memcached extends BaseCache {
     
     protected function _has($key) {
         if(!$this->mc->get($key)) {
-            if($this->mc->getResultCode() != Memcached::RES_NOT_FOUND) {
+            if($this->mc->getResultCode() != \Memcached::RES_NOTFOUND) {
+                
                 return true;
             }
             return false;
