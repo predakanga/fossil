@@ -44,6 +44,9 @@ class Init extends BaseInit {
     protected $firephp;
     
     public function everyTimeInit() {
+        if(PHP_SAPI == "cli") {
+            return;
+        }
         // If we're not a dev, quit immediately
         $user = User::me($this->container, false);
         if($user && $user->isDev()) {
