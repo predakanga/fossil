@@ -38,8 +38,7 @@ use Fossil\OM,
     Fossil\Plugins\Forums\Models\ForumTopic,
     Fossil\Plugins\Forums\Models\ForumPost,
     Fossil\Plugins\Forums\Forms\NewTopic,
-    Fossil\Plugins\Forums\Forms\NewPost,
-    Fossil\Annotations\Compilation\CacheResult;
+    Fossil\Plugins\Forums\Forms\NewPost;
 
 /**
  * Description of Forum
@@ -127,9 +126,6 @@ class Forum extends LoginRequiredController {
         return $this->redirectResponse("?controller=forum&action=viewTopic&id={$topic->id}");
     }
     
-    /**
-     * @CacheResult(versionedKey = true)
-     */
     protected function collectSubforums() {
         $cats = array();
         $forums = $this->orm->getEM()->createQuery("SELECT forum, category
