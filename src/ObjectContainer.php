@@ -258,6 +258,8 @@ class ObjectContainer {
     }
     
     protected function appSpecificEveryTimeInit() {
+        // First, fire up the error manager
+        $this->get("ErrorManager");
         // Run each layer's initializers
         $this->ensureFossilInitializer();
         if($this->fossilInit) {
