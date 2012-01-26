@@ -66,11 +66,9 @@ class Init extends BaseInit {
                 }
 
                 // Set the SQL logger up
-                if(FireFossil::getInstance()->detectClientExtension()) {
-                    $oldLogger = $this->container->get("ORM")->getLogger();
-                    $newLogger = new FirePHPSqlLogger($this->firephp, $oldLogger);
-                    $this->container->get("ORM")->setLogger($newLogger);
-                }
+                $oldLogger = $this->container->get("ORM")->getLogger();
+                $newLogger = new FirePHPSqlLogger($this->firephp, $oldLogger);
+                $this->container->get("ORM")->setLogger($newLogger);
             }
         }
         

@@ -41,6 +41,7 @@ class Dispatcher extends \Fossil\Dispatcher {
     public function setFirephp($firephp) {
         $this->firephp = $firephp;
     }
+    
     public function run() {
         // Set up an output buffer
         ob_start();
