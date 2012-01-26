@@ -57,6 +57,7 @@ abstract class Model extends Object {
     protected $orm;
     protected $unattached = false;
     public static $unattachedDirty = array();
+    protected static $reattachOnWake = true;
     
     private function getMetadata() {
         return $this->orm->getEM()->getClassMetadata(get_class($this));
@@ -75,6 +76,7 @@ abstract class Model extends Object {
     }
     
     public function __sleep() {
+        $excludedFields = array();
         // Don't worry about it if we're not already set up
         if(!$this->unattached) {
             // First, check whether this entity is dirty
@@ -87,23 +89,31 @@ abstract class Model extends Object {
             }
             // Replace all associations with custom serialization
             $md = $this->getMetadata();
+            $associations = array();
             foreach($md->getAssociationMappings() as $field => $mapping) {
                 if($md->isSingleValuedAssociation($field)) {
                     // Wrap the field in a PersistedAssoc
                     if($this->$field) {
-                        $this->$field = new PersistedAssoc($this->$field->id());
+                        $associations[$field] = new PersistedAssoc($this->$field->id());
+                        $excludedFields[] = $field;
                     }
                 } elseif($md->isCollectionValuedAssociation($field)) {
-                    $this->$field = new PersistedAssoc();
+                    $associations[$field] = new PersistedAssoc();
+                    $excludedFields[] = $field;
                 }
             }
+            $this->_persistedAssociations = $associations;
         }
-        return parent::__sleep();
+        return array_diff(parent::__sleep(), $excludedFields);
     }
     
     public function __wakeup() {
         if($this->id) {
+            parent::__wakeup();
             $this->unattached = true;
+            if(self::$defaultContainer && self::$reattachOnWake) {
+                $this->reattach($this->container);
+            }
         }
     }
     
@@ -132,28 +142,22 @@ abstract class Model extends Object {
         $md = $this->getMetadata();
         $em = $this->orm->getEM();
         // First, restore all associations
-        foreach($md->getAssociationMappings() as $fieldName => $mapping) {
-            $fieldValue = $this->{$fieldName};
-            if($fieldValue) {
-                if($fieldValue instanceof PersistedAssoc) {
-                    $targetClass = $md->getAssociationTargetClass($fieldName);
-                    if($md->isSingleValuedAssociation($fieldName)) {
-                        // Get a reference to the associated entity
-                        $this->$fieldName = $em->getReference($targetClass, $fieldValue->getID());
-                    } elseif($md->isCollectionValuedAssociation($fieldName)) {
-                        // Create a new PersistentCollection, uninitialized
-                        $targetMD = $em->getClassMetadata($targetClass);
-                        $coll = new PersistentCollection($em, $targetMD, new ArrayCollection);
-                        $coll->setOwner($this, $md->getAssociationMapping($fieldName));
-                        $coll->setInitialized(false);
-                        $this->$fieldName = $coll;
-                    }
-                } else {
-                    trigger_error("Reattaching a model with improperly persisted associations, of type " .
-                                  get_class($this) . ".", E_USER_WARNING);
-                }
+        foreach($this->_persistedAssociations as $fieldName => $fieldValue) {
+            $targetClass = $md->getAssociationTargetClass($fieldName);
+            if($md->isSingleValuedAssociation($fieldName)) {
+                // Get a reference to the associated entity
+                $this->$fieldName = $em->getReference($targetClass, $fieldValue->getID());
+            } elseif($md->isCollectionValuedAssociation($fieldName)) {
+                // Create a new PersistentCollection, uninitialized
+                $targetMD = $em->getClassMetadata($targetClass);
+                $coll = new PersistentCollection($em, $targetMD, new ArrayCollection);
+                $coll->setOwner($this, $md->getAssociationMapping($fieldName));
+                $coll->setInitialized(false);
+                $this->$fieldName = $coll;
             }
         }
+        unset($this->_persistedAssociations);
+        
         $this->orm->getEM()->getUnitOfWork()->registerManaged($this, $md->getIdentifierValues($this),
                                                               $this->_getData());
         if(!$md->isVersioned) {
@@ -185,6 +189,9 @@ abstract class Model extends Object {
     
     public function get($key, $direct = false) {
         if($direct) {
+            if(isset($this->_persistedAssociations) && isset($this->_persistedAssociations[$key])) {
+                trigger_error("Attempting to access a collection before entity was reattached, on {$this}", E_USER_WARNING);
+            }
             return $this->$key;
         }
         $methodName = "get" . ucfirst($key);
@@ -192,6 +199,9 @@ abstract class Model extends Object {
             return $this->$methodName();
         }
         
+        if(isset($this->_persistedAssociations) && isset($this->_persistedAssociations[$key])) {
+            trigger_error("Attempting to access a collection before entity was reattached, on {$this}", E_USER_WARNING);
+        }
         return $this->$key;
     }
     

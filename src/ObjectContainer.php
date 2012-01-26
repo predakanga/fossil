@@ -570,6 +570,16 @@ class ObjectContainer {
         $this->updateCache();
     }
     
+    public function setDefaultInstance($isDefaultInstance) {
+        if($isDefaultInstance) {
+            Object::$defaultContainer = $this;
+        } else {
+            if(Object::$defaultContainer == $this) {
+                Object::$defaultContainer = null;
+            }
+        }
+    }
+    
     public function __sleep() {
         return array('registrations', 'instancedTypes', 'classmap');
     }

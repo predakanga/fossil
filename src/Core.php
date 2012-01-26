@@ -180,7 +180,7 @@ class Core extends Object {
         return false;
     }
     
-    public static function create($appNS = null, $appPath = null) {
+    public static function create($appNS = null, $appPath = null, $setDefaultInstance = true) {
         global $overlayNamespace, $overlayPath;
         
         $appDetails = null;
@@ -197,6 +197,7 @@ class Core extends Object {
         }
         
         $newContainer = new ObjectContainer($appDetails, $overlayDetails);
+        $newContainer->setDefaultInstance($setDefaultInstance);
         return $newContainer->get("Core");
     }
 }

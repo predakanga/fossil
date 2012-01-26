@@ -35,6 +35,7 @@ namespace Fossil;
  * @author predakanga
  */
 class Object {
+    public static $defaultContainer = null;
     /**
      * @var Fossil\ObjectContainer
      */
@@ -63,6 +64,12 @@ class Object {
         }
         
         return array_diff($keysToStore, $toExclude);
+    }
+    
+    public function __wakeup() {
+        if(self::$defaultContainer) {
+            $this->restoreObjects(self::$defaultContainer);
+        }
     }
     
     protected function determineObjects() {

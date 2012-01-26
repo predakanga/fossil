@@ -55,6 +55,8 @@ class User extends \Fossil\Models\Model {
     const GENDER_M = 1;
     const GENDER_F = 2;
     
+    protected static $reattachOnWake = false;
+
     /**
      * @Id @GeneratedValue @Column(type="integer")
      * @var int
@@ -166,7 +168,7 @@ class User extends \Fossil\Models\Model {
         static $attached = false;
         
         if($me) {
-            if(!$attached && $reattach) {
+            if($me->unattached && $reattach) {
                 $me->reattach($container);
                 $attached = true;
             }
@@ -178,7 +180,7 @@ class User extends \Fossil\Models\Model {
         if(isset($session->get("FossilAuth")->user)) {
             $user = $session->get("FossilAuth")->user;
             $me = $user;
-            if($reattach) {
+            if($me->unattached && $reattach) {
                 $user->reattach($container);
                 $attached = true;
             } else {
