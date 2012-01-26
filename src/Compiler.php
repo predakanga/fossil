@@ -289,7 +289,7 @@ EOT;
     }
     
     protected function needsExtension($originalClass) {
-        return $this->annotations->classHasMethodAnnotation($originalClass, "F:Compilation");
+        return $this->annotations->classHasMethodAnnotation($originalClass, "F:Compilation\BaseCompilation");
     }
     
     protected function compileExtensions($originalClass, $currentClass) {
@@ -303,7 +303,7 @@ EOT;
             if($method->getDeclaringClassName() != $originalClass) {
                 continue;
             }
-            $annos = $this->annotations->getMethodAnnotations($method, "F:Compilation");
+            $annos = $this->annotations->getMethodAnnotations($method, "F:Compilation\BaseCompilation");
             foreach($annos as $anno) {
                 $allAnnos[get_class($anno)] = $anno;
             }

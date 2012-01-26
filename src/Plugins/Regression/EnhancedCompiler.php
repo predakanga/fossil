@@ -2,6 +2,9 @@
 
 namespace Fossil\Plugins\Regression;
 
+use Fossil\Annotations\Compilation\LogCall,
+    Fossil\Annotations\Compilation\TimeCall;
+
 /**
  * Description of EnhancedCompiler
  *
@@ -9,12 +12,12 @@ namespace Fossil\Plugins\Regression;
  * @F:ExtensionClass()
  */
 class EnhancedCompiler extends SimpleCompiler {
-    /** @F:LogCall() */
+    /** @LogCall() */
     public function someCall($a) {
         return;
     }
 
-    /** @F:TimeCall() */
+    /** @TimeCall() */
     public function compileAll() {
         return parent::compileAll();
     }

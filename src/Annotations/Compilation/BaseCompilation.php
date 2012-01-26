@@ -34,12 +34,15 @@
  * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Annotations;
+namespace Fossil\Annotations\Compilation;
 
-class LogCall extends Compilation {
-    public function call($funcname, $args, $compileArgs) {
-        print "$funcname called on " . get_class($this) . "\n";
-        
-        return $this->completeCall($funcname, $args);
+use Fossil\Annotations\Annotation;
+
+abstract class BaseCompilation extends Annotation {
+    protected function completeCall($funcname, $args) {}
+    abstract public function call($funcname, $args, $compileArgs);
+    
+    public function getArgs() {
+        return get_object_vars($this);
     }
 }

@@ -32,7 +32,7 @@ namespace Fossil\Plugins\Wiki\Controllers;
 use Fossil\Plugins\Users\Controllers\LoginRequiredController,
     Fossil\Plugins\Wiki\Models\WikiPage,
     Fossil\Plugins\Wiki\Forms\EditWiki,
-    Fossil\Plugins\Users\Annotations\RequireRole,
+    Fossil\Plugins\Users\Annotations\Compilation\RequireRole,
     Fossil\Models\PaginationProxy;
 
 /**
@@ -143,8 +143,6 @@ class Wiki extends LoginRequiredController {
         return $this->templateResponse("fossil:wiki/edit", array("page" => $page));
     }
     
-    /**
-     */
     public function runDelete(WikiPage $page, $confirm = false) {
         if($confirm == "yes") {
             $page->delete();

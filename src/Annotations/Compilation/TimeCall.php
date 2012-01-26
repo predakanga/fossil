@@ -34,13 +34,15 @@
  * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Annotations;
+namespace Fossil\Annotations\Compilation;
 
-abstract class Compilation extends Annotation {
-    protected function completeCall($funcname, $args) {}
-    abstract public function call($funcname, $args, $compileArgs);
-    
-    public function getArgs() {
-        return get_object_vars($this);
+class TimeCall extends BaseCompilation {
+    public function call($funcname, $args, $compileArgs) {
+        $start = microtime(true);
+        $retval = $this->completeCall($funcname, $args);
+        $end = microtime(true);
+        
+        echo "$funcname on " . get_class($this) . " took " . ($end-$start) . "\n";
+        return $retval;
     }
 }

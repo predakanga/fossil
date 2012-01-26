@@ -38,7 +38,8 @@ namespace Fossil\Plugins\Users\Models;
 
 use Fossil\OM,
     Fossil\Util\Crypto,
-    Fossil\Util\Random;
+    Fossil\Util\Random,
+    Fossil\Annotations\Compilation\Memoize;
 
 /**
  * @author predakanga
@@ -238,21 +239,21 @@ class User extends \Fossil\Models\Model {
     }
     
     /**
-     * @F:Memoize(postStore="storeToSession")
+     * @Memoize(postStore="storeToSession")
      */
     public function isDev() {
         return true;
     }
     
     /**
-     * @F:Memoize(postStore="storeToSession")
+     * @Memoize(postStore="storeToSession")
      */
     public function isAdmin() {
         return true;
     }
     
     /**
-     * @F:Memoize(postStore="storeToSession")
+     * @Memoize(postStore="storeToSession")
      */
     public function getUnreadConversationCount() {
         return PrivateMessageConversation::getUnreadCount($this->container, $this);

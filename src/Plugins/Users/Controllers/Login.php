@@ -38,7 +38,7 @@ namespace Fossil\Plugins\Users\Controllers;
 
 use \Fossil\OM,
     \Fossil\Plugins\Users\Models\User as UserModel,
-    \Fossil\Plugins\Users\Annotations\RequireRole,
+    \Fossil\Plugins\Users\Annotations\Compilation\RequireRole,
     \Fossil\Plugins\Users\Forms\Login as LoginForm,
     \Fossil\Plugins\Users\Forms\Signup as SignupForm;
 

@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  * Copyright (c) 2011, predakanga
  * All rights reserved.
  * 
@@ -25,45 +25,42 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
- * @author predakanga
- * @since 0.1
- * @category Fossil Plugins
- * @package Users
- * @subpackage Annotations
- * @license https://github.com/predakanga/Fossil/blob/master/LICENSE.txt New BSD License
  */
 
-namespace Fossil\Plugins\Users\Annotations;
-
-use Fossil\Plugins\Users\Models\User,
-    Fossil\Plugins\Users\Models\Role,
-    Fossil\Plugins\Users\Exceptions\AccessDeniedException;
+namespace Fossil\Annotations\Compilation;
 
 /**
- * Description of RequireRole
+ * Description of Memoize
  *
  * @author predakanga
  */
-class RequireRole extends \Fossil\Annotations\Compilation {
+class Memoize extends BaseCompilation {
+    public $ttl = "PT15M";
+    public $postStore = null;
+    
     public function call($funcname, $args, $compileArgs) {
-        $found = false;
-        if(User::me($this->container)) {
-            foreach(User::me($this->container)->getRoles() as $role) {
-                if($role->name == $compileArgs['value']) {
-                    $found = true;
-                }
-                break;
+        if(count($args)) {
+            throw new \Exception("Memoize currently doesn't support methods with arguments");
+        }
+        
+        $memoizeName = "_" . get_class($this) . "_{$funcname}_memoize";
+        if(isset($this->$memoizeName)) {
+            // Check the expiry time
+            list($value, $expiry) = $this->$memoizeName;
+            $expiry->add(new \DateInterval($compileArgs['ttl']));
+            if($expiry < new \DateTime()) {
+                unset($this->$memoizeName);
             }
         }
-        if(!$found) {
-            if(method_exists($this, "unauthorizedAction")) {
-                return $this->unauthorizedAction($args[0]);
-            } else {
-                throw new AccessDeniedException();
+        if(!isset($this->$memoizeName)) {
+            $this->$memoizeName = array($this->completeCall($funcname, $args), new \DateTime());
+            if(isset($compileArgs['postStore'])) {
+                $this->{$compileArgs['postStore']}();
             }
         }
         
-        return $this->completeCall($funcname, $args);
+        return $this->{$memoizeName}[0];
     }
 }
+
+?>
