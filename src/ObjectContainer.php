@@ -395,15 +395,30 @@ class ObjectContainer {
             if(isset($retArray[$name])) {
                 // TODO: Create a hierarchy here of priority
                 // In the meantime, store descendant instances only
-                if(is_a($implClass, $retArray[$name])) {
+                if(is_subclass_of($implClass, $retArray[$name])) {
                     // Current implClass descends from the stored class - store
                     $retArray[$name] = $implClass;
-                } elseif(is_a($retArray[$name], $implClass)) {
+                } elseif(is_subclass_of($retArray[$name], $implClass)) {
                     // Stored class descends from the current implClass - ignore
                 } else {
                     // Current implClass is not related directly to the stored class
                     // Most likely an object typed incorrectly, or both descend from a common class
                     // Throw exception? Most likely log warning
+                    // In this case, select the one that's from the most valuable namespace
+                    // Overlay > App > Fossil
+                    $priorities = array("none" => 0,
+                                        "fossil" => 1,
+                                        "app" => 2,
+                                        "overlay" => 3);
+                    
+                    $oldClass = $retArray[$name];
+                    $newClass = $implClass;
+                    $oldValue = $priorities[$this->mapClassnameToOrigin($oldClass)];
+                    $newValue = $priorities[$this->mapClassnameToOrigin($newClass)];
+                    
+                    if($newValue > $oldValue) {
+                        $retArray[$name] = $implClass;
+                    }
                 }
             } else {
                 // Otherwise, just store it
@@ -412,6 +427,33 @@ class ObjectContainer {
         }
         // And return the list of implementations
         return $retArray;
+    }
+    
+    protected function mapClassnameToOrigin($classname) {
+        $classname = ltrim($classname, "\\");
+        $fossilDetails = $this->get("Core")->getFossilDetails();
+        $appDetails = $this->get("Core")->getAppDetails();
+        $overlayDetails = $this->get("Core")->getAppDetails();
+        
+        if($overlayDetails) {
+            $ns = $overlayDetails['ns'];
+            if(stripos($classname, $ns) === 0) {
+                return "overlay";
+            }
+        }
+        if($appDetails) {
+            $ns = $appDetails['ns'];
+            if(stripos($classname, $ns) === 0) {
+                return "app";
+            }
+        }
+        if($fossilDetails) {
+            $ns = $fossilDetails['ns'];
+            if(stripos($classname, $ns) === 0) {
+                return "fossil";
+            }
+        }
+        return "none";
     }
     
     public function registerType($type, $fqcn, $overwrite = true, $noConflict = false) {
