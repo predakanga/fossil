@@ -114,6 +114,76 @@ class CompilerTest extends FossilTestCase {
     }
     
     /**
+     * @covers Fossil\Compiler::compileClass
+     */
+    public function testCompileClass() {
+        // Remove the following lines when you implement this test.
+        $this->markTestIncomplete(
+                'This test has not been implemented yet.'
+        );
+    }
+    
+    /**
+     * @covers Fossil\Compiler::compileExtension
+     */
+    public function testCompileExtension() {
+        // Remove the following lines when you implement this test.
+        $this->markTestIncomplete(
+                'This test has not been implemented yet.'
+        );
+    }
+    
+    /**
+     * @covers Fossil\Compiler::compileExtensions
+     */
+    public function testCompileExtensions() {
+        // Remove the following lines when you implement this test.
+        $this->markTestIncomplete(
+                'This test has not been implemented yet.'
+        );
+    }
+    
+    /**
+     * @covers Fossil\Compiler::isExtensionClass
+     */
+    public function testIsExtensionClass() {
+        // Remove the following lines when you implement this test.
+        $this->markTestIncomplete(
+                'This test has not been implemented yet.'
+        );
+    }
+    
+    /**
+     * @covers Fossil\Compiler::needsExtension
+     */
+    public function testNeedsExtension() {
+        // Remove the following lines when you implement this test.
+        $this->markTestIncomplete(
+                'This test has not been implemented yet.'
+        );
+    }
+    
+    /**
+     * @covers Fossil\Compiler::reparentClass
+     */
+    public function testReparentClass() {
+        // Remove the following lines when you implement this test.
+        $this->markTestIncomplete(
+                'This test has not been implemented yet.'
+        );
+    }
+    
+    /**
+     * @covers Fossil\Compiler::saveClass
+     */
+    public function testSaveClass() {
+        // Remove the following lines when you implement this test.
+        $this->markTestIncomplete(
+                'This test has not been implemented yet.'
+        );
+    }
+    
+    /**
      * @covers Fossil\Compiler::compileAllClasses
      */
     public function testCompileAllClassesBare() {
