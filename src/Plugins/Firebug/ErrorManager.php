@@ -46,10 +46,16 @@ class ErrorManager extends \Fossil\ErrorManager {
     }
     
     public function logException($exception) {
+        if(!$this->firephp) {
+            return parent::logException($warning);
+        }
         $this->firephp->error($exception, "Unhandled exception");
     }
     
     public function logError($error) {
+        if(!$this->firephp) {
+            return parent::logError($warning);
+        }
         if(!is_array($error)) {
             $this->firephp->error($error);
         } else {
@@ -58,6 +64,9 @@ class ErrorManager extends \Fossil\ErrorManager {
     }
     
     public function logWarning($warning) {
+        if(!$this->firephp) {
+            return parent::logWarning($warning);
+        }
         if(!is_array($warning)) {
             $this->firephp->warn($warning);
         } else {
@@ -66,6 +75,9 @@ class ErrorManager extends \Fossil\ErrorManager {
     }
     
     public function logInfo($info) {
+        if(!$this->firephp) {
+            return parent::logInfo($warning);
+        }
         if(!is_array($info)) {
             $this->firephp->info($info);
         } else {
@@ -74,6 +86,9 @@ class ErrorManager extends \Fossil\ErrorManager {
     }
     
     public function logHandledException(\Exception $exception) {
+        if(!$this->firephp) {
+            return parent::logHandledException($warning);
+        }
         $this->firephp->info($exception, "Handled exception");
     }
 }
